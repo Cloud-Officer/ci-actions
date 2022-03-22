@@ -1,0 +1,37 @@
+---
+name: 'Swiftlint'
+description: 'Execute swiftlint'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep SWIFTLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/github-action-for-swiftlint
+    - uses: norio-nomura/action-swiftlint@3.2.1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        # https://github.com/realm/SwiftLint
+        args: "lint --strict"

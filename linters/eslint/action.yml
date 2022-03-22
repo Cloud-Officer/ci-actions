@@ -1,0 +1,49 @@
+---
+name: 'ESLint'
+description: 'Execute eslint'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep ESLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: npm install eslint
+
+    # https://github.com/marketplace/actions/run-eslint-with-reviewdog
+    - uses: reviewdog/action-eslint@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        # https://github.com/eslint/eslint
+        eslint_flags: "--no-ignore --ext .js"
+        fail_on_error: true
+        filter_mode: nofilter
+        github_token: ${{ inputs.github_token }}
+        level: info
+        reporter: github-pr-review
+        # reviewdog_flags:
+        tool_name: eslint
+        workdir: "."

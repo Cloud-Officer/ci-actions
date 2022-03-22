@@ -1,0 +1,18 @@
+---
+name: 'Checkout'
+description: 'Checkout'
+
+inputs:
+  ssh-key:
+    description: 'ssh key'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive

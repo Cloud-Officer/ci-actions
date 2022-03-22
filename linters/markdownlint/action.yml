@@ -1,0 +1,43 @@
+---
+name: 'Markdownlint'
+description: 'Execute markdownlint'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep MARKDOWNLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
+    - uses: reviewdog/action-markdownlint@v0
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        fail_on_error: true
+        filter_mode: nofilter
+        github_token: ${{ inputs.github_token }}
+        level: info
+        # https://github.com/igorshubovych/markdownlint-cli
+        markdownlint_flags: "."
+        reporter: github-pr-review
+        # reviewdog_flags:

@@ -1,0 +1,40 @@
+---
+name: 'Dependabot'
+description: 'Create a Jira ticket on Dependabot PR'
+
+inputs:
+  base-url:
+    description: 'Base URL'
+    required: true
+  user-email:
+    description: 'User email'
+    required: true
+  api-token:
+    description: 'API token'
+    required: true
+  project:
+    description: 'project'
+    required: true
+  issue-type:
+    description: 'Issue type'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # https://github.com/marketplace/actions/jira-login
+    - uses: atlassian/gajira-login@master
+      env:
+        JIRA_BASE_URL: ${{ inputs.base-url }}
+        JIRA_USER_EMAIL: ${{ inputs.user-email }}
+        JIRA_API_TOKEN: ${{ inputs.api-token }}
+
+    # https://github.com/marketplace/actions/jira-create-issue
+    - uses: atlassian/gajira-create@master
+      with:
+        project: ${{ inputs.project }}
+        issuetype: ${{ inputs.issue-type }}
+        summary: |
+          [${{github.event.repository.name }}] ${{github.event.pull_request.title }}
+        description: |
+          ${{github.event.pull_request.html_url }}

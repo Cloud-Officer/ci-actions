@@ -1,0 +1,57 @@
+---
+name: 'Rubocop'
+description: 'Execute rubocop'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+  ruby-version:
+    description: 'ruby version'
+    required: false
+    default: '3.0'
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep RUBOCOP &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+    - uses: ruby/setup-ruby@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+
+    # https://github.com/marketplace/actions/run-rubocop-with-reviewdog
+    - uses: reviewdog/action-rubocop@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        fail_on_error: true
+        filter_mode: nofilter
+        github_token: ${{ inputs.github_token }}
+        level: info
+        reporter: github-pr-review
+        # reviewdog_flags:
+        rubocop_extensions: "rubocop-rails rubocop-performance rubocop-rspec rubocop-i18n rubocop-rake"
+        # https://rubocop.org/
+        rubocop_flags: " --except Layout/LineLength,Metrics/BlockLength"
+        # rubocop_version:
+        tool_name: rubocop
+        workdir: "."

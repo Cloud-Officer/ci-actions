@@ -1,0 +1,45 @@
+---
+name: 'Flake8'
+description: 'Execute flake8'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep FLAKE8 &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/run-flake8-with-reviewdog
+    - uses: reviewdog/action-flake8@v3
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        fail_on_error: true
+        filter_mode: nofilter
+        # https://flake8.pycqa.org/en/latest/
+        flake8_args: ""
+        github_token: ${{ inputs.github_token }}
+        level: info
+        reporter: github-pr-review
+        # reviewdog_flags:
+        tool_name: flake8
+        workdir: "."

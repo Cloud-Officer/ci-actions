@@ -1,0 +1,46 @@
+---
+name: 'Hadolint'
+description: 'Execute hadolint'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep HADOLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/run-hadolint-with-reviewdog
+    - uses: reviewdog/action-hadolint@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        # exclude: ""
+        fail_on_error: true
+        filter_mode: nofilter
+        github_token: ${{ inputs.github_token }}
+        # https://github.com/hadolint/hadolint
+        # hadolint_flags: ""
+        #hadolint_ignore:
+        level: info
+        reporter: github-pr-review
+        # reviewdog_flags:
+        tool_name: hadolint

@@ -1,0 +1,54 @@
+---
+name: 'PMD'
+description: 'Execute pmd'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep PMD &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - uses: reviewdog/action-setup@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        reviewdog_version: latest
+
+    # https://github.com/marketplace/actions/setup-java-jdk
+    - uses: actions/setup-java@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        distribution: adopt
+        java-version: 15
+        check-latest: true
+
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: wget -nc -O /opt/pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.34.0/pmd-bin-6.34.0.zip && unzip -d /opt /opt/pmd.zip && rm -f /opt/pmd.zip && mv /opt/pmd-bin-6.34.0 /opt/pmd && chmod +x /opt/pmd/*
+
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+      run: /opt/pmd/bin/run.sh pmd -dir . -rulesets ".pmd.xml" | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info"

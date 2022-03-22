@@ -1,0 +1,14 @@
+---
+name: 'Slack'
+description: 'Send action status to slack'
+
+inputs:
+  webhook-url:
+    description: 'Slack incoming webhook URL'
+    required: true
+  jobs:
+    description: 'Jobs'
+    required: true
+runs:
+  using: 'node16'
+  main: 'index.js'

@@ -1,0 +1,43 @@
+---
+name: 'KTLint'
+description: 'Execute ktlint'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep KTLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/run-ktlint-with-reviewdog
+    - uses: ScaCap/action-ktlint@master
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        github_token: ${{ inputs.github_token }}
+        fail_on_error: true
+        filter_mode: nofilter
+        level: info
+        reporter: github-pr-review
+        relative: true
+        android: false
+        ktlint_version: latest

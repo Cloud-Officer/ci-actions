@@ -1,0 +1,39 @@
+---
+name: 'Bandit'
+description: 'Execute bandit'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep BANDIT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/run-bandit
+    - uses: tj-actions/bandit@v2.1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        bandit_version: "1.7.0"
+        targets: "."
+        # https://github.com/PyCQA/bandit
+        options: "-ll --ini .bandit --silent"

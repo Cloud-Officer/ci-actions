@@ -1,0 +1,224 @@
+---
+name: 'Setup'
+description: 'Setup tools'
+
+inputs:
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  aws-access-key-id:
+    description: 'aws access key id'
+    required: true
+  aws-secret-access-key:
+    description: 'aws secret access key'
+    required: true
+  aws-region:
+    description: 'aws region'
+    required: true
+  php-version:
+    description: 'Setup PHP version.'
+    required: false
+    default: 'none'
+  php-extensions:
+    description: 'Setup PHP extensions'
+    required: false
+  php-ini-file:
+    description: 'Set base ini file'
+    required: false
+    default: 'production'
+  php-ini-values:
+    description: 'Add values to php.ini'
+    required: false
+  php-coverage:
+    description: 'Setup code coverage driver'
+    required: false
+  php-tools:
+    description: 'Setup popular tools globally'
+    required: false
+    default: 'composer'
+  python-version:
+    description: "Version range or exact version of a Python version to use, using SemVer's version range syntax."
+    required: false
+    default: 'none'
+  python-cache:
+    description: 'Used to specify a package manager for caching in the default directory. Supported values: pip, pipenv.'
+    required: false
+    default: 'pip'
+  python-architecture:
+    description: 'The target architecture (x86, x64) of the Python interpreter.'
+    required: false
+    default: 'x64'
+  python-token:
+    description: Used to pull python distributions from actions/python-versions. Since there's a default, this is typically not supplied by the user.
+    required: false
+    default: ${{ github.token }}
+  python-cache-dependency-path:
+    description: 'Used to specify the path to dependency files. Supports wildcards or a list of file names for caching multiple dependencies.'
+    required: false
+  mongodb-version:
+    description: 'MongoDB version to use'
+    default: 'none'
+    required: false
+  mongodb-replica-set:
+    description: 'MongoDB replica set name (no replica set by default)'
+    required: false
+    default: ''
+  mongodb-port:
+    description: 'MongoDB port to use (default 27017)'
+    required: false
+    default: 27017
+  mongodb-db:
+    description: 'MongoDB db to create (default: none)'
+    required: false
+    default: ''
+  mongodb-username:
+    description: 'MongoDB root username (default: none)'
+    required: false
+    default: ''
+  mongodb-password:
+    description: 'MongoDB root password (default: none)'
+    required: false
+    default: ''
+  mysql-version:
+    description: 'The version of MySQL and MariaDB'
+    required: false
+    default: 'none'
+  mysql-distribution:
+    description: 'The distribution. valid values are mysql or mariadb'
+    required: false
+    default: 'mysql'
+  mysql-auto-start:
+    description: 'Start MySQL server if it is true'
+    required: false
+    default: 'true'
+  mysql-my-cnf:
+    description: 'my.cnf settings for mysqld'
+    required: false
+    default: ''
+  mysql-root-password:
+    description: 'password for the root user'
+    required: false
+  mysql-user:
+    description: 'name of a new user'
+    required: false
+  mysql-password:
+    description: 'password for the new user'
+    required: false
+  redis-version:
+    description: 'the version of redis'
+    required: true
+    default: 'none'
+  redis-port:
+    description: 'the port of redis-sever'
+    required: true
+    default: '6379'
+  redis-tls-port:
+    description: 'the tls port of redis-sever'
+    required: false
+    default: '0'
+  redis-auto-start:
+    description: 'enable to auto-start redis-sever'
+    required: true
+    default: 'true'
+  redis-conf:
+    description: 'extra configurations for redis.conf'
+    required: false
+  apt-packages:
+    description: 'additional apt packages to install'
+    required: false
+    default: 'none'
+runs:
+  using: 'composite'
+  steps:
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+
+    # https://github.com/marketplace/actions/setup-php-action
+    - uses: shivammathur/setup-php@v2
+      if: ${{ inputs.php-version != 'none' }}
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.php-extensions }}
+        ini-file: ${{ inputs.php-ini-file }}
+        ini-values: ${{ inputs.php-ini-values }}
+        coverage: ${{ inputs.php-coverage }}
+        tools: ${{ inputs.php-tools }}
+
+    # https://github.com/marketplace/actions/cache
+    - id: composer-cache
+      shell: bash
+      if: ${{ inputs.php-version != 'none' }}
+      run: echo '::set-output name=dir::$(composer config cache-files-dir)'
+    - uses: actions/cache@v2
+      if: ${{ inputs.php-version != 'none' }}
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    # https://github.com/marketplace/actions/setup-python
+    - uses: actions/setup-python@v3
+      if: ${{ inputs.python-version != 'none' }}
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: ${{ inputs.python-cache }}
+        architecture: ${{ inputs.python-architecture }}
+        token: ${{ inputs.python-token }}
+        cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v2
+      if: ${{ inputs.python-version != 'none' }}
+      with:
+        path: ${{ env.pythonLocation }}
+        key: pip-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+
+    # https://github.com/marketplace/actions/mongodb-in-github-actions
+    - uses: supercharge/mongodb-github-action@1.7.0
+      if: ${{ inputs.mongodb-version != 'none' }}
+      with:
+        mongodb-version: ${{ inputs.mongodb-version }}
+        mongodb-replica-set: ${{ inputs.mongodb-replica-set }}
+        mongodb-port: ${{ inputs.mongodb-port }}
+        mongodb-db: ${{ inputs.mongodb-db }}
+        mongodb-username: ${{ inputs.mongodb-username }}
+        mongodb-password: ${{ inputs.mongodb-password }}
+
+    # https://github.com/marketplace/actions/actions-setup-mysql
+    - uses: shogo82148/actions-setup-mysql@v1
+      if: ${{ inputs.mysql-version != 'none' }}
+      with:
+        mysql-version: ${{ inputs.mysql-version }}
+        distribution: ${{ inputs.mysql-distribution }}
+        auto-start: ${{ inputs.mysql-auto-start }}
+        my-cnf: ${{ inputs.mysql-my-cnf }}
+        root-password: ${{ inputs.mysql-root-password }}
+        user: ${{ inputs.mysql-user }}
+        password: ${{ inputs.mysql-password }}
+
+    # https://github.com/marketplace/actions/actions-setup-redis
+    - uses: shogo82148/actions-setup-redis@v1
+      if: ${{ inputs.redis-version != 'none'}}
+      with:
+        redis-version: ${{ inputs.redis-version }}
+        redis-port: ${{ inputs.redis-port }}
+        redis-tls-port: ${{ inputs.redis-tls-port }}
+        auto-start: ${{ inputs.redis-auto-start }}
+        redis-conf: ${{ inputs.redis-conf }}
+
+    - shell: bash
+      if: ${{ inputs.apt-packages != 'none' }}
+      run: sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
