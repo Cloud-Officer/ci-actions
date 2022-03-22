@@ -56,11 +56,11 @@ try {
     ]};
 
     if (fields.length > 0) {
-      data.attachments.blocks.push({
+      data.attachments[0].blocks.push({
         "type": "section",
           "fields": fields
       });
-      data.attachments.blocks.push({
+      data.attachments[0].blocks.push({
         "type": "divider"
       });
     }
