@@ -36,6 +36,7 @@ runs:
 
     - shell: bash
       run: |
+        set -x
         deployment=$(aws deploy create-deployment --application-name ${{ inputs.application-name }} --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ${{ inputs.deployment-group-name }} --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location bucket="${{ inputs.s3-bucket }},bundleType=zip,key=${{ inputs.s3-key }}" --query 'deploymentId' --output text)
         echo "Deployment ID=${deployment}"
         counter=0
@@ -72,4 +73,4 @@ runs:
           esac
         done
         
-        exit 1
+        echo "Aborting deployment monitoring as > 5 mins!"
