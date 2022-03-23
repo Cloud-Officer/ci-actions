@@ -39,7 +39,7 @@ runs:
         set -x
         deployment=$(aws deploy create-deployment --application-name ${{ inputs.application-name }} --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ${{ inputs.deployment-group-name }} --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location bucket="${{ inputs.s3-bucket }},bundleType=zip,key=${{ inputs.s3-key }}" --query 'deploymentId' --output text)
         echo "Deployment ID=${deployment}"
-        counter=0
+        counter=1
 
         while [ ${counter} -lt 60 ]; do
           status=$(aws deploy get-deployment --deployment-id ${deployment} --query 'deploymentInfo.status' --output text)
