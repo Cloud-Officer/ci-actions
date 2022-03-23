@@ -37,7 +37,7 @@ runs:
     - shell: bash
       run: |
         deployment=$(aws deploy create-deployment --application-name ${{ inputs.application-name }} --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ${{ inputs.deployment-group-name }} --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location bucket="${{ inputs.s3-bucket }},bundleType=zip,key=${{ inputs.s3-key }}" --query 'deploymentId' --output text)
-
+        echo "Deployment ID=${deployment}"
         counter=0
 
         while [ ${counter} -lt 60 ]; do
@@ -45,23 +45,28 @@ runs:
         
           case ${status} in
             Succeeded)
+            echo "Deployment succeeded"
             exit 0
             ;;
           
             Failed)
+            echo "Deployment failed"
             exit 1
             ;;
           
             Stopped)
+            echo "Deployment stopped"
             exit 1
             ;;
         
             Ready)
+            echo "Deployment ready"
             exit 0
             ;;
         
             *)
             ((counter++))
+            echo "Deployment status=${status}..."
             sleep 5
             ;;
           esac
