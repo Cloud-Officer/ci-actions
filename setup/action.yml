@@ -166,6 +166,11 @@ runs:
         lfs: true
         submodules: recursive
 
+    # https://github.com/marketplace/actions/webfactory-ssh-agent
+    - uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ inputs.ssh-key }}
+
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - uses: aws-actions/configure-aws-credentials@v1
       with:
