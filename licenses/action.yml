@@ -28,6 +28,9 @@ runs:
         lfs: true
         submodules: recursive
 
+    - shell: bash
+      run: if ! which sha256sum &> /dev/null; then brew install coreutils ; fi
+
     # https://github.com/snyk/actions
     - uses: snyk/actions/setup@master
 
