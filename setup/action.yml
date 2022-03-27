@@ -64,7 +64,7 @@ inputs:
     required: false
     default: 'default'
   ruby-bundler:
-    description: 'The version of Bundler to install. Either none, latest, Gemfile.lock, or a version number' (e.g., 1, 2, 2.1.4).
+    description: 'The version of Bundler to install. Either none, latest, Gemfile.lock, or a version number'
     required: false
     default: 'default'
   ruby-bundler-cache:
