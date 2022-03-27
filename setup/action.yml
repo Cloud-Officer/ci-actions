@@ -55,6 +55,34 @@ inputs:
   python-cache-dependency-path:
     description: 'Used to specify the path to dependency files. Supports wildcards or a list of file names for caching multiple dependencies.'
     required: false
+  ruby-version:
+    description: 'Engine and version to use, see the syntax in the README. Reads from .ruby-version or .tool-versions if unset.'
+    required: false
+    default: 'none'
+  ruby-rubygems:
+    description: 'The version of RubyGems to use. Either default, latest, or a version number'
+    required: false
+    default: 'default'
+  ruby-bundler:
+    description: 'The version of Bundler to install. Either none, latest, Gemfile.lock, or a version number' (e.g., 1, 2, 2.1.4).
+    required: false
+    default: 'default'
+  ruby-bundler-cache:
+    description: 'Run "bundle install", and cache the result automatically. Either true or false'
+    required: false
+    default: 'false'
+  ruby-working-directory:
+    description: 'The working directory to use for resolving paths for .ruby-version, .tool-versions and Gemfile.lock'
+    required: false
+    default: '.'
+  ruby-cache-version:
+    description: 'Arbitrary string that will be added to the cache key of the bundler cache'
+    required: false
+    default: '0'
+  xcode-version:
+    description: 'Version of Xcode to use'
+    required: false
+    default: 'none'
   mongodb-version:
     description: 'MongoDB version to use'
     default: 'none'
@@ -161,7 +189,7 @@ runs:
       shell: bash
       if: ${{ inputs.php-version != 'none' }}
       run: echo '::set-output name=dir::$(composer config cache-files-dir)'
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       if: ${{ inputs.php-version != 'none' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
@@ -179,12 +207,53 @@ runs:
         cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       if: ${{ inputs.python-version != 'none' }}
       with:
         path: ${{ env.pythonLocation }}
         key: pip-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
         restore-keys: ${{ runner.os }}-pip-
+
+    # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+    - uses: ruby/setup-ruby@v1
+      if: ${{ inputs.ruby-version != 'none' }}
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+        rubygems: ${{ inputs.ruby-rubygems }}
+        bundler: ${{ inputs.ruby-bundler }}
+        bundler-cache: ${{ inputs.ruby-bundler-cache }}
+        working-directory: ${{ inputs.ruby-working-directory }}
+        cache-version: ${{ inputs.ruby-cache-version }}
+
+    # https://github.com/marketplace/actions/setup-xcode-version
+    - uses: maxim-lobanov/setup-xcode@v1
+      if: ${{ inputs.xcode-version != 'none' }}
+      with:
+        xcode-version: ${{ inputs.xcode-version }}
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v3
+      if: ${{ inputs.xcode-version != 'none' }}
+      with:
+        path: Carthage
+        key: ${{ runner.os }}-carthage-${{ hashFiles('**/Cartfile.resolved') }}
+        restore-keys: ${{ runner.os }}-carthage-
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v3
+      if: ${{ inputs.xcode-version != 'none' }}
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: ${{ runner.os }}-pods-
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v3
+      if: ${{ inputs.xcode-version != 'none' }}
+      with:
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: ${{ runner.os }}-spm-
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
     - uses: supercharge/mongodb-github-action@1.7.0
