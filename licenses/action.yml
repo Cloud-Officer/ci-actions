@@ -32,7 +32,9 @@ runs:
       run: if ! which sha256sum &> /dev/null; then brew install coreutils ; fi
 
     # https://github.com/snyk/actions
-    - uses: snyk/actions/setup@master
+    #- uses: snyk/actions/setup@master
+    - run: ${{ github.action_path }}/setup_snyk.sh ${{ inputs.snyk-version }} ${{ runner.os }}
+      shell: bash
 
     # https://github.com/marketplace/actions/setup-go-environment
     - uses: actions/setup-go@v2
