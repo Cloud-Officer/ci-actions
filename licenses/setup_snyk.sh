@@ -53,6 +53,7 @@ esac
 chmod +x snyk
 sudo mv snyk /usr/local/bin
 
+pwd
 echo URL="${URL}"
 echo $PREFIX="${PREFIX}"
 echo wget -qO- "${URL}"
