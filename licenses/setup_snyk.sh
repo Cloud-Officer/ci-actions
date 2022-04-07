@@ -55,6 +55,8 @@ sudo mv snyk /usr/local/bin
 
 echo URL="${URL}"
 echo $PREFIX="${PREFIX}"
+wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}"
+wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4
 wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4 | wget --progress=bar:force:noscroll -i -
 
 sha256sum -c snyk-${PREFIX}.sha256
