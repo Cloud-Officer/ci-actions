@@ -44,7 +44,7 @@ case "${2}" in
 esac
 
 OLDPWD=$(pwd)
-TEMP="/temp/${$}"
+TEMP="/tmp/${$}"
 mkdir -p "${TEMP}"
 cd "${TEMP}"
 
