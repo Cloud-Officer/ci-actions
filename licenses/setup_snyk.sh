@@ -44,7 +44,8 @@ case "${2}" in
 esac
 
 OLDPWD=$(pwd)
-TEMP="/tmp/${$}"
+TEMP="/tmp/${$}-${RANDOM}"
+echo "Installing from ${TEMP}"
 mkdir -p "${TEMP}"
 cd "${TEMP}"
 
