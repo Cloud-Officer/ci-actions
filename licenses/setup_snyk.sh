@@ -58,8 +58,8 @@ echo URL="${URL}"
 echo $PREFIX="${PREFIX}"
 echo wget -qO- "${URL}"
 echo wget -qO- "${URL}" "|" grep "browser_download_url" "|" grep "${PREFIX}"
-echo wget -qO- "${URL}" "|" grep "browser_download_url" "|" grep "${PREFIX}" "|" cut -d '"' -f 4
-echo wget -qO- "${URL}" "|" grep "browser_download_url" "|" grep "${PREFIX}" "|" cut -d '"' -f 4 "|" wget --progress=bar:force:noscroll -i -
+URLS=$(wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4)
+echo "URLS=${URLS}"
 wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4 | wget --progress=bar:force:noscroll -i -
 
 sha256sum -c snyk-${PREFIX}.sha256
