@@ -43,6 +43,11 @@ case "${2}" in
         die "Invalid running specified: $2"
 esac
 
+OLDPWD=$(pwd)
+TEMP="/temp/${$}"
+mkdir -p "${TEMP}"
+cd "${TEMP}"
+
 {
     echo "#!/bin/bash"
     echo export SNYK_INTEGRATION_NAME="GITHUB_ACTIONS"
@@ -52,17 +57,11 @@ esac
 
 chmod +x snyk
 sudo mv snyk /usr/local/bin
-
-pwd
-echo URL="${URL}"
-echo $PREFIX="${PREFIX}"
-echo wget -qO- "${URL}"
-echo wget -qO- "${URL}" "|" grep "browser_download_url" "|" grep "${PREFIX}"
-URLS=$(wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4)
-echo "URLS=${URLS}"
 wget -qO- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | cut -d '"' -f 4 | wget --progress=bar:force:noscroll -i -
 
 sha256sum -c snyk-${PREFIX}.sha256
 chmod +x "snyk-${PREFIX}"
 sudo mv "snyk-${PREFIX}" /usr/local/bin
-#rm -rf snyk*
+
+cd "${OLDPWD}"
+rm -rf "${TEMP}"
