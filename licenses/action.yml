@@ -31,6 +31,8 @@ runs:
     - shell: bash
       run: if ! which sha256sum &> /dev/null; then brew install coreutils ; fi
 
+    - uses: mxschmitt/action-tmate@v3
+
     # https://github.com/snyk/actions
     - uses: snyk/actions/setup@master
 
