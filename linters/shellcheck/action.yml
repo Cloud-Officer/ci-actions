@@ -30,7 +30,7 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/run-shellcheck-with-reviewdog
-    - uses: reviewdog/action-shellcheck@v1.5
+    - uses: reviewdog/action-shellcheck@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         exclude: "./git/*"
