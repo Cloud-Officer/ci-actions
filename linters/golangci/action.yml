@@ -30,7 +30,7 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/run-golangci-lint-with-reviewdog
-    - uses: reviewdog/action-golangci-lint@v1
+    - uses: reviewdog/action-golangci-lint@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         fail_on_error: true
