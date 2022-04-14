@@ -4,7 +4,7 @@ const axios = require("axios");
 try {
     const webhook_url = core.getInput('webhook-url');
     const jobs = JSON.parse(core.getInput('jobs'));
-    let i, fields, block;
+    let fields, block;
 
     fields = [];
     for (var i in jobs.variables.outputs) {
