@@ -10,7 +10,7 @@ inputs:
 outputs:
   BUILD_NAME:
     description: 'Build name'
-    value:  ${{ steps.variables.outputs.BUILD_NAME }}
+    value: ${{ steps.variables.outputs.BUILD_NAME }}
   BUILD_VERSION:
     description: 'Build version'
     value: ${{ steps.variables.outputs.BUILD_VERSION }}
