@@ -7,7 +7,7 @@ try {
     let i, fields, block;
 
     fields = [];
-    for (i in jobs.variables.outputs) {
+    for (var i in jobs.variables.outputs) {
       if (i.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
         if (jobs.variables.outputs[i] == '1') {
           fields.push({
@@ -67,8 +67,11 @@ try {
 
     let color = '#5cb589';
     fields = [];
-    for (i in jobs) {
-      if (i == 'variables') continue;
+    for (var i in jobs) {
+      if (i == 'variables') {
+        continue;
+      }
+
       var emoji = ':question:';
       switch (jobs[i].result) {
         case 'success':
