@@ -29,11 +29,10 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-bandit
-    - uses: tj-actions/bandit@v2.1
+    # https://github.com/marketplace/actions/bandit-security-linter
+    - uses: tj-actions/bandit@v5.1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        bandit_version: "1.7.0"
         targets: "."
         # https://github.com/PyCQA/bandit
         options: "-ll --ini .bandit --silent"
