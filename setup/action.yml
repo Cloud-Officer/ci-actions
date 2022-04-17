@@ -15,6 +15,18 @@ inputs:
   aws-region:
     description: 'aws region'
     required: false
+  go-version:
+    description: 'The Go version to download (if necessary) and use. Supports semver spec and ranges'
+    required: false
+    default: 'none'
+  go-check-latest:
+    description: 'Set this option to true if you want the action to always check for the latest available version that satisfies the version spec'
+    required: false
+    default: false
+  go-token:
+    description: 'Used to pull node distributions from go-versions'
+    required: false
+    default: ${{ github.token }}
   php-version:
     description: 'Setup PHP version.'
     required: false
@@ -179,6 +191,24 @@ runs:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ inputs.aws-region }}
+
+    # https://github.com/marketplace/actions/setup-go-environment
+    - uses: actions/setup-go@v3
+      if: ${{ inputs.go-version != 'none' }}
+      with:
+        go-version: ${{ inputs.go-version }}
+        check-latest: ${{ go-check-latest }}
+        token: ${{ inputs.go-token }}
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v3
+      if: ${{ inputs.go-version != 'none' }}
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
 
     # https://github.com/marketplace/actions/setup-php-action
     - uses: shivammathur/setup-php@v2

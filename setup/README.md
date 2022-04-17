@@ -32,6 +32,18 @@ inputs:
   aws-region:
     description: 'aws region'
     required: false
+  go-version:
+    description: 'The Go version to download (if necessary) and use. Supports semver spec and ranges'
+    required: false
+    default: 'none'
+  go-check-latest:
+    description: 'Set this option to true if you want the action to always check for the latest available version that satisfies the version spec'
+    required: false
+    default: false
+  go-token:
+    description: 'Used to pull node distributions from go-versions'
+    required: false
+    default: ${{ github.token }}
   php-version:
     description: 'Setup PHP version.'
     required: false
