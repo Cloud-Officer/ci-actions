@@ -197,7 +197,7 @@ runs:
       if: ${{ inputs.go-version != 'none' }}
       with:
         go-version: ${{ inputs.go-version }}
-        check-latest: ${{ go-check-latest }}
+        check-latest: ${{ inputs.go-check-latest }}
         token: ${{ inputs.go-token }}
 
     # https://github.com/marketplace/actions/cache
