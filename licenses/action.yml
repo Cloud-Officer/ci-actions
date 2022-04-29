@@ -41,5 +41,5 @@ runs:
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: |
-        setup_snyk.sh latest ${{ runner.os }}
+        "${GITHUB_ACTION_PATH}"/setup_snyk.sh latest ${{ runner.os }}
         snyk test --org=${{ inputs.snyk-org }} ${{ inputs.snyk-parameters }}
