@@ -28,13 +28,12 @@ runs:
         lfs: true
         submodules: recursive
 
-    - shell: bash
-      run: if ! which sha256sum &> /dev/null; then brew install coreutils ; fi
-
     # https://github.com/marketplace/actions/setup-go-environment
     - uses: actions/setup-go@v2
       with:
         go-version: '1.13'
+
+    - uses: mxschmitt/action-tmate@v3
 
     # https://support.snyk.io/hc/en-us/articles/360002118098-How-do-I-specify-a-custom-manifest-file-name-for-snyk-test-
     - shell: bash
