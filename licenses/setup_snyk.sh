@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 # This script takes two positional arguments. The first is the version of Snyk to install.
 # This can be a standard version (ie. v1.390.0) or it can be latest, in which case the
@@ -55,7 +55,7 @@ esac
 chmod +x snyk
 sudo mv snyk /usr/local/bin
 
-wget --timeout=5 --tries=5 --retry-connrefused "${URL}"
+wget --timeout=5 --tries=5 --retry-connrefused "${URL}" || true
 wget -q --timeout=5 --tries=5 --retry-connrefused -O- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | grep -v sha | awk '{print $2}' | tr -d '"' | wget --timeout=5  --tries=5 --retry-connrefused --progress=bar:force:noscroll -i -
 
 chmod +x "snyk-${PREFIX}"
