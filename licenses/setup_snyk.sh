@@ -55,7 +55,7 @@ esac
 chmod +x snyk
 sudo mv snyk /usr/local/bin
 
-wget -q --timeout=10 -O- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | grep -v sha | awk '{print $2}' | tr -d '"' | wget --timeout=10 --progress=bar:force:noscroll -i -
+wget -q --timeout=5 --tries=5 --retry-connrefused -O- "${URL}" | grep "browser_download_url" | grep "${PREFIX}" | grep -v sha | awk '{print $2}' | tr -d '"' | wget --timeout=5  --tries=5 --retry-connrefused --progress=bar:force:noscroll -i -
 
 chmod +x "snyk-${PREFIX}"
 sudo mv "snyk-${PREFIX}" /usr/local/bin
