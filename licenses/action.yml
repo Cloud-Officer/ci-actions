@@ -37,6 +37,7 @@ runs:
     - shell: bash
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
+      if: ${{ runner.os != 'macOS' }}
       run: |
         "${GITHUB_ACTION_PATH}"/setup_snyk.sh latest ${{ runner.os }}
         snyk test --org=${{ inputs.snyk-org }} ${{ inputs.snyk-parameters }}
