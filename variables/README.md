@@ -24,6 +24,9 @@ outputs:
   COMMIT_MESSAGE:
     description: 'Commit message'
     value: ${{ steps.variables.outputs.COMMIT_MESSAGE }}
+  MODIFIED_GITHUB_RUN_NUMBER:
+    description: 'Modified build number'
+    value: ${{ steps.variables.outputs.MODIFIED_GITHUB_RUN_NUMBER }}
   DEPLOY_ON_BETA:
     description: 'Deploy code on beta'
     value: ${{ steps.variables.outputs.DEPLOY_ON_BETA }}

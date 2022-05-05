@@ -93,9 +93,10 @@ function execute_if_tests()
 # set environment variables
 
 SHORT_COMMIT="$(git rev-parse --short HEAD)"
-MODIFIED_GITHUB_RUN_NUMBER=$((GITHUB_RUN_NUMBER + 15000))
 SAFE_BRANCH="${GITHUB_REF/refs\/heads\//}"
 SAFE_BRANCH="${SAFE_BRANCH/\//_}"
+MODIFIED_GITHUB_RUN_NUMBER=$((GITHUB_RUN_NUMBER + 15000))
+export MODIFIED_GITHUB_RUN_NUMBER
 
 if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
   TAG="${GITHUB_REF/refs\/tags\//}"
@@ -125,6 +126,7 @@ fi
 echo "::set-output name=BUILD_NAME::${BUILD_NAME}"
 echo "::set-output name=BUILD_VERSION::${BUILD_VERSION}"
 echo "::set-output name=COMMIT_MESSAGE::${COMMIT_MESSAGE}"
+echo "::set-output name=MODIFIED_GITHUB_RUN_NUMBER::${MODIFIED_GITHUB_RUN_NUMBER}"
 
 DEPLOY_ON_BETA=0
 
