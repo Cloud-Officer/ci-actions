@@ -19,6 +19,7 @@ jobs:
       BUILD_NAME: "${{steps.variables.outputs.BUILD_NAME}}"
       BUILD_VERSION: "${{steps.variables.outputs.BUILD_VERSION}}"
       COMMIT_MESSAGE: "${{steps.variables.outputs.COMMIT_MESSAGE}}"
+      MODIFIED_GITHUB_RUN_NUMBER: "${{steps.variables.outputs.MODIFIED_GITHUB_RUN_NUMBER}}"
       DEPLOY_ON_BETA: "${{steps.variables.outputs.DEPLOY_ON_BETA}}"
       DEPLOY_ON_RC: "${{steps.variables.outputs.DEPLOY_ON_RC}}"
       DEPLOY_ON_PROD: "${{steps.variables.outputs.DEPLOY_ON_PROD}}"
