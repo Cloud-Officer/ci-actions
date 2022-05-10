@@ -264,13 +264,13 @@ runs:
 
     # https://github.com/marketplace/actions/setup-xcode-version
     - uses: maxim-lobanov/setup-xcode@v1
-      if: ${{ inputs.xcode-version != 'none' }}
+      if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         xcode-version: ${{ inputs.xcode-version }}
 
     # https://github.com/marketplace/actions/cache
     - uses: actions/cache@v3
-      if: ${{ inputs.xcode-version != 'none' }}
+      if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Carthage
         key: ${{ runner.os }}-carthage-${{ hashFiles('**/Cartfile.resolved') }}
@@ -278,7 +278,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - uses: actions/cache@v3
-      if: ${{ inputs.xcode-version != 'none' }}
+      if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Pods
         key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
@@ -286,7 +286,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - uses: actions/cache@v3
-      if: ${{ inputs.xcode-version != 'none' }}
+      if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: .build
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
