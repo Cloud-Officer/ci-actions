@@ -14,8 +14,8 @@ inputs:
     required: true
   snyk-parameters:
     description: 'snyk parameters'
-    required: fasle
-    defaul: '--all-projects'
+    required: false
+    default: '--all-projects'
 
 runs:
   using: "composite"

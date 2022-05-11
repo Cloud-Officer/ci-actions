@@ -1,0 +1,29 @@
+---
+name: 'SOUP'
+description: 'Execute soup'
+
+inputs:
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  parameters:
+    description: 'soup parameters'
+    required: false
+    default: '--no_prompt'
+
+runs:
+  using: "composite"
+  steps:
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v2
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/Cloud-Officer/soup
+    - shell: bash
+      run: |
+        brew install cloud-officer/ci/soup
+        soup ${{ inputs.parameters }}
