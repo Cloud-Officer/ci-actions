@@ -327,4 +327,6 @@ runs:
 
     - shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
-      run: sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
+      run: |
+        sudo apt-get --yes update
+        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
