@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: Actionlint
       id: actionlint
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: ESLint
       id: eslint
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: Markdownlint
       id: markdownlint
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: PMD
       id: pmd
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: ShellCheck
       id: shellcheck
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - variables
-    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
+    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
     - name: Yamllint
       id: yamllint
