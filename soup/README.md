@@ -10,10 +10,14 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
+  github-token:
+    description: 'github token'
+    required: false
+    default: ''
   parameters:
     description: 'soup parameters'
     required: false
-    default: ''
+    default: '--no_prompt'
 ```
 
 ## Example usage
@@ -66,5 +70,6 @@ jobs:
         uses: cloud-officer/ci-actions/soup@master
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
           parameters: "--no_prompt"
 ```

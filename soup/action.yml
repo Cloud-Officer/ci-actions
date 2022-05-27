@@ -6,6 +6,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
+  github-token:
+    description: 'github token'
+    required: false
+    default: ''
   parameters:
     description: 'soup parameters'
     required: false
@@ -25,7 +29,7 @@ runs:
     # https://github.com/Cloud-Officer/soup
     - shell: bash
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ input.github-token }}
       run: |
         brew install cloud-officer/ci/soup
         soup ${{ inputs.parameters }}
