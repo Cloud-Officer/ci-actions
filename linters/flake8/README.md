@@ -76,7 +76,6 @@ jobs:
         uses: cloud-officer/ci-actions/linters/flake8@master
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
-          docstrings: ${{ steps.variables.outputs.SKIP_DOCSTRINGS != '1' }}
           ssh-key: "${{secrets.SSH_KEY}}"
           github_token: "${{secrets.GITHUB_TOKEN}}"
 ```
