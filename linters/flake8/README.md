@@ -13,6 +13,11 @@ inputs:
   linters:
     description: 'List of all enabled linters'
     required: true
+  docstrings:
+    description: 'Whether to lint docstrings or not'
+    required: false
+    default: false
+    type: boolean
   ssh-key:
     description: 'ssh key'
     required: true
@@ -51,6 +56,7 @@ jobs:
       DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
       SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
       SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
+      SKIP_DOCSTRINGS: "${{steps.variables.outputs.SKIP_DOCSTRINGS}}"
       UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
       LINTERS: "${{steps.variables.outputs.LINTERS}}"
     steps:
@@ -71,6 +77,7 @@ jobs:
         uses: cloud-officer/ci-actions/linters/flake8@master
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
+          docstrings: ${{ steps.variables.outputs.SKIP_DOCSTRINGS != '1' }}
           ssh-key: "${{secrets.SSH_KEY}}"
           github_token: "${{secrets.GITHUB_TOKEN}}"
 ```
