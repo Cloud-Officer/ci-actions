@@ -27,7 +27,7 @@ runs:
 
     - id: docstrings
       shell: bash
-      if: ${{ inputs.docstrings == true }}
+      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == true) }}
       run: pip install flake8-docstrings
 
     # https://github.com/marketplace/actions/checkout
