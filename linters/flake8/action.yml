@@ -6,6 +6,11 @@ inputs:
   linters:
     description: 'List of all enabled linters'
     required: true
+  docstrings:
+    description: 'Whether to lint docstrings or not'
+    required: false
+    default: false
+    type: boolean
   ssh-key:
     description: 'ssh key'
     required: true
@@ -19,6 +24,11 @@ runs:
     - id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep FLAKE8 &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+
+    - id: docstrings
+      shell: bash
+      if: ${{ inputs.docstrings == true }}
+      run: pip install flake8-docstrings
 
     # https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v2
