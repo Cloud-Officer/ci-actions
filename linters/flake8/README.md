@@ -56,7 +56,6 @@ jobs:
       DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
       SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
       SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
-      SKIP_DOCSTRINGS: "${{steps.variables.outputs.SKIP_DOCSTRINGS}}"
       UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
       LINTERS: "${{steps.variables.outputs.LINTERS}}"
     steps:
