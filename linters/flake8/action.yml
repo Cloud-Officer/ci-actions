@@ -8,9 +8,8 @@ inputs:
     required: true
   docstrings:
     description: 'Whether to lint docstrings or not'
-    required: false
+    required: true
     default: true
-    type: boolean
   ssh-key:
     description: 'ssh key'
     required: true
@@ -44,7 +43,7 @@ runs:
       run: pip install --upgrade flake8
 
     - shell: bash
-      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == true) }}
+      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == 'true') }}
       run: pip install --upgrade flake8-docstrings
 
     - shell: bash
