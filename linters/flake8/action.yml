@@ -6,10 +6,6 @@ inputs:
   linters:
     description: 'List of all enabled linters'
     required: true
-  docstrings:
-    description: 'Whether to lint docstrings or not'
-    required: true
-    default: true
   ssh-key:
     description: 'ssh key'
     required: true
@@ -40,11 +36,7 @@ runs:
         reviewdog_version: latest
 
     - shell: bash
-      run: pip install --upgrade flake8
-
-    - shell: bash
-      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == 'true') }}
-      run: pip install --upgrade flake8-docstrings
+      run: pip install --upgrade flake8 flake8-docstrings
 
     - shell: bash
       env:

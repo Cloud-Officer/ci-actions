@@ -13,11 +13,6 @@ inputs:
   linters:
     description: 'List of all enabled linters'
     required: true
-  docstrings:
-    description: 'Whether to lint docstrings or not'
-    required: false
-    default: false
-    type: boolean
   ssh-key:
     description: 'ssh key'
     required: true
