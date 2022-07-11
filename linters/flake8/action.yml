@@ -25,11 +25,6 @@ runs:
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep FLAKE8 &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
 
-    - id: docstrings
-      shell: bash
-      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == true) }}
-      run: pip install flake8-docstrings
-
     # https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
@@ -39,17 +34,18 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-flake8-with-reviewdog
-    - uses: reviewdog/action-flake8@v3
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        fail_on_error: true
-        filter_mode: nofilter
-        # https://flake8.pycqa.org/en/latest/
-        flake8_args: ""
-        github_token: ${{ inputs.github_token }}
-        level: info
-        reporter: github-pr-review
-        # reviewdog_flags:
-        tool_name: flake8
-        workdir: "."
+        reviewdog_version: latest
+
+    - shell: bash
+      run: pip install --upgrade flake8
+
+    - shell: bash
+      if: ${{ (steps.check.outputs.continue == 'true') && (inputs.docstrings == true) }}
+      run: pip install --upgrade flake8-docstrings
+
+    - shell: bash
+      run: flake8 . "" 2>&1 | /tmp/reviewdog -f=flake8 -name="flake8" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info" ""
