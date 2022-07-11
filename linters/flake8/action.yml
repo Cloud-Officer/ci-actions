@@ -9,7 +9,7 @@ inputs:
   docstrings:
     description: 'Whether to lint docstrings or not'
     required: false
-    default: false
+    default: true
     type: boolean
   ssh-key:
     description: 'ssh key'
@@ -50,4 +50,4 @@ runs:
     - shell: bash
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
-      run: flake8 . "" 2>&1 | reviewdog -f=flake8 -name="flake8" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info" ""
+      run: flake8 . 2>&1 | reviewdog -f=flake8 -name=flake8 -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info
