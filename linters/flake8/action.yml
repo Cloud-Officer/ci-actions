@@ -48,4 +48,6 @@ runs:
       run: pip install --upgrade flake8-docstrings
 
     - shell: bash
-      run: flake8 . "" 2>&1 | /tmp/reviewdog -f=flake8 -name="flake8" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info" ""
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+      run: flake8 . "" 2>&1 | reviewdog -f=flake8 -name="flake8" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info" ""
