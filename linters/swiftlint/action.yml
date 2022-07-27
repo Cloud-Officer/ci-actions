@@ -34,4 +34,4 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # https://github.com/realm/SwiftLint
-        args: "lint --strict --force-exclude"
+        args: "lint --strict"
