@@ -40,11 +40,13 @@ runs:
         php-version: ${{ inputs.php-version }}
         tools: composer
 
-    - shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      run: curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer && chmod a+x php-cs-fixer
-
     # https://cs.symfony.com/doc/usage.html
     - shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: ./php-cs-fixer fix --dry-run --diff --verbose
+      run: |
+        composer install --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+        ./vendor/bin/php-cs-fixer fix --dry-run --diff --verbose
+        
+        if [ -f phpstan.neon ]; then
+          ./vendor/bin/phpstan analyse
+        fi
