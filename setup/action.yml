@@ -300,9 +300,9 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - uses: actions/cache@v3
+      id: tuist
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
-        id: tuist
         path: |
           Tuist/Cache
           Tuist/Dependencies
