@@ -303,9 +303,9 @@ runs:
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         id: tuist
-        path:
-          - Tuist/Cache
-          - Tuist/Dependencies
+        path: |
+          Tuist/Cache
+          Tuist/Dependencies
         key: ${{ runner.os }}-tuist-${{ hashFiles('Tuist/Dependencies/Lockfiles/Package.resolved') }}
         restore-keys: ${{ runner.os }}-tuist-
 
