@@ -167,6 +167,12 @@ inputs:
     description: 'additional apt packages to install'
     required: false
     default: 'none'
+
+outputs:
+  tuist-cache-hit:
+    description: 'Cache hit for Tuist'
+    value: ${{ steps.tuist.outputs.cache-hit }}
+
 runs:
   using: 'composite'
   steps:
@@ -296,7 +302,7 @@ runs:
     - uses: actions/cache@v3
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
-        id: tuist-cache
+        id: tuist
         path:
           - Tuist/Cache
           - Tuist/Dependencies
