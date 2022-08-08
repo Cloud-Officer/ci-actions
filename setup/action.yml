@@ -292,6 +292,17 @@ runs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: ${{ runner.os }}-spm-
 
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v3
+      if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
+      with:
+        id: tuist-cache
+        path:
+          - Tuist/Cache
+          - Tuist/Dependencies
+        key: ${{ runner.os }}-tuist-${{ hashFiles('Tuist/Dependencies/Lockfiles/Package.resolved') }}
+        restore-keys: ${{ runner.os }}-tuist-
+
     # https://github.com/marketplace/actions/mongodb-in-github-actions
     - uses: supercharge/mongodb-github-action@1.7.0
       if: ${{ inputs.mongodb-version != 'none' }}
