@@ -40,7 +40,7 @@ runs:
         echo "Deployment ID=${deployment}"
         counter=1
 
-        while [ ${counter} -lt 60 ]; do
+        while [ ${counter} -lt 120 ]; do
           status=$(aws deploy get-deployment --deployment-id ${deployment} --query 'deploymentInfo.status' --output text)
         
           case ${status} in
