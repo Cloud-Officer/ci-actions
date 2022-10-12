@@ -21,7 +21,7 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep BANDIT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}

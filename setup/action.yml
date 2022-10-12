@@ -177,7 +177,7 @@ runs:
   using: 'composite'
   steps:
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
