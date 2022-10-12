@@ -15,6 +15,14 @@ inputs:
   github_token:
     description: 'github token'
     required: true
+  php-version:
+    description: 'php version'
+    required: false
+    default: '7.4'
+  php-cs-fixer-version:
+    description: 'php-cd-fixer version'
+    required: false
+    default: 'latest'
 ```
 
 ## Example usage
