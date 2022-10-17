@@ -1,3 +1,17 @@
 # https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
 
-*       @ydesgagn
+*                        @ydesgagn
+
+# build/deploy related files
+
+.eslintrc.json           @tlacroix @ydesgagn
+.github/*                @tlacroix @ydesgagn
+.gitignore               @tlacroix @ydesgagn
+.markdownlint.yml        @tlacroix @ydesgagn
+.pmd.xml                 @tlacroix @ydesgagn
+.shellcheckrc            @tlacroix @ydesgagn
+.yamllint.yml            @tlacroix @ydesgagn
+CODEOWNERS               @tlacroix @ydesgagn
+README.md                @tlacroix @ydesgagn
+codedeploy/*             @tlacroix @ydesgagn
+*.sh                     @tlacroix @ydesgagn
