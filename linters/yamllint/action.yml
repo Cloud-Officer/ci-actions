@@ -18,7 +18,7 @@ runs:
   steps:
     - id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep YAMLLINT &> /dev/null; then echo "::set-output name=continue::true"; else echo "::set-output name=continue::false"; fi
+      run: if echo "${{ inputs.linters }}" | grep YAMLLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v3
