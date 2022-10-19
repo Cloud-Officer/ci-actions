@@ -123,6 +123,11 @@ else
   export COMMIT_MESSAGE
 fi
 
+echo "::set-output name=BUILD_NAME::${BUILD_NAME}"
+echo "::set-output name=BUILD_VERSION::${BUILD_VERSION}"
+echo "::set-output name=COMMIT_MESSAGE::${COMMIT_MESSAGE}"
+echo "::set-output name=MODIFIED_GITHUB_RUN_NUMBER::${MODIFIED_GITHUB_RUN_NUMBER}"
+
 DEPLOY_ON_BETA=0
 
 if on_beta; then
@@ -130,6 +135,7 @@ if on_beta; then
 fi
 
 export DEPLOY_ON_BETA
+echo "::set-output name=DEPLOY_ON_BETA::${DEPLOY_ON_BETA}"
 
 DEPLOY_ON_RC=0
 
@@ -138,6 +144,7 @@ if on_rc; then
 fi
 
 export DEPLOY_ON_RC
+echo "::set-output name=DEPLOY_ON_RC::${DEPLOY_ON_RC}"
 
 DEPLOY_ON_PROD=0
 
@@ -146,6 +153,7 @@ if on_prod && [ "${TAG}" != "" ]; then
 fi
 
 export DEPLOY_ON_PROD
+echo "::set-output name=DEPLOY_ON_PROD::${DEPLOY_ON_PROD}"
 
 DEPLOY_MACOS=0
 
@@ -154,6 +162,7 @@ if on_macos; then
 fi
 
 export DEPLOY_MACOS
+echo "::set-output name=DEPLOY_MACOS::${DEPLOY_MACOS}"
 
 DEPLOY_TVOS=0
 
@@ -162,6 +171,7 @@ if on_tvos; then
 fi
 
 export DEPLOY_TVOS
+echo "::set-output name=DEPLOY_TVOS::${DEPLOY_TVOS}"
 
 SKIP_LICENSES=0
 
@@ -170,6 +180,7 @@ if skip_licenses; then
 fi
 
 export SKIP_LICENSES
+echo "::set-output name=SKIP_LICENSES::${SKIP_LICENSES}"
 
 SKIP_TESTS=0
 
@@ -178,6 +189,7 @@ if skip_tests; then
 fi
 
 export SKIP_TESTS
+echo "::set-output name=SKIP_TESTS::${SKIP_TESTS}"
 
 UPDATE_PACKAGES=0
 
@@ -186,6 +198,7 @@ if update_packages; then
 fi
 
 export UPDATE_PACKAGES
+echo "::set-output name=UPDATE_PACKAGES::${UPDATE_PACKAGES}"
 
 LINTERS=""
 
@@ -245,7 +258,4 @@ if [ -f .yamllint.yml ]; then
   LINTERS="${LINTERS} YAMLLINT"
 fi
 
-for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS SKIP_LICENSES SKIP_TESTS UPDATE_PACKAGES LINTERS; do
-  echo "${github}=${!github}" >> "${GITHUB_ENV}"
-  echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
-done
+echo "::set-output name=LINTERS::${LINTERS}"
