@@ -7,47 +7,6 @@ inputs:
     description: 'ssh key'
     required: true
 
-outputs:
-  BUILD_NAME:
-    description: 'Build name'
-    value: ${{ steps.variables.outputs.BUILD_NAME }}
-  BUILD_VERSION:
-    description: 'Build version'
-    value: ${{ steps.variables.outputs.BUILD_VERSION }}
-  COMMIT_MESSAGE:
-    description: 'Commit message'
-    value: ${{ steps.variables.outputs.COMMIT_MESSAGE }}
-  MODIFIED_GITHUB_RUN_NUMBER:
-    description: 'Modified build number'
-    value: ${{ steps.variables.outputs.MODIFIED_GITHUB_RUN_NUMBER }}
-  DEPLOY_ON_BETA:
-    description: 'Deploy code on beta'
-    value: ${{ steps.variables.outputs.DEPLOY_ON_BETA }}
-  DEPLOY_ON_RC:
-    description: 'Deploy code on rc'
-    value: ${{ steps.variables.outputs.DEPLOY_ON_RC }}
-  DEPLOY_ON_PROD:
-    description: 'Deploy code on prod'
-    value: ${{ steps.variables.outputs.DEPLOY_ON_PROD }}
-  DEPLOY_MACOS:
-    description: 'Deploy code on macOS'
-    value: ${{ steps.variables.outputs.DEPLOY_MACOS }}
-  DEPLOY_TVOS:
-    description: 'Deploy code on tvOS'
-    value: ${{ steps.variables.outputs.DEPLOY_TVOS }}
-  SKIP_LICENSES:
-    description: 'Skip open source licences check'
-    value: ${{ steps.variables.outputs.SKIP_LICENSES }}
-  SKIP_TESTS:
-    description: 'Skip unit tests'
-    value: ${{ steps.variables.outputs.SKIP_TESTS }}
-  UPDATE_PACKAGES:
-    description: 'Update packages on instance'
-    value: ${{ steps.variables.outputs.UPDATE_PACKAGES }}
-  LINTERS:
-    description: 'List of all enabled linters'
-    value: ${{ steps.variables.outputs.LINTERS }}
-
 runs:
   using: "composite"
   steps:
