@@ -37,9 +37,11 @@ runs:
 
     # flake8-docstrings
     - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
       run: pip install --upgrade flake8
 
     - shell: bash
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+      if: ${{ steps.check.outputs.continue == 'true' }}
       run: flake8 . 2>&1 | reviewdog -f=flake8 -name=flake8 -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info
