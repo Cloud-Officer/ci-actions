@@ -28,7 +28,7 @@ runs:
   using: 'composite'
   steps:
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
-    - uses: aws-actions/configure-aws-credentials@v1
+    - uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
