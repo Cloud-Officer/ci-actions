@@ -105,21 +105,21 @@ if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
   BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
   export BUILD_VERSION
   git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-  COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}")"
+  COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}" | head -n 1)"
   export COMMIT_MESSAGE
 elif [ -n "${GITHUB_HEAD_REF}" ]; then
   BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-$(date +"%Y%m%d%H%M%S")-${MODIFIED_GITHUB_RUN_NUMBER}"
   export BUILD_NAME
   BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
   export BUILD_VERSION
-  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}")"
+  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}" | head -n 1)"
   export COMMIT_MESSAGE
 else
   BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-$(date +"%Y%m%d%H%M%S")-${MODIFIED_GITHUB_RUN_NUMBER}"
   export BUILD_NAME
   BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
   export BUILD_VERSION
-  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}")"
+  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}" | head -n 1)"
   export COMMIT_MESSAGE
 fi
 
