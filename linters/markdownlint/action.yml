@@ -38,6 +38,6 @@ runs:
         github_token: ${{ inputs.github_token }}
         level: info
         # https://github.com/igorshubovych/markdownlint-cli
-        markdownlint_flags: ". --ignore '{**/vendor/**,**/node_modules/**}'"
+        markdownlint_flags: ". --ignore '{**/vendor/**,**/node_modules/**,**/Libraries/Sources/**}'"
         reporter: github-pr-review
         # reviewdog_flags:
