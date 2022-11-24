@@ -27,7 +27,7 @@ runs:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
-        submodules: false
+        submodules: recursive
 
     # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
     - uses: reviewdog/action-markdownlint@v0
