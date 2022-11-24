@@ -31,7 +31,7 @@ runs:
 
     - shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf
+      run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
 
     # https://github.com/marketplace/actions/run-yamllint-with-reviewdog
     - uses: reviewdog/action-yamllint@v1
