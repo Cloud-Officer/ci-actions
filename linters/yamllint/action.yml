@@ -29,6 +29,10 @@ runs:
         lfs: true
         submodules: recursive
 
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf
+
     # https://github.com/marketplace/actions/run-yamllint-with-reviewdog
     - uses: reviewdog/action-yamllint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
