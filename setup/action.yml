@@ -198,6 +198,13 @@ runs:
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ inputs.aws-region }}
 
+    # install apt packages
+    - shell: bash
+      if: ${{ inputs.apt-packages != 'none' }}
+      run: |
+        sudo apt-get --yes update
+        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
+
     # https://github.com/marketplace/actions/setup-go-environment
     - uses: actions/setup-go@v3
       if: ${{ inputs.go-version != 'none' }}
@@ -341,9 +348,3 @@ runs:
         redis-tls-port: ${{ inputs.redis-tls-port }}
         auto-start: ${{ inputs.redis-auto-start }}
         redis-conf: ${{ inputs.redis-conf }}
-
-    - shell: bash
-      if: ${{ inputs.apt-packages != 'none' }}
-      run: |
-        sudo apt-get --yes update
-        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
