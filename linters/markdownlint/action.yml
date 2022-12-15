@@ -31,7 +31,11 @@ runs:
 
     - shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
+      run: |
+        grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
+        find . -type d -name vendor -exec rm -rf {} \; || true
+        find . -type d -name node_modules -exec rm -rf {} \; || true
+        find . -type d -name Libraries -exec rm -rf {} \; || true
 
     # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
     - uses: reviewdog/action-markdownlint@v0
