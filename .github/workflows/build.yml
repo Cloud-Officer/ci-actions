@@ -14,7 +14,7 @@ name: Build
 jobs:
   variables:
     name: Prepare Variables
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       BUILD_NAME: "${{steps.variables.outputs.BUILD_NAME}}"
       BUILD_VERSION: "${{steps.variables.outputs.BUILD_VERSION}}"
@@ -37,10 +37,10 @@ jobs:
         ssh-key: "${{secrets.SSH_KEY}}"
   actionlint:
     name: Github Actions Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: Actionlint
       id: actionlint
@@ -51,10 +51,10 @@ jobs:
         github_token: "${{secrets.GITHUB_TOKEN}}"
   eslint:
     name: JavaScript ES Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: ESLint
       id: eslint
@@ -65,10 +65,10 @@ jobs:
         github_token: "${{secrets.GITHUB_TOKEN}}"
   markdownlint:
     name: Markdown Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: Markdownlint
       id: markdownlint
@@ -79,10 +79,10 @@ jobs:
         github_token: "${{secrets.GITHUB_TOKEN}}"
   pmd:
     name: Java Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: PMD
       id: pmd
@@ -93,10 +93,10 @@ jobs:
         github_token: "${{secrets.GITHUB_TOKEN}}"
   shellcheck:
     name: Shell Scripts Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: ShellCheck
       id: shellcheck
@@ -107,10 +107,10 @@ jobs:
         github_token: "${{secrets.GITHUB_TOKEN}}"
   yamllint:
     name: YAML Linter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
     - variables
-    if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
+    if: "${{github.event_name == 'pull_request' || github.event_name == 'pull_request_target'}}"
     steps:
     - name: Yamllint
       id: yamllint
