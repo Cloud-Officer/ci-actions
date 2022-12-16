@@ -261,7 +261,7 @@ runs:
       if: ${{ inputs.python-version != 'none' }}
       with:
         path: ${{ env.pythonLocation }}
-        key: pip-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
         restore-keys: ${{ runner.os }}-pip-
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
