@@ -208,7 +208,7 @@ env:
   PHP-COVERAGE: pcov
   PHP-EXTENSIONS: mongodb-1.7.4
   PHP-TOOLS: composer
-  PHP-VERSION: '7.4'
+  PHP-VERSION: '8.1'
   REDIS-VERSION: latest
 jobs:
   php_unit_tests:
