@@ -26,6 +26,11 @@ function on_tvos()
   echo "${COMMIT_MESSAGE}" | grep -iF '#tvos' &> /dev/null
 }
 
+function skip_all()
+{
+  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-all' &> /dev/null
+}
+
 function skip_licenses()
 {
   echo "${COMMIT_MESSAGE}" | grep -iF '#skip-licenses' &> /dev/null
@@ -191,6 +196,12 @@ if skip_tests; then
 fi
 
 export SKIP_TESTS
+
+if skip_all; then
+  SKIP_LICENSES=1
+  SKIP_LINTERS=1
+  SKIP_TESTS=1
+fi
 
 UPDATE_PACKAGES=0
 
