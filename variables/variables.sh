@@ -31,6 +31,11 @@ function skip_licenses()
   echo "${COMMIT_MESSAGE}" | grep -iF '#skip-licenses' &> /dev/null
 }
 
+function skip_linters()
+{
+  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-linters' &> /dev/null
+}
+
 function skip_tests()
 {
   echo "${COMMIT_MESSAGE}" | grep -iF '#skip-tests' &> /dev/null
@@ -171,6 +176,14 @@ fi
 
 export SKIP_LICENSES
 
+SKIP_LINTERS=0
+
+if skip_linters; then
+  SKIP_LINTERS=1
+fi
+
+export SKIP_LINTERS
+
 SKIP_TESTS=0
 
 if skip_tests; then
@@ -245,7 +258,7 @@ if [ -f .yamllint.yml ]; then
   LINTERS="${LINTERS} YAMLLINT"
 fi
 
-for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS SKIP_LICENSES SKIP_TESTS UPDATE_PACKAGES LINTERS; do
+for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
   echo "${github}=${!github}" >> "${GITHUB_ENV}"
   echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
 done

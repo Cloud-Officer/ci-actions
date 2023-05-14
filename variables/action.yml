@@ -38,6 +38,9 @@ outputs:
   SKIP_LICENSES:
     description: 'Skip open source licences check'
     value: ${{ steps.variables.outputs.SKIP_LICENSES }}
+  SKIP_LINTERS:
+    description: 'Skip linter checks'
+    value: ${{ steps.variables.outputs.SKIP_LINTERS }}
   SKIP_TESTS:
     description: 'Skip unit tests'
     value: ${{ steps.variables.outputs.SKIP_TESTS }}

@@ -45,6 +45,9 @@ outputs:
   SKIP_LICENSES:
     description: 'Skip open source licences check'
     value: ${{ steps.variables.outputs.SKIP_LICENSES }}
+  SKIP_LINTERS:
+    description: 'Skip linter checks'
+    value: ${{ steps.variables.outputs.SKIP_LINTERS }}
   SKIP_TESTS:
     description: 'Skip unit tests'
     value: ${{ steps.variables.outputs.SKIP_TESTS }}
@@ -85,6 +88,7 @@ jobs:
       DEPLOY_MACOS: "${{steps.variables.outputs.DEPLOY_MACOS}}"
       DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
       SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
+      SKIP_LINTERS: "${{steps.variables.outputs.SKIP_LINTERS}}"
       SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
       UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
       LINTERS: "${{steps.variables.outputs.LINTERS}}"
