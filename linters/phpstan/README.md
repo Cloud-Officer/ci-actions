@@ -15,6 +15,10 @@ inputs:
   github_token:
     description: 'github token'
     required: true
+  apt-packages:
+    description: 'additional apt packages to install'
+    required: false
+    default: 'none'
   php-version:
     description: 'php version'
     required: false
@@ -30,7 +34,7 @@ inputs:
   php-stan-command:
     description: 'php stan command(s)'
     required: false
-    default: 'vendor/bin/phpstan analyse'
+    default: './vendor/bin/phpstan analyse'
 ```
 
 ## Example usage

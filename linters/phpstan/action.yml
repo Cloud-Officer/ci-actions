@@ -12,6 +12,10 @@ inputs:
   github_token:
     description: 'github token'
     required: true
+  apt-packages:
+    description: 'additional apt packages to install'
+    required: false
+    default: 'none'
   php-version:
     description: 'php version'
     required: false
@@ -50,6 +54,13 @@ runs:
       if: ${{ inputs.ssh-key != ''}}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
+
+    # install apt packages
+    - shell: bash
+      if: ${{ inputs.apt-packages != 'none' }}
+      run: |
+        sudo apt-get --yes update
+        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
 
     # https://github.com/marketplace/actions/setup-php-action
     - uses: shivammathur/setup-php@v2
