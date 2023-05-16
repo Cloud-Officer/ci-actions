@@ -23,7 +23,7 @@ inputs:
   php-stan-command:
     description: 'php stan command(s)'
     required: false
-    default: 'vendor/bin/phpstan analyse'
+    default: './vendor/bin/phpstan analyse'
 
 runs:
   using: "composite"
