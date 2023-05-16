@@ -50,8 +50,9 @@ runs:
         tools: composer
 
     # https://github.com/marketplace/actions/cache
-    - shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' }}
+    - id: composer-cache
+      shell: bash
+      if: ${{ inputs.php-version != 'none' }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
     - uses: actions/cache@v3
       if: ${{ steps.check.outputs.continue == 'true' }}
