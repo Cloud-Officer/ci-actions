@@ -20,6 +20,10 @@ inputs:
     description: 'php extensions'
     required: false
     default: ''
+  composer-command:
+    description: 'composer command'
+    required: false
+    default: 'composer install'
   php-stan-command:
     description: 'php stan command(s)'
     required: false
@@ -63,7 +67,7 @@ runs:
 
     - shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: composer install --optimize-autoloader --no-interaction --no-suggest --prefer-dist --no-scripts
+      run: ${{ inputs.composer-command }}
 
     # https://phpstan.org/
     - shell: bash

@@ -23,6 +23,10 @@ inputs:
     description: 'php extensions'
     required: false
     default: ''
+  composer-command:
+    description: 'composer command'
+    required: false
+    default: 'composer install'
   php-stan-command:
     description: 'php stan command(s)'
     required: false
@@ -83,5 +87,6 @@ jobs:
           github_token: "${{secrets.GITHUB_TOKEN}}"
           php-version: "${{env.PHP-VERSION}}"
           php-extensions: "${{env.PHP-EXTENSIONS}}"
-          php-stan-command: vendor/bin/phpstan analyse
+          composer-command: composer install --optimize-autoloader --no-interaction --no-suggest --prefer-dist
+          php-stan-command: "./vendor/bin/phpstan analyse"
 ```
