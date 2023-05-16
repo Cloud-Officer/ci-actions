@@ -1,0 +1,70 @@
+---
+name: 'PHPStan'
+description: 'Execute phpstan'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+  php-version:
+    description: 'php version'
+    required: false
+    default: '8.2'
+  php-extensions:
+    description: 'php extensions'
+    required: false
+    default: ''
+  php-stan-command:
+    description: 'php stan command(s)'
+    required: false
+    default: 'vendor/bin/phpstan analyse'
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v3
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-php-action
+    - uses: shivammathur/setup-php@v2
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.php-extensions }}
+        tools: composer
+
+    # https://github.com/marketplace/actions/cache
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
+    - uses: actions/cache@v3
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: composer install --optimize-autoloader --no-interaction --no-suggest --prefer-dist --no-scripts
+
+    # https://phpstan.org/
+    - shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: ${{ inputs.php-stan-command }}

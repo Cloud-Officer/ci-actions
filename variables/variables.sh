@@ -249,6 +249,10 @@ if [  -f .php-cs-fixer.dist.php ]; then
   LINTERS="${LINTERS} PHPCS"
 fi
 
+if [  -f phpstan.neon ]; then
+  LINTERS="${LINTERS} PHPSTAN"
+fi
+
 if [ -f .pmd.xml ]; then
   LINTERS="${LINTERS} PMD"
 fi
