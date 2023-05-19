@@ -4,6 +4,7 @@ A collection of Github Actions for CI.
 
 ## Repository structure
 
+* [aws](aws/README.md): GenericAWS CLI or shell commands
 * [codedeploy](codedeploy/README.md): Github Actions for AWS CodeDeploy
 * [jira](jira/README.md): Github Action to integrate Dependabot with Jira
 * [linters](linters/README.md): Github Actions for various linters

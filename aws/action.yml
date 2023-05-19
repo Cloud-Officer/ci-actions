@@ -1,0 +1,40 @@
+---
+name: 'AWS'
+description: 'Execute AWS CLI or shell commands'
+
+inputs:
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  aws-access-key-id:
+    description: 'aws access key id'
+    required: true
+  aws-secret-access-key:
+    description: 'aws secret access key'
+    required: true
+  aws-region:
+    description: 'aws region'
+    required: true
+  shell-commands:
+    description: 'shell commands'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v3
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+    - uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - shell: bash
+      run: ${{ inputs.shell-commands }}
