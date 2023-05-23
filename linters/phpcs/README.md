@@ -18,11 +18,23 @@ inputs:
   php-version:
     description: 'php version'
     required: false
-    default: '7.4'
+    default: '8.2'
+  php-extensions:
+    description: 'php extensions'
+    required: false
+    default: ''
+  composer-command:
+    description: 'composer command'
+    required: false
+    default: 'none'
   php-cs-fixer-version:
     description: 'php-cd-fixer version'
     required: false
     default: 'latest'
+  php-cs-fixer-command:
+    description: 'php-cs-fixer command(s)'
+    required: false
+    default: './php-cs-fixer fix --dry-run --diff --verbose'
 ```
 
 ## Example usage
