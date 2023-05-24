@@ -44,6 +44,26 @@ inputs:
     description: 'Used to pull node distributions from go-versions'
     required: false
     default: ${{ github.token }}
+  node-version:
+    description: 'Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
+    required: false
+    default: 'none'
+  node-version-file:
+    description: 'File containing the version Spec of the version to use.  Examples: .nvmrc, .node-version, .tool-versions.'
+    required: false
+  node-architecture:
+    description: 'Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.'
+    required: false
+  node-check-latest:
+    description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec.'
+    required: false
+    default: false
+  node-cache:
+    description: 'Used to specify a package manager for caching in the default directory. Supported values: npm, yarn, pnpm.'
+    required: false
+  node-cache-dependency-path:
+    description: 'Used to specify the path to a dependency file: package-lock.json, yarn.lock, etc. Supports wildcards or a list of file names for caching multiple dependencies.'
+    required: false
   php-version:
     description: 'Setup PHP version.'
     required: false
