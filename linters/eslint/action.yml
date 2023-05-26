@@ -29,15 +29,6 @@ runs:
         lfs: true
         submodules: recursive
 
-    - uses: actions/setup-node@v3
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        node-version: latest
-
-    - shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      run: npm install eslint
-
     # https://github.com/marketplace/actions/run-eslint-with-reviewdog
     - uses: reviewdog/action-eslint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
