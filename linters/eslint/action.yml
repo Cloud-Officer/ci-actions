@@ -36,7 +36,7 @@ runs:
 
     - shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: npm install eslint@8.32.0
+      run: npm install eslint@7.12.1
 
     # https://github.com/marketplace/actions/run-eslint-with-reviewdog
     - uses: reviewdog/action-eslint@v1
