@@ -14,4 +14,4 @@
 codeowners               @ydesgagn
 readme.md                @ydesgagn
 codedeploy/*             @ydesgagn
-*.sh                     
+*.sh                     @ydesgagn
