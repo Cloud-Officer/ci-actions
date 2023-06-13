@@ -11,7 +11,7 @@
 .pmd.xml                 @ydesgagn
 .shellcheckrc            @ydesgagn
 .yamllint.yml            @ydesgagn
-CODEOWNERS               @ydesgagn
-README.md                @ydesgagn
+codeowners               @ydesgagn
+readme.md                @ydesgagn
 codedeploy/*             @ydesgagn
 *.sh                     
