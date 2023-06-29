@@ -1,4 +1,4 @@
-# ci-actions
+# ci-actions [![Build](https://github.com/Cloud-Officer/ci-actions/actions/workflows/build.yml/badge.svg)](https://github.com/Cloud-Officer/ci-actions/actions/workflows/build.yml)
 
 A collection of Github Actions for CI.
 
