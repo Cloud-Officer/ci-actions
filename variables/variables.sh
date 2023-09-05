@@ -26,6 +26,11 @@ function on_tvos()
   echo "${COMMIT_MESSAGE}" | grep -iF '#tvos' &> /dev/null
 }
 
+function deploy_options()
+{
+  echo "${COMMIT_MESSAGE}" | grep -iF '#deploy-options' &> /dev/null
+}
+
 function skip_all()
 {
   echo "${COMMIT_MESSAGE}" | grep -iF '#skip-all' &> /dev/null
@@ -173,6 +178,14 @@ fi
 
 export DEPLOY_TVOS
 
+DEPLOY_OPTIONS=""
+
+if deploy_options; then
+  DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
+fi
+
+export DEPLOY_OPTIONS
+
 SKIP_LICENSES=0
 
 if skip_licenses; then
@@ -273,7 +286,7 @@ if [ -f .yamllint.yml ]; then
   LINTERS="${LINTERS} YAMLLINT"
 fi
 
-for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
+for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
   echo "${github}=${!github}" >> "${GITHUB_ENV}"
   echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
 done

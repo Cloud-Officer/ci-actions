@@ -42,6 +42,9 @@ outputs:
   DEPLOY_TVOS:
     description: 'Deploy code on tvOS'
     value: ${{ steps.variables.outputs.DEPLOY_TVOS }}
+  DEPLOY_OPTIONS:
+    description: 'Deploy options'
+    value: ${{ steps.variables.outputs.DEPLOY_OPTIONS }}
   SKIP_LICENSES:
     description: 'Skip open source licences check'
     value: ${{ steps.variables.outputs.SKIP_LICENSES }}
@@ -87,6 +90,7 @@ jobs:
       DEPLOY_ON_PROD: "${{steps.variables.outputs.DEPLOY_ON_PROD}}"
       DEPLOY_MACOS: "${{steps.variables.outputs.DEPLOY_MACOS}}"
       DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
+      DEPLOY_OPTIONS: "${{steps.variables.outputs.DEPLOY_OPTIONS}}"
       SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
       SKIP_LINTERS: "${{steps.variables.outputs.SKIP_LINTERS}}"
       SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"

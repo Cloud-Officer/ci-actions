@@ -35,6 +35,9 @@ outputs:
   DEPLOY_TVOS:
     description: 'Deploy code on tvOS'
     value: ${{ steps.variables.outputs.DEPLOY_TVOS }}
+  DEPLOY_OPTIONS:
+    description: 'Deploy options'
+    value: ${{ steps.variables.outputs.DEPLOY_OPTIONS }}
   SKIP_LICENSES:
     description: 'Skip open source licences check'
     value: ${{ steps.variables.outputs.SKIP_LICENSES }}
