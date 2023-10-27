@@ -5,7 +5,7 @@
 # build/deploy related files
 
 .eslintrc.json           @ydesgagn
-.github/*                @ydesgagn
+.github/                 @ydesgagn
 .gitignore               @ydesgagn
 .markdownlint.yml        @ydesgagn
 .pmd.xml                 @ydesgagn
@@ -13,5 +13,5 @@
 .yamllint.yml            @ydesgagn
 codeowners               @ydesgagn
 readme.md                @ydesgagn
-codedeploy/*             @ydesgagn
+codedeploy/              @ydesgagn
 *.sh                     @ydesgagn
