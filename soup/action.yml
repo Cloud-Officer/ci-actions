@@ -35,5 +35,6 @@ runs:
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         fi
 
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install cloud-officer/ci/soup
+        export HOMEBREW_NO_AUTO_UPDATE=1
+        brew install cloud-officer/ci/soup || true
         soup ${{ inputs.parameters }}
