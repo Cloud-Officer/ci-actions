@@ -23,14 +23,14 @@ runs:
   using: "composite"
   steps:
     # https://github.com/marketplace/actions/jira-login
-    - uses: atlassian/gajira-login@master
+    - uses: atlassian/gajira-login@v3
       env:
         JIRA_BASE_URL: ${{ inputs.base-url }}
         JIRA_USER_EMAIL: ${{ inputs.user-email }}
         JIRA_API_TOKEN: ${{ inputs.api-token }}
 
     # https://github.com/marketplace/actions/jira-create-issue
-    - uses: atlassian/gajira-create@master
+    - uses: atlassian/gajira-create@v3
       with:
         project: ${{ inputs.project }}
         issuetype: ${{ inputs.issue-type }}
