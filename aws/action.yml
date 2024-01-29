@@ -22,7 +22,7 @@ runs:
   using: 'composite'
   steps:
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true

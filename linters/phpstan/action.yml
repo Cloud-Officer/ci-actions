@@ -41,7 +41,7 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -50,7 +50,7 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/webfactory-ssh-agent
-    - uses: webfactory/ssh-agent@v0.7.0
+    - uses: webfactory/ssh-agent@v0.8.0
       if: ${{ inputs.ssh-key != ''}}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
@@ -75,7 +75,7 @@ runs:
       shell: bash
       if: ${{ inputs.php-version != 'none' }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}

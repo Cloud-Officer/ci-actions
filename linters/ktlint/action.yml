@@ -21,7 +21,7 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep KTLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,7 +30,7 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/run-ktlint-with-reviewdog
-    - uses: ScaCap/action-ktlint@master
+    - uses: ScaCap/action-ktlint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         github_token: ${{ inputs.github_token }}

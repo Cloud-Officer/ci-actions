@@ -9,8 +9,10 @@ This action performs setup of many common tools all at once. Please see the indi
 * [setup-python](https://github.com/marketplace/actions/setup-python)
 * [setup-ruby](https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby)
 * [setup-xcode](https://github.com/marketplace/actions/setup-xcode-version)
+* [setup-elasticsearch](https://github.com/marketplace/actions/run-elasticsearch-with-plugins)
 * [setup-mongodb](https://github.com/marketplace/actions/mongodb-in-github-actions)
 * [setup-mysql](https://github.com/marketplace/actions/actions-setup-mysql)
+* [setup-rabbitmq](https://github.com/marketplace/actions/rabbitmq-in-github-actions)
 * [setup-redis](https://github.com/marketplace/actions/actions-setup-redis)
 
 Take note that when you enable the setup action for a language, the
@@ -23,33 +25,105 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: false
+  aws-region:
+    description: AWS Region, e.g. us-east-2
+    required: false
+  aws-role-to-assume:
+    description: The Amazon Resource Name (ARN) of the role to assume. Use the provided credentials to assume an IAM role and configure the Actions environment with the assumed role credentials rather than with the provided credentials.
+    required: false
   aws-access-key-id:
-    description: 'aws access key id'
+    description: AWS Access Key ID. Provide this key if you want to assume a role using access keys rather than a web identity token.
     required: false
   aws-secret-access-key:
-    description: 'aws secret access key'
+    description: AWS Secret Access Key. Required if aws-access-key-id is provided.
     required: false
-  aws-region:
-    description: 'aws region'
+  aws-session-token:
+    description: AWS Session Token.
+    required: false
+  aws-web-identity-token-file:
+    description: Use the web identity token file from the provided file system path in order to assume an IAM role using a web identity, e.g. from within an Amazon EKS worker node.
+    required: false
+  aws-role-chaining:
+    description: Use existing credentials from the environment to assume a new role, rather than providing credentials as input.
+    required: false
+  aws-audience:
+    description: The audience to use for the OIDC provider
+    required: false
+    default: sts.amazonaws.com
+  aws-http-proxy:
+    description: Proxy to use for the AWS SDK agent
+    required: false
+  aws-mask-aws-account-id:
+    description: Whether to mask the AWS account ID for these credentials as a secret value. By default the account ID will not be masked
+    required: false
+  aws-role-duration-seconds:
+    description: Role duration in seconds. Default is one hour.
+    required: false
+  aws-role-external-id:
+    description: The external ID of the role to assume.
+    required: false
+  aws-role-session-name:
+    description: "Role session name (default: GitHubActions)"
+    required: false
+  aws-role-skip-session-tagging:
+    description: Skip session tagging during role assumption
+    required: false
+  aws-inline-session-policy:
+    description: Define an inline session policy to use when assuming a role
+    required: false
+  aws-managed-session-policies:
+    description: Define a list of managed session policies to use when assuming a role
+    required: false
+  aws-output-credentials:
+    description: Whether to set credentials as step output
+    required: false
+  aws-unset-current-credentials:
+    description: Whether to unset the existing credentials in your runner. May be useful if you run this action multiple times in the same job
+    required: false
+  aws-disable-retry:
+    description: Whether to disable the retry and backoff mechanism when the assume role call fails. By default the retry mechanism is enabled
+    required: false
+  aws-retry-max-attempts:
+    description: The maximum number of attempts it will attempt to retry the assume role call. By default it will retry 12 times
+    required: false
+  aws-special-characters-workaround:
+    description: Some environments do not support special characters in AWS_SECRET_ACCESS_KEY. This option will retry fetching credentials until the secret access key does not contain special characters. This option overrides disable-retry and retry-max-attempts. This option is disabled by default
     required: false
   go-version:
-    description: 'The Go version to download (if necessary) and use. Supports semver spec and ranges'
+    description: 'The Go version to download (if necessary) and use. Supports semver spec and ranges. Be sure to enclose this option in single quotation marks.'
     required: false
     default: 'none'
+  go-version-file:
+    description: 'Path to the go.mod or go.work file.'
+    required: false
   go-check-latest:
     description: 'Set this option to true if you want the action to always check for the latest available version that satisfies the version spec'
     required: false
     default: false
   go-token:
-    description: 'Used to pull node distributions from go-versions'
+    description: Used to pull Go distributions from go-versions. Since there's a default, this is typically not supplied by the user. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
     required: false
-    default: ${{ github.token }}
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+  go-cache:
+    description: Used to specify whether caching is needed. Set to true, if you'd like to enable caching.
+    required: false
+    default: true
+  go-cache-dependency-path:
+    description: 'Used to specify the path to a dependency file - go.sum'
+    required: false
+  go-architecture:
+    description: 'Target architecture for Go to use. Examples: x86, x64. Will use system architecture by default.'
+    required: false
+  node-always-auth:
+    description: 'Set always-auth in npmrc.'
+    required: false
+    default: 'false'
   node-version:
     description: 'Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
     required: false
     default: 'none'
   node-version-file:
-    description: 'File containing the version Spec of the version to use.  Examples: .nvmrc, .node-version, .tool-versions.'
+    description: 'File containing the version Spec of the version to use.  Examples: package.json, .nvmrc, .node-version, .tool-versions.'
     required: false
   node-architecture:
     description: 'Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.'
@@ -58,6 +132,16 @@ inputs:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec.'
     required: false
     default: false
+  node-registry-url:
+    description: 'Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN.'
+    required: false
+  node-scope:
+    description: 'Optional scope for authenticating against scoped registries. Will fall back to the repository owner when using the GitHub Packages registry (https://npm.pkg.github.com/).'
+    required: false
+  node-token:
+    description: Used to pull node distributions from node-versions. Since there's a default, this is typically not supplied by the user. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    required: false
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   node-cache:
     description: 'Used to specify a package manager for caching in the default directory. Supported values: npm, yarn, pnpm.'
     required: false
@@ -68,6 +152,9 @@ inputs:
     description: 'Setup PHP version.'
     required: false
     default: 'none'
+  php-version-file:
+    description: 'Setup PHP version from a file.'
+    required: false
   php-extensions:
     description: 'Setup PHP extensions'
     required: false
@@ -89,6 +176,9 @@ inputs:
     description: "Version range or exact version of a Python version to use, using SemVer's version range syntax."
     required: false
     default: 'none'
+  python-version-file:
+    description: "File containing the Python version to use. Example: .python-version"
+    required: false
   python-cache:
     description: 'Used to specify a package manager for caching in the default directory. Supported values: pip, pipenv.'
     required: false
@@ -97,13 +187,25 @@ inputs:
     description: 'The target architecture (x86, x64) of the Python interpreter.'
     required: false
     default: 'x64'
+  python-check-latest:
+    description: "Set this option if you want the action to check for the latest available version that satisfies the version spec."
+    required: false
+    default: false
   python-token:
     description: Used to pull python distributions from actions/python-versions. Since there's a default, this is typically not supplied by the user.
     required: false
-    default: ${{ github.token }}
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   python-cache-dependency-path:
     description: 'Used to specify the path to dependency files. Supports wildcards or a list of file names for caching multiple dependencies.'
     required: false
+  python-update-environment:
+    description: "Set this option if you want the action to update environment variables."
+    required: false
+    default: true
+  python-allow-prereleases:
+    description: "When 'true', a version range passed to 'python-version' input will match prerelease versions if no GA versions are found. Only 'x.y' version range is supported for CPython."
+    required: false
+    default: false
   ruby-version:
     description: 'Engine and version to use, see the syntax in the README. Reads from .ruby-version or .tool-versions if unset.'
     required: false
@@ -128,10 +230,33 @@ inputs:
     description: 'Arbitrary string that will be added to the cache key of the bundler cache'
     required: false
     default: '0'
+  ruby-self-hosted:
+    description: |
+      Consider the runner as a self-hosted runner, which means not using prebuilt Ruby binaries which only work
+      on GitHub-hosted runners or self-hosted runners with a very similar image to the ones used by GitHub runners.
+      The default is to detect this automatically based on the OS, OS version and architecture.
+    required: false
+  ruby-windows-toolchain:
+    description: |
+      This input allows to override the default toolchain setup on Windows.
+      The default setting ('default') installs a toolchain based on the selected Ruby.
+      Specifically, it installs MSYS2 if not already there and installs mingw/ucrt/mswin build tools and packages.
+      It also sets environment variables using 'ridk' or 'vcvars64.bat' based on the selected Ruby.
+      At present, the only other setting than 'default' is 'none', which only adds Ruby to PATH.
+      No build tools or packages are installed, nor are any ENV setting changed to activate them.
+    required: false
   xcode-version:
     description: 'Version of Xcode to use'
     required: false
     default: 'none'
+  elasticsearch-version:
+    description: 'The version of Elasticsearch'
+    default: 'none'
+    required: false
+  elasticsearch-plugins:
+    description: 'Elasticsearch plugin strings'
+    required: false
+    default: ''
   mongodb-version:
     description: 'MongoDB version to use'
     default: 'none'
@@ -181,9 +306,37 @@ inputs:
   mysql-password:
     description: 'password for the new user'
     required: false
+  rabbitmq-version:
+    description: 'RabbitMQ version to use'
+    required: false
+    default: 'none'
+  rabbitmq-ports:
+    description: 'Port mappings in a [host]:[container] format, delimited by spaces (example: "1883:1883 8883:8883")'
+    required: false
+    default: '1883:1883'
+  rabbitmq-certificates:
+    description: 'Absolute path to a directory containing certificate files which can be referenced in the config (the folder is mounted under `/rabbitmq-certs`)'
+    required: false
+    default: ''
+  rabbitmq-config:
+    description: 'Absolute path to the `rabbitmq.conf` configuration file to use'
+    required: false
+    default: ''
+  rabbitmq-definitions:
+    description: 'Absolute path to the `definitions.json` definition file to use (requires using a `x.y.z-management` image version or enabling the `rabbitmq_management` plugin)'
+    required: false
+    default: ''
+  rabbitmq-plugins:
+    description: 'A comma separated list of RabbitMQ plugins which should be enabled'
+    required: false
+    default: ''
+  rabbitmq-container-name:
+    description: 'The name of the spawned Docker container (can be used as hostname when accessed from other containers)'
+    required: false
+    default: 'rabbitmq'
   redis-version:
     description: 'the version of redis'
-    required: true
+    required: false
     default: 'none'
   redis-port:
     description: 'the port of redis-sever'

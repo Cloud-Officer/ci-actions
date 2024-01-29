@@ -21,7 +21,7 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep PMD &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -36,7 +36,7 @@ runs:
         reviewdog_version: latest
 
     # https://github.com/marketplace/actions/setup-java-jdk
-    - uses: actions/setup-java@v3
+    - uses: actions/setup-java@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         distribution: adopt

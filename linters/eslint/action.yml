@@ -21,7 +21,7 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep ESLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -29,7 +29,8 @@ runs:
         lfs: true
         submodules: recursive
 
-    - uses: actions/setup-node@v3
+    # https://github.com/marketplace/actions/setup-node-js-environment
+    - uses: actions/setup-node@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         node-version: latest
