@@ -543,7 +543,7 @@ runs:
         plugins: ${{ inputs.elasticsearch-plugins }}
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
-    - uses: supercharge/mongodb-github-action@master
+    - uses: supercharge/mongodb-github-action@v1.10.0
       if: ${{ inputs.mongodb-version != 'none' }}
       with:
         mongodb-version: ${{ inputs.mongodb-version }}
