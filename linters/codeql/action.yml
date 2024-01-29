@@ -1,0 +1,41 @@
+---
+name: 'CodeQL'
+description: 'Execute CodeQL'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+  languages:
+    description: 'List of all enabled languages'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep CODEQL &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - uses: actions/checkout@v4
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/github/codeql-action
+    - uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ inputs.languages }}
+    - uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{ inputs.languages }}"
