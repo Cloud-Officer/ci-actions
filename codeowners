@@ -8,7 +8,6 @@
 .github/                 @ydesgagn
 .gitignore               @ydesgagn
 .markdownlint.yml        @ydesgagn
-.pmd.xml                 @ydesgagn
 .shellcheckrc            @ydesgagn
 .yamllint.yml            @ydesgagn
 codeowners               @ydesgagn
