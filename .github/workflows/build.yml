@@ -100,20 +100,6 @@ jobs:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github_token: "${{secrets.GITHUB_TOKEN}}"
-  pmd:
-    name: Java Linter
-    runs-on: ubuntu-22.04
-    needs:
-    - variables
-    if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
-    steps:
-    - name: PMD
-      id: pmd
-      uses: cloud-officer/ci-actions/linters/pmd@master
-      with:
-        linters: "${{needs.variables.outputs.LINTERS}}"
-        ssh-key: "${{secrets.SSH_KEY}}"
-        github_token: "${{secrets.GITHUB_TOKEN}}"
   shellcheck:
     name: Shell Scripts Linter
     runs-on: ubuntu-22.04
