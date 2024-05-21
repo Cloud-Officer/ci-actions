@@ -11,9 +11,8 @@ name: Build
     branches:
     - master
     - "[0-9]*"
-  release:
-    types:
-    - created
+    tags:
+    - "'**'"
 jobs:
   variables:
     name: Prepare Variables
