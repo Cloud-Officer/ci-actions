@@ -22,6 +22,9 @@ corresponding [cache](https://github.com/marketplace/actions/cache) action(s) wi
 
 ```yml
 inputs:
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+    default: 1
   ssh-key:
     description: 'ssh key'
     required: false

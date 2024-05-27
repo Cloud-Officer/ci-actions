@@ -3,6 +3,9 @@ name: 'Setup'
 description: 'Setup tools'
 
 inputs:
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+    default: 1
   ssh-key:
     description: 'ssh key'
     required: false
@@ -350,6 +353,7 @@ runs:
     # https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v4
       with:
+        fetch-depth: ${{ inputs.fetch-depth }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
