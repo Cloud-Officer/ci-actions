@@ -77,7 +77,7 @@ jobs:
           ssh-key: "${{secrets.SSH_KEY}}"
   phpstan:
     name: PHP Stan Linter
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs:
       - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1'}}"
