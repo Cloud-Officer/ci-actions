@@ -42,11 +42,14 @@ runs:
       with:
         ruby-version: 3.3.2
         bundler-cache: true
-        working-directory: ${{env.soup_location}}
 
     # https://github.com/Cloud-Officer/soup
     - shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
+        pushd "${{env.soup_location}}"
+        bundle config unset deployment
+        bundle install
+        popd
         "${{env.soup_location}}/bin/soup.rb" ${{ inputs.parameters }}
