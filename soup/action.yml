@@ -35,18 +35,19 @@ runs:
         curl -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
         unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
         rm -rf "${RUNNER_TEMP}/soup.zip"
-        echo "::set-output name=location::${RUNNER_TEMP}"
+        ls -al "${RUNNER_TEMP}"
+        echo "soup_location=${RUNNER_TEMP}" >> ${GITHUB_ENV}
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - uses: ruby/setup-ruby@master
       with:
         ruby-version: 3.3.2
         bundler-cache: true
-        working-directory: ${{steps.soup.outputs.location}}
+        working-directory: ${{env.soup_location}}
 
     # https://github.com/Cloud-Officer/soup
     - shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        "${{steps.soup.outputs.location}}/bin/soup.rb" ${{ inputs.parameters }}
+        "${{env.soup_location}}/bin/soup.rb" ${{ inputs.parameters }}
