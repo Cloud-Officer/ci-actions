@@ -63,7 +63,7 @@ jobs:
         ssh-key: "${{secrets.SSH_KEY}}"
   aws:
     name: AWS
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs:
       - variables
     if: "(needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1')"
