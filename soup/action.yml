@@ -31,9 +31,13 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        if [ "${RUNNER_OS}" == "Linux" ]; then
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-        fi
-
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install cloud-officer/ci/soup || true
-        soup ${{ inputs.parameters }}
+        latest_tag="$(curl --silent https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
+        echo "Latest soup tag: ${latest_tag}"
+        asset_url=""https://github.com/Cloud-Officer/soup/archive/refs/tags/${latest_tag}.zip""
+        curl -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
+        unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
+        rm -rf "${RUNNER_TEMP}/soup.zip"
+        pushd "${RUNNER_TEMP}"
+        bundle install
+        popd
+        "${RUNNER_TEMP}/bin/soup.rb" ${{ inputs.parameters }}
