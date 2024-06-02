@@ -41,7 +41,7 @@ runs:
     - uses: ruby/setup-ruby@master
       with:
         ruby-version: 3.3.2
-        bundler-cache: true
+        bundler: 'none'
 
     # https://github.com/Cloud-Officer/soup
     - shell: bash
