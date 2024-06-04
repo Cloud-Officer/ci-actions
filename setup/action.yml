@@ -98,6 +98,76 @@ inputs:
   go-architecture:
     description: 'Target architecture for Go to use. Examples: x86, x64. Will use system architecture by default.'
     required: false
+  java-version:
+    description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
+    required: false
+    default: 'none'
+  java-version-file:
+    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
+    required: false
+  java-distribution:
+    description: 'Java distribution. See the list of supported distributions in README file'
+    required: true
+    default: 'temurin'
+  java-package:
+    description: 'The package type (jdk, jre, jdk+fx, jre+fx)'
+    required: false
+    default: 'jdk'
+  java-architecture:
+    description: "The architecture of the package (defaults to the action runner's architecture)"
+    required: false
+  java-jdkFile:
+    description: 'Path to where the compressed JDK is located'
+    required: false
+  java-check-latest:
+    description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
+    required: false
+    default: false
+  java-server-id:
+    description: 'ID of the distributionManagement repository in the pom.xml file. Default is `github`'
+    required: false
+    default: 'github'
+  java-server-username:
+    description: 'Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR'
+    required: false
+    default: 'GITHUB_ACTOR'
+  java-server-password:
+    description: 'Environment variable name for password or token for authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
+    required: false
+    default: 'GITHUB_TOKEN'
+  java-settings-path:
+    description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
+    required: false
+  java-overwrite-settings:
+    description: 'Overwrite the settings.xml file if it exists. Default is "true".'
+    required: false
+    default: true
+  java-gpg-private-key:
+    description: 'GPG private key to import. Default is empty string.'
+    required: false
+  java-gpg-passphrase:
+    description: 'Environment variable name for the GPG private key passphrase. Default is $GPG_PASSPHRASE.'
+    required: false
+  java-cache:
+    description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
+    required: false
+  java-cache-dependency-path:
+    description: 'The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.'
+    required: false
+  java-job-status:
+    description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
+    required: false
+    default: ${{ job.status }}
+  java-token:
+    description: The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    required: false
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+  java-mvn-toolchain-id:
+    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
+  java-mvn-toolchain-vendor:
+    description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
   node-always-auth:
     description: 'Set always-auth in npmrc.'
     required: false
@@ -229,6 +299,36 @@ inputs:
       At present, the only other setting than 'default' is 'none', which only adds Ruby to PATH.
       No build tools or packages are installed, nor are any ENV setting changed to activate them.
     required: false
+  android-sdk-version:
+    description: 'sdk version'
+    required: false
+    default: 'none'
+  android-build-tools-version:
+    description: 'build tools version'
+    required: false
+    default: '33.0.2'
+  android-ndk-version:
+    description: 'ndk version'
+    required: false
+  android-cmake-version:
+    description: 'cmake version'
+    required: false
+  android-cache-disabled:
+    description: 'disabled cache'
+    required: false
+    default: 'false'
+  android-cache-key:
+    description: 'cache key'
+    required: false
+    default: ''
+  android-generate-job-summary:
+    description: 'display job summary'
+    required: false
+    default: 'true'
+  android-job-status:
+    description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
+    required: false
+    default: ${{ job.status }}
   xcode-version:
     description: 'Version of Xcode to use'
     required: false
@@ -420,6 +520,49 @@ runs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-go-
 
+    # https://github.com/marketplace/actions/setup-java-jdk
+    - uses: actions/setup-java@4
+      if: ${{ inputs.java-version != 'none' }}
+      with:
+        java-version: ${{ inputs.java-version }}
+        java-version-file: ${{ inputs.java-version-file }}
+        distribution: ${{ inputs.java-distribution }}
+        java-package: ${{ inputs.java-package }}
+        architecture: ${{ inputs.java-architecture }}
+        jdkFile: ${{ inputs.java-jdkFile }}
+        check-latest: ${{ inputs.java-check-latest }}
+        server-id: ${{ inputs.java-server-id }}
+        server-username: ${{ inputs.java-server-username }}
+        server-password: ${{ inputs.java-server-password }}
+        settings-path: ${{ inputs.java-settings-path }}
+        overwrite-settings: ${{ inputs.java-overwrite-settings }}
+        gpg-private-key: ${{ inputs.java-gpg-private-key }}
+        gpg-passphrase: ${{ inputs.java-gpg-passphrase }}
+        cache: ${{ inputs.java-cache }}
+        cache-dependency-path: ${{ inputs.java-cache-dependency-path }}
+        job-status: ${{ inputs.java-job-status }}
+        token: ${{ inputs.java-token }}
+        mvn-toolchain-id: ${{ inputs.java-mvn-toolchain-id }}
+        mvn-toolchain-vendor: ${{ inputs.java-mvn-toolchain-vendor }}
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v4
+      if: ${{ inputs.java-version != 'none' }}
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: ${{ runner.os }}-gradle-
+
+    # https://github.com/marketplace/actions/cache
+    - uses: actions/cache@v4
+      if: ${{ inputs.java-version != 'none' }}
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven-
+
     # https://github.com/marketplace/actions/setup-node-js-environment
     - uses: actions/setup-node@v4
       if: ${{ inputs.node-version != 'none' }}
@@ -497,6 +640,19 @@ runs:
         cache-version: ${{ inputs.ruby-cache-version }}
         self-hosted: ${{ inputs.ruby-self-hosted }}
         windows-toolchain: ${{ inputs.ruby-windows-toolchain }}
+
+    # https://github.com/marketplace/actions/setup-android-sdk-for-self-hosted-runner
+    - uses: amyu/setup-android@v4
+      if: ${{ inputs.android-sdk-version != 'none'}}
+      with:
+        sdk-version: ${{ inputs.android-sdk-version }}
+        build-tools-version: ${{ inputs.android-build-tools-version }}
+        ndk-version: ${{ inputs.android-ndk-version }}
+        cmake-version: ${{ inputs.android-cmake-version }}
+        cache-disabled: ${{ inputs.android-cache-disabled }}
+        cache-key: ${{ inputs.android-cache-key }}
+        generate-job-summary: ${{ inputs.android-generate-job-summary }}
+        job-status: ${{ inputs.android-job-status }}
 
     # https://github.com/marketplace/actions/setup-xcode-version
     - uses: maxim-lobanov/setup-xcode@v1
