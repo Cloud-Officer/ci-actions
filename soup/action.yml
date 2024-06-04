@@ -9,7 +9,7 @@ inputs:
   github-token:
     description: 'github token'
     required: false
-    default: ''
+    default: ${{ github.token }}
   parameters:
     description: 'soup parameters'
     required: false
@@ -25,6 +25,7 @@ runs:
         persist-credentials: true
         lfs: true
         submodules: recursive
+        token: ${{ inputs.github-token }}
 
     - shell: bash
       id: soup
