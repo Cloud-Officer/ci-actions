@@ -8,8 +8,7 @@ inputs:
     required: true
   github-token:
     description: 'github token'
-    required: false
-    default: '${{secrets.GITHUB_TOKEN}}'
+    required: true
   parameters:
     description: 'soup parameters'
     required: false
