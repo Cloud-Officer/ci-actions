@@ -14,10 +14,6 @@ inputs:
     description: 'soup parameters'
     required: false
     default: '--no_prompt'
-  token:
-    description: 'github token'
-    required: false
-    default: ''
 
 runs:
   using: "composite"
@@ -29,7 +25,6 @@ runs:
         persist-credentials: true
         lfs: true
         submodules: recursive
-        token: ${{ inputs.token }}
 
     - shell: bash
       id: soup
