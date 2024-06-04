@@ -8,11 +8,16 @@ inputs:
     required: true
   github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ''
   parameters:
     description: 'soup parameters'
     required: false
     default: '--no_prompt'
+  token:
+    description: 'github token'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -20,11 +25,11 @@ runs:
     # https://github.com/marketplace/actions/checkout
     - uses: actions/checkout@v4
       with:
-        #ssh-key: ${{ inputs.ssh-key }}
+        ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
         submodules: recursive
-        token: ${{ inputs.github-token }}
+        token: ${{ inputs.token }}
 
     - shell: bash
       id: soup
