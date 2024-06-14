@@ -41,7 +41,7 @@ runs:
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - uses: ruby/setup-ruby@master
       with:
-        ruby-version: 3.3.2
+        ruby-version: 3.3.3
         bundler: 'none'
 
     # https://github.com/Cloud-Officer/soup
