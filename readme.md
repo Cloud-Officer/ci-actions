@@ -20,6 +20,7 @@ Nothing to install.
 
 * [aws](aws/README.md): GenericAWS CLI or shell commands
 * [codedeploy](codedeploy/README.md): Github Actions for AWS CodeDeploy
+* [docker](docker/README.md): Github Actions for DockerHub
 * [jira](jira/README.md): Github Action to integrate Dependabot with Jira
 * [linters](linters/README.md): Github Actions for various linters
 * [setup](setup/README.md): Github Action to setup tools all at once
