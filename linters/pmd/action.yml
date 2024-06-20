@@ -16,12 +16,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if PMD is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep PMD &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,24 +32,28 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/setup-reviewdog
-    - uses: reviewdog/action-setup@v1
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         reviewdog_version: latest
 
     # https://github.com/marketplace/actions/setup-java-jdk
-    - uses: actions/setup-java@v4
+    - name: Setup Java
+      uses: actions/setup-java@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         distribution: adopt
         java-version: 15
         check-latest: true
 
-    - shell: bash
+    - name: Setup PMD
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: wget -nc -O /opt/pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.52.0/pmd-bin-6.52.0.zip && unzip -d /opt /opt/pmd.zip && rm -f /opt/pmd.zip && mv /opt/pmd-bin-6.52.0 /opt/pmd && chmod +x /opt/pmd/*
 
-    - shell: bash
+    - name: Run PMD
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}

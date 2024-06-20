@@ -16,12 +16,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if FLAKE8 is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep FLAKE8 &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,17 +32,20 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/setup-reviewdog
-    - uses: reviewdog/action-setup@v1
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         reviewdog_version: latest
 
     # flake8-docstrings
-    - shell: bash
+    - name: Install flake8-docstrings
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: pip install --upgrade flake8
 
-    - shell: bash
+    - name: Run flake8
+      shell: bash
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       if: ${{ steps.check.outputs.continue == 'true' }}

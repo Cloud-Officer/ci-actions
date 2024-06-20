@@ -20,12 +20,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if RUBOCOP is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep RUBOCOP &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -34,13 +36,15 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-    - uses: ruby/setup-ruby@master
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@master
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ruby-version: ${{ inputs.ruby-version }}
 
     # https://github.com/marketplace/actions/run-rubocop-with-reviewdog
-    - uses: reviewdog/action-rubocop@v2
+    - name: Run Rubocop with Reviewdog
+      uses: reviewdog/action-rubocop@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         fail_on_error: true

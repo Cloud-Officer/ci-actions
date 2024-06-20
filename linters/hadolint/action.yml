@@ -16,12 +16,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if HADOLINT is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep HADOLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,7 +32,8 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/run-hadolint-with-reviewdog
-    - uses: reviewdog/action-hadolint@v1
+    - name: Hadolint
+      uses: reviewdog/action-hadolint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # exclude: ""

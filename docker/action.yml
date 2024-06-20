@@ -14,14 +14,14 @@ runs:
   using: "composite"
   steps:
     # https://github.com/marketplace/actions/checkout
-    - name: Check out the repo
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         persist-credentials: true
         lfs: true
         submodules: recursive
 
-    - name: Get repository name
+    - name: Get Repository Name
       shell: bash
       run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "${GITHUB_ENV}"
 
@@ -40,14 +40,14 @@ runs:
         driver-opts: image=moby/buildkit:latest,network=host
 
     # https://github.com/marketplace/actions/docker-metadata-action
-    - name: Extract metadata (tags, labels) for Docker
+    - name: Extract Metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.username }}/${{ env.REPO_NAME }}
 
     # https://github.com/marketplace/actions/build-and-push-docker-images
-    - name: Build and push Docker image
+    - name: Build and Push Docker Images
       id: push
       uses: docker/build-push-action@v6
       with:
@@ -59,7 +59,7 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
 
     # https://github.com/marketplace/actions/attest-build-provenance
-    - name: Generate artifact attestation
+    - name: Generate Artifact Attestation
       uses: actions/attest-build-provenance@v1
       with:
         subject-name: docker.io/${{ inputs.username }}/${{ env.REPO_NAME }}

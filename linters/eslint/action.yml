@@ -21,7 +21,8 @@ runs:
       run: if echo "${{ inputs.linters }}" | grep ESLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,19 +31,22 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/setup-node-js-environment
-    - uses: actions/setup-node@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         node-version: latest
 
-    - shell: bash
+    - name: Install ESLint
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
         rm -rf package.json yarn.lock
         npm install eslint@8.57.0
 
     # https://github.com/marketplace/actions/run-eslint-with-reviewdog
-    - uses: reviewdog/action-eslint@v1
+    - name: Run ESLint with Reviewdog
+      uses: reviewdog/action-eslint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # https://github.com/eslint/eslint

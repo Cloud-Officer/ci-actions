@@ -270,6 +270,10 @@ if [ -f .pmd.xml ]; then
   LINTERS="${LINTERS} PMD"
 fi
 
+if [ -f .protolint.yaml ]; then
+  LINTERS="${LINTERS} PROTOLINT"
+fi
+
 if [ -f .rubocop.yml ]; then
   LINTERS="${LINTERS} RUBOCOP"
 fi
