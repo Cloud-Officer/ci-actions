@@ -451,7 +451,8 @@ runs:
   using: 'composite'
   steps:
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
         fetch-depth: ${{ inputs.fetch-depth }}
         ssh-key: ${{ inputs.ssh-key }}
@@ -460,13 +461,15 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/webfactory-ssh-agent
-    - uses: webfactory/ssh-agent@v0.9.0
+    - name: SSH Agent
+      uses: webfactory/ssh-agent@v0.9.0
       if: ${{ inputs.ssh-key != ''}}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
 
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
-    - uses: aws-actions/configure-aws-credentials@v4
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
       if: ${{ inputs.aws-access-key-id != '' }}
       with:
         aws-region: ${{ inputs.aws-region }}
@@ -492,14 +495,16 @@ runs:
         special-characters-workaround: ${{ inputs.aws-special-characters-workaround }}
 
     # install apt packages
-    - shell: bash
+    - name: Install APT Packages
+      shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
       run: |
         sudo apt-get --yes update
         sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
 
     # https://github.com/marketplace/actions/setup-go-environment
-    - uses: actions/setup-go@v4
+    - name: Setup Go
+      uses: actions/setup-go@v4
       if: ${{ inputs.go-version != 'none' }}
       with:
         go-version: ${{ inputs.go-version }}
@@ -511,7 +516,8 @@ runs:
         architecture: ${{ inputs.go-architecture }}
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - Go
+      uses: actions/cache@v4
       if: ${{ inputs.go-version != 'none' }}
       with:
         path: |
@@ -521,7 +527,8 @@ runs:
         restore-keys: ${{ runner.os }}-go-
 
     # https://github.com/marketplace/actions/setup-java-jdk
-    - uses: actions/setup-java@v4
+    - name: Setup Java
+      uses: actions/setup-java@v4
       if: ${{ inputs.java-version != 'none' }}
       with:
         java-version: ${{ inputs.java-version }}
@@ -546,7 +553,8 @@ runs:
         mvn-toolchain-vendor: ${{ inputs.java-mvn-toolchain-vendor }}
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - Gradle
+      uses: actions/cache@v4
       if: ${{ inputs.java-version != 'none' }}
       with:
         path: |
@@ -556,7 +564,8 @@ runs:
         restore-keys: ${{ runner.os }}-gradle-
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - Maven
+      uses: actions/cache@v4
       if: ${{ inputs.java-version != 'none' }}
       with:
         path: ~/.m2/repository
@@ -564,7 +573,8 @@ runs:
         restore-keys: ${{ runner.os }}-maven-
 
     # https://github.com/marketplace/actions/setup-node-js-environment
-    - uses: actions/setup-node@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
       if: ${{ inputs.node-version != 'none' }}
       with:
         always-auth: ${{ inputs.node-always-auth }}
@@ -579,7 +589,8 @@ runs:
         cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
 
     # https://github.com/marketplace/actions/setup-php-action
-    - uses: shivammathur/setup-php@v2
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       if: ${{ inputs.php-version != 'none' }}
       with:
         php-version: ${{ inputs.php-version }}
@@ -591,11 +602,13 @@ runs:
         tools: ${{ inputs.php-tools }}
 
     # https://github.com/marketplace/actions/cache
-    - id: composer-cache
+    - name: Cache - Composer Location
+      id: composer-cache
       shell: bash
       if: ${{ inputs.php-version != 'none' }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
-    - uses: actions/cache@v4
+    - name: Cache - Composer
+      uses: actions/cache@v4
       if: ${{ inputs.php-version != 'none' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
@@ -603,7 +616,8 @@ runs:
         restore-keys: ${{ runner.os }}-composer-
 
     # https://github.com/marketplace/actions/setup-python
-    - uses: actions/setup-python@v5
+    - name: Setup Python
+      uses: actions/setup-python@v5
       if: ${{ inputs.python-version != 'none' }}
       with:
         python-version: ${{ inputs.python-version }}
@@ -617,11 +631,13 @@ runs:
         allow-prereleases: ${{ inputs.python-allow-prereleases }}
 
     # https://github.com/marketplace/actions/cache
-    - id: pip-cache
+    - name: Cache - PIP Location
+      id: pip-cache
       shell: bash
       if: ${{ inputs.python-version != 'none' }}
       run: echo "dir=$(pip cache dir)" >> "${GITHUB_OUTPUT}"
-    - uses: actions/cache@v4
+    - name: Cache - PIP
+      uses: actions/cache@v4
       if: ${{ inputs.python-version != 'none' }}
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
@@ -629,7 +645,8 @@ runs:
         restore-keys: ${{ runner.os }}-pip-
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-    - uses: ruby/setup-ruby@master
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@master
       if: ${{ inputs.ruby-version != 'none' }}
       with:
         ruby-version: ${{ inputs.ruby-version }}
@@ -642,7 +659,8 @@ runs:
         windows-toolchain: ${{ inputs.ruby-windows-toolchain }}
 
     # https://github.com/marketplace/actions/setup-android-sdk-for-self-hosted-runner
-    - uses: amyu/setup-android@v4
+    - name: Setup Android
+      uses: amyu/setup-android@v4
       if: ${{ inputs.android-sdk-version != 'none'}}
       with:
         sdk-version: ${{ inputs.android-sdk-version }}
@@ -655,13 +673,15 @@ runs:
         job-status: ${{ inputs.android-job-status }}
 
     # https://github.com/marketplace/actions/setup-xcode-version
-    - uses: maxim-lobanov/setup-xcode@v1
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         xcode-version: ${{ inputs.xcode-version }}
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - Carthage
+      uses: actions/cache@v4
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Carthage
@@ -669,7 +689,8 @@ runs:
         restore-keys: ${{ runner.os }}-carthage-
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - CocoaPods
+      uses: actions/cache@v4
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Pods
@@ -677,7 +698,8 @@ runs:
         restore-keys: ${{ runner.os }}-pods-
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - SPM
+      uses: actions/cache@v4
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: .build
@@ -685,7 +707,8 @@ runs:
         restore-keys: ${{ runner.os }}-spm-
 
     # https://github.com/marketplace/actions/cache
-    - uses: actions/cache@v4
+    - name: Cache - Tuist
+      uses: actions/cache@v4
       id: tuist
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
@@ -696,14 +719,16 @@ runs:
         restore-keys: ${{ runner.os }}-tuist-
 
     # https://github.com/marketplace/actions/run-elasticsearch-with-plugins
-    - uses: miyataka/elasticsearch-github-actions@master
+    - name: Setup Elasticsearch
+      uses: miyataka/elasticsearch-github-actions@master
       if: ${{ inputs.elasticsearch-version != 'none' }}
       with:
         stack-version: ${{ inputs.elasticsearch-version }}
         plugins: ${{ inputs.elasticsearch-plugins }}
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
-    - uses: supercharge/mongodb-github-action@v1.10.0
+    - name: Setup MongoDB
+      uses: supercharge/mongodb-github-action@v1.10.0
       if: ${{ inputs.mongodb-version != 'none' }}
       with:
         mongodb-version: ${{ inputs.mongodb-version }}
@@ -714,7 +739,8 @@ runs:
         mongodb-password: ${{ inputs.mongodb-password }}
 
     # https://github.com/marketplace/actions/actions-setup-mysql
-    - uses: shogo82148/actions-setup-mysql@v1
+    - name: Setup MySQL
+      uses: shogo82148/actions-setup-mysql@v1
       if: ${{ inputs.mysql-version != 'none' }}
       with:
         mysql-version: ${{ inputs.mysql-version }}
@@ -726,7 +752,8 @@ runs:
         password: ${{ inputs.mysql-password }}
 
     # https://github.com/marketplace/actions/rabbitmq-in-github-actions
-    - uses: namoshek/rabbitmq-github-action@master
+    - name: Setup RabbitMQ
+      uses: namoshek/rabbitmq-github-action@master
       if: ${{ inputs.rabbitmq-version != 'none'}}
       with:
         version: ${{ inputs.rabbitmq-version }}
@@ -738,7 +765,8 @@ runs:
         container-name: ${{ inputs.rabbitmq-container-name }}
 
     # https://github.com/marketplace/actions/actions-setup-redis
-    - uses: shogo82148/actions-setup-redis@v1
+    - name: Setup Redis
+      uses: shogo82148/actions-setup-redis@v1
       if: ${{ inputs.redis-version != 'none'}}
       with:
         redis-version: ${{ inputs.redis-version }}
