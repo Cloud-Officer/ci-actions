@@ -19,7 +19,8 @@ runs:
   using: "composite"
   steps:
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
@@ -27,7 +28,8 @@ runs:
         submodules: recursive
         token: ${{ inputs.github-token }}
 
-    - shell: bash
+    - name: Get SOUP Code
+      shell: bash
       id: soup
       run: |
         latest_tag="$(curl --silent --header "Authorization: Bearer ${{ inputs.github-token }}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
@@ -39,13 +41,15 @@ runs:
         echo "soup_location=${RUNNER_TEMP}/soup-${latest_tag}" >> ${GITHUB_ENV}
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-    - uses: ruby/setup-ruby@master
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@master
       with:
         ruby-version: 3.3.3
         bundler: 'none'
 
     # https://github.com/Cloud-Officer/soup
-    - shell: bash
+    - name: Run SOUP
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |

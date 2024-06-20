@@ -36,12 +36,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if PHPCS is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep PHPCS &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -50,14 +52,16 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/setup-php-action
-    - uses: shivammathur/setup-php@v2
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         php-version: ${{ inputs.php-version }}
         extensions: ${{ inputs.php-extensions }}
         tools: composer
 
-    - shell: bash
+    - name: Setup php-cs-fixer
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command == 'none'}}
       run: |
         if [ "${{ inputs.php-cs-fixer-version }}" == "latest" ] ;then
@@ -66,11 +70,13 @@ runs:
           curl -L https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${{ inputs.php-cs-fixer-version }}/php-cs-fixer.phar -o php-cs-fixer && chmod a+x php-cs-fixer
         fi
 
-    - shell: bash
+    - name: Run Composer
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none'}}
       run: ${{ inputs.composer-command }}
 
     # https://cs.symfony.com/doc/usage.html
-    - shell: bash
+    - name: Run php-cs-fixer
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: ${{ inputs.php-cs-fixer-command }}

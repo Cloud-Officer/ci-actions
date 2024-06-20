@@ -16,12 +16,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if SWIFTLINT is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep SWIFTLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -30,7 +32,8 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/github-action-for-swiftlint
-    - uses: norio-nomura/action-swiftlint@3.2.1
+    - name: Run SwiftLint
+      uses: norio-nomura/action-swiftlint@3.2.1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # https://github.com/realm/SwiftLint

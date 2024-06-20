@@ -58,16 +58,19 @@ runs:
   using: "composite"
   steps:
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
         submodules: recursive
 
-    - shell: bash
+    - name: Output Action Path
+      shell: bash
       run: echo "${{ github.action_path }}" >> ${GITHUB_PATH}
 
-    - id: variables
+    - name: Run Prepare Variables
+      id: variables
       shell: bash
       run: variables.sh

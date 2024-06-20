@@ -16,12 +16,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if MARKDOWNLINT is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep MARKDOWNLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -29,7 +31,8 @@ runs:
         lfs: true
         submodules: recursive
 
-    - shell: bash
+    - name: Remove vendor, node_modules, Libraries
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
         grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
@@ -38,7 +41,8 @@ runs:
         find . -type d -name Libraries -exec rm -rf {} \; || true
 
     # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
-    - uses: reviewdog/action-markdownlint@v0
+    - name: Run markdownlint with Reviewdog
+      uses: reviewdog/action-markdownlint@v0
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         fail_on_error: true

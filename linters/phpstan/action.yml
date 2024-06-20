@@ -36,12 +36,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: check
+    - name: Check if PHPStan is enabled
+      id: check
       shell: bash
       run: if echo "${{ inputs.linters }}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
@@ -50,20 +52,23 @@ runs:
         submodules: recursive
 
     # https://github.com/marketplace/actions/webfactory-ssh-agent
-    - uses: webfactory/ssh-agent@v0.9.0
+    - name: Setup SSH Agent
+      uses: webfactory/ssh-agent@v0.9.0
       if: ${{ inputs.ssh-key != ''}}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
 
     # install apt packages
-    - shell: bash
+    - name: Install APT Packages
+      shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
       run: |
         sudo apt-get --yes update
         sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
 
     # https://github.com/marketplace/actions/setup-php-action
-    - uses: shivammathur/setup-php@v2
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         php-version: ${{ inputs.php-version }}
@@ -71,22 +76,26 @@ runs:
         tools: composer
 
     # https://github.com/marketplace/actions/cache
-    - id: composer-cache
+    - name: Cache - Composer Location
+      id: composer-cache
       shell: bash
       if: ${{ inputs.php-version != 'none' }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
-    - uses: actions/cache@v4
+    - name: Cache - Composer
+      uses: actions/cache@v4
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
-    - shell: bash
+    - name: Run Composer
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: ${{ inputs.composer-command }}
 
     # https://phpstan.org/
-    - shell: bash
+    - name: Run PHPStan
+      shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: ${{ inputs.php-stan-command }}
