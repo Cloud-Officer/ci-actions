@@ -44,7 +44,7 @@ runs:
     - name: Setup Ruby
       uses: ruby/setup-ruby@master
       with:
-        ruby-version: 3.3.4
+        ruby-version: 3.3.5
         bundler: 'none'
 
     # https://github.com/Cloud-Officer/soup
