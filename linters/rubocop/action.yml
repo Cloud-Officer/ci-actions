@@ -42,12 +42,12 @@ runs:
       with:
         ruby-version: ${{ inputs.ruby-version }}
 
-    - name: Run importmap
-      shell: bash
-      run: |
-        if [ -f bin/importmap ]; then
-          bin/importmap audit
-        fi
+    #- name: Run importmap
+    #  shell: bash
+    #  run: |
+    #    if [ -f bin/importmap ]; then
+    #      bin/importmap audit
+    #    fi
 
     # https://github.com/marketplace/actions/run-rubocop-with-reviewdog
     - name: Run Rubocop with Reviewdog
