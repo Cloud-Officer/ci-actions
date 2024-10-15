@@ -42,8 +42,9 @@ runs:
     - name: Install flake8-docstrings
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: pip install --upgrade flake8
-
+      run: |
+        rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
+        pip install --upgrade flake8
     - name: Run flake8
       shell: bash
       env:
