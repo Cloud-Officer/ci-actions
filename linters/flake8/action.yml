@@ -43,7 +43,7 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
-        rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
+        sudo rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
         pip install --upgrade flake8
     - name: Run flake8
       shell: bash
