@@ -11,6 +11,5 @@
 .shellcheckrc            @ydesgagn
 .yamllint.yml            @ydesgagn
 codeowners               @ydesgagn
-readme.md                @ydesgagn
 codedeploy/              @ydesgagn
 *.sh                     @ydesgagn
