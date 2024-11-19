@@ -124,8 +124,15 @@ try {
     }
     console.log(JSON.stringify(data, undefined, 2));
 
-    let res = axios.post(webhook_url, data);
-    console.log(JSON.stringify(res, undefined, 2));
+    const res = axios.post(webhook_url, data)
+        .catch((error) => {
+          console.error('Error', error);
+          console.info('URL', webhook_url);
+          core.setFailed(error.message);
+        })
+        .then(() => {
+          console.log(JSON.stringify(res, undefined, 2));
+        })
 } catch (error) {
     core.setFailed(error.message);
 }
