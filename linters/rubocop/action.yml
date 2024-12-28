@@ -15,7 +15,7 @@ inputs:
   ruby-version:
     description: 'ruby version'
     required: false
-    default: '3.0'
+    default: '3.4'
 
 runs:
   using: "composite"
