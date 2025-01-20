@@ -504,7 +504,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       if: ${{ inputs.go-version != 'none' }}
       with:
         go-version: ${{ inputs.go-version }}
@@ -728,7 +728,7 @@ runs:
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
     - name: Setup MongoDB
-      uses: supercharge/mongodb-github-action@v1.10.0
+      uses: supercharge/mongodb-github-action@v1.12.0
       if: ${{ inputs.mongodb-version != 'none' }}
       with:
         mongodb-version: ${{ inputs.mongodb-version }}

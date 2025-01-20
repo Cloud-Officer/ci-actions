@@ -60,7 +60,7 @@ runs:
 
     # https://github.com/marketplace/actions/attest-build-provenance
     - name: Generate Artifact Attestation
-      uses: actions/attest-build-provenance@v1
+      uses: actions/attest-build-provenance@v2
       with:
         subject-name: docker.io/${{ inputs.username }}/${{ env.REPO_NAME }}
         subject-digest: ${{ steps.push.outputs.digest }}
