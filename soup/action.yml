@@ -25,7 +25,7 @@ runs:
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
       uses: actions/checkout@v4
-      if: ${{ inputs.checkout }} == 'true'
+      if: ${{ inputs.checkout == 'true' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
@@ -48,7 +48,7 @@ runs:
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
       uses: ruby/setup-ruby@master
-      if: ${{ inputs.checkout }} == 'true'
+      if: ${{ inputs.checkout == 'true'}}
       with:
         ruby-version: 3.4.1
         bundler: 'none'
