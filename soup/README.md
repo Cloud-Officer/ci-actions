@@ -7,6 +7,10 @@ SOUP list against dependencies.
 
 ```yml
 inputs:
+  checkout:
+    description: 'perform a checkout'
+    required: false
+    default: true
   ssh-key:
     description: 'ssh key'
     required: true
