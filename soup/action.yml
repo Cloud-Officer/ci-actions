@@ -3,6 +3,10 @@ name: 'SOUP'
 description: 'Execute soup'
 
 inputs:
+  checkout:
+    description: 'perform a checkout'
+    required: false
+    default: true
   ssh-key:
     description: 'ssh key'
     required: true
@@ -21,6 +25,7 @@ runs:
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
       uses: actions/checkout@v4
+      if: ${{ inputs.checkout }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
