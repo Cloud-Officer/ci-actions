@@ -10,7 +10,7 @@ inputs:
   checkout:
     description: 'perform a checkout'
     required: false
-    default: true
+    default: 'true'
   ssh-key:
     description: 'ssh key'
     required: true
