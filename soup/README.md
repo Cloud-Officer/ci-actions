@@ -7,10 +7,6 @@ SOUP list against dependencies.
 
 ```yml
 inputs:
-  checkout:
-    description: 'perform a checkout'
-    required: false
-    default: true
   ssh-key:
     description: 'ssh key'
     required: true
@@ -22,6 +18,10 @@ inputs:
     description: 'soup parameters'
     required: false
     default: '--no_prompt'
+  skip-checkout:
+    description: 'skip the checkout'
+    required: false
+    default: 'false'
 ```
 
 ## Example usage
