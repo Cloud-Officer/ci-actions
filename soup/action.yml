@@ -48,7 +48,6 @@ runs:
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
       uses: ruby/setup-ruby@master
-      if: ${{ inputs.skip-checkout == 'false' }}
       with:
         ruby-version: 3.4.1
         bundler: 'none'
