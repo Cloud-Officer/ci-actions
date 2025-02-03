@@ -4,10 +4,11 @@ const axios = require("axios");
 try {
     const webhook_url = core.getInput('webhook-url');
     const jobs = JSON.parse(core.getInput('jobs'));
-    let fields, block;
+    let fields;
+    let i;
 
     fields = [];
-    for (var i in jobs.variables.outputs) {
+    for (i in jobs.variables.outputs) {
       if (i.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
         if (jobs.variables.outputs[i] == '1') {
           fields.push({
@@ -67,7 +68,7 @@ try {
 
     let color = '#5cb589';
     fields = [];
-    for (var i in jobs) {
+    for (i in jobs) {
       if (i == 'variables') {
         continue;
       }
