@@ -50,7 +50,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # https://github.com/eslint/eslint
-        eslint_flags: "--no-ignore --ext .js"
+        eslint_flags: "."
         fail_on_error: true
         filter_mode: nofilter
         github_token: ${{ inputs.github_token }}
