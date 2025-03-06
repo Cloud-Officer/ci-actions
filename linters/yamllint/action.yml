@@ -41,7 +41,7 @@ runs:
       uses: reviewdog/action-yamllint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        fail_level: true
+        fail_level: any
         filter_mode: nofilter
         github_token: ${{ inputs.github_token }}
         level: info

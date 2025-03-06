@@ -37,7 +37,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         # exclude: ""
-        fail_level: true
+        fail_level: any
         filter_mode: nofilter
         github_token: ${{ inputs.github_token }}
         # https://github.com/hadolint/hadolint
