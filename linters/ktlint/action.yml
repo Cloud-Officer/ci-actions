@@ -37,7 +37,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         github_token: ${{ inputs.github_token }}
-        fail_on_error: true
+        fail_level: true
         filter_mode: nofilter
         level: info
         reporter: github-pr-review
