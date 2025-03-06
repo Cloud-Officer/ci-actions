@@ -51,7 +51,7 @@ runs:
       with:
         # https://github.com/eslint/eslint
         eslint_flags: "."
-        fail_on_error: true
+        fail_level: true
         filter_mode: nofilter
         github_token: ${{ inputs.github_token }}
         level: info
