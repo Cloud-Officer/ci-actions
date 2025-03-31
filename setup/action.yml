@@ -283,7 +283,7 @@ inputs:
   ruby-cache-version:
     description: 'Arbitrary string that will be added to the cache key of the bundler cache'
     required: false
-    default: '0'
+    default: ${{ env.RUNNER_ARCH }}-v2
   ruby-self-hosted:
     description: |
       Consider the runner as a self-hosted runner, which means not using prebuilt Ruby binaries which only work
