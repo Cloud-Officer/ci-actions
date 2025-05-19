@@ -59,5 +59,4 @@ to set secrets to enable runner and steps debug logs.
 You can always enable a tmate debug session to connect to a running runner instance and try things manually if debug
 logs are not enough. See [Debug your GitHub Actions by using tmate](https://github.com/mxschmitt/action-tmate).
 
-The documentation for all the runner environments is
-available [here](https://github.com/actions/virtual-environments/tree/main/images).
+The documentation for all the [runner environments](https://github.com/actions/virtual-environments/tree/main/images).
