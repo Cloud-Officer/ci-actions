@@ -437,6 +437,10 @@ inputs:
     description: 'The name of the spawned Docker container (can be used as hostname when accessed from other containers)'
     required: false
     default: 'rabbitmq'
+  redis-distribution:
+    description: 'the distribution of redis'
+    required: false
+    default: 'redis'
   redis-version:
     description: 'the version of redis'
     required: false
