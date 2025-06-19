@@ -29,7 +29,7 @@ runs:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
-        submodules: recursive
+        submodules: false
 
     # https://github.com/marketplace/actions/run-ktlint-with-reviewdog
     - name: Run KTLint with Reviewdog
