@@ -39,7 +39,6 @@ runs:
         find . -type d -name vendor -exec rm -rf {} \; || true
         find . -type d -name node_modules -exec rm -rf {} \; || true
         find . -type d -name Libraries -exec rm -rf {} \; || true
-        rm -rf .git
 
     # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
     - name: Run markdownlint with Reviewdog
@@ -51,6 +50,6 @@ runs:
         github_token: ${{ inputs.github_token }}
         level: info
         # https://github.com/igorshubovych/markdownlint-cli
-        markdownlint_flags: "**/*.md"
+        markdownlint_flags: ". --ignore '{**/vendor/**,**/node_modules/**,**/Libraries/**}'"
         reporter: github-pr-review
         # reviewdog_flags:
