@@ -40,16 +40,30 @@ runs:
         find . -type d -name node_modules -exec rm -rf {} \; || true
         find . -type d -name Libraries -exec rm -rf {} \; || true
 
-    # https://github.com/marketplace/actions/run-markdownlint-with-reviewdog
-    - name: Run markdownlint with Reviewdog
-      uses: reviewdog/action-markdownlint@v0
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.github_token }}
-        level: info
-        # https://github.com/igorshubovych/markdownlint-cli
-        markdownlint_flags: "."
-        reporter: github-pr-review
-        # reviewdog_flags:
+        reviewdog_version: latest
+
+    # https://github.com/marketplace/actions/setup-node-js-environment
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        node-version: latest
+
+    - name: Install markdownlint-cli2
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: |
+        npm install -g markdownlint-cli2
+
+    - name: Run markdownlint
+      shell: bash
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: |
+        markdownlint-cli2 "**/*.md" 2>&1 | reviewdog -efm="%f:%l:%c %m" -efm="%f:%l %m" -name="markdownlint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"
