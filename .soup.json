@@ -194,7 +194,7 @@
   "form-data": {
     "language": "JS",
     "package": "form-data",
-    "version": "4.0.4",
+    "version": "4.0.5",
     "license": "MIT",
     "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications.",
     "website": "https://github.com/form-data/form-data#readme",

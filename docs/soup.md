@@ -18,7 +18,7 @@
 | JS | es-object-atoms | 1.1.1 | MIT | ES Object-related atoms: Object, ToObject, RequireObjectCoercible | <https://github.com/ljharb/es-object-atoms#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | es-set-tostringtag | 2.1.0 | MIT | A helper to optimistically set Symbol.toStringTag, when possible. | <https://github.com/es-shims/es-set-tostringtag#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | follow-redirects | 1.15.11 | MIT | HTTP and HTTPS modules that follow redirects. | <https://github.com/follow-redirects/follow-redirects> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | form-data | 4.0.4 | MIT | A library to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications. | <https://github.com/form-data/form-data#readme> | 2025-09-15 | Low | Dependency | Dependency |
+| JS | form-data | 4.0.5 | MIT | A library to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications. | <https://github.com/form-data/form-data#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | function-bind | 1.1.2 | MIT | Implementation of Function.prototype.bind | <https://github.com/Raynos/function-bind> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | get-intrinsic | 1.3.0 | MIT | Get and robustly cache all JS language-level intrinsics at first require time | <https://github.com/ljharb/get-intrinsic#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | get-proto | 1.0.1 | MIT | Robustly get the Prototype of an object | <https://github.com/ljharb/get-proto#readme> | 2025-09-15 | Low | Dependency | Dependency |
