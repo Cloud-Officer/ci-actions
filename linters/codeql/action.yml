@@ -64,6 +64,10 @@ runs:
 
         if [ "$FINDINGS_COUNT" -gt 0 ]; then
           echo ""
+          echo "=== CodeQL Security Findings ==="
+          echo ""
+          jq -rs '.[].runs[].results[] | "[\(.level // "warning")] \(.ruleId)\n  File: \(.locations[0].physicalLocation.artifactLocation.uri // "unknown"):\(.locations[0].physicalLocation.region.startLine // 1)\n  Message: \(.message.text)\n"' $SARIF_FILES
+          echo ""
           jq -rs '.[].runs[].results[] | "::error file=\(.locations[0].physicalLocation.artifactLocation.uri // "unknown"),line=\(.locations[0].physicalLocation.region.startLine // 1)::\(.ruleId): \(.message.text)"' $SARIF_FILES
           exit 1
         fi
