@@ -42,19 +42,28 @@ runs:
 
     - name: Run CodeQL Analysis
       uses: github/codeql-action/analyze@v4
+      id: analyze
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         category: "/language:${{ inputs.languages }}"
         output: codeql-results
+        upload: always
 
     - name: Check for CodeQL findings
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
-        if find codeql-results -name '*.sarif' -exec cat {} \; | jq -e '[.runs[].results[]] | length > 0' > /dev/null 2>&1; then
-          echo "::error::CodeQL found security vulnerabilities!"
-          find codeql-results -name '*.sarif' -exec cat {} \; | jq -r '.runs[].results[] | "- \(.ruleId): \(.message.text) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"'
+        SARIF_FILES=$(find codeql-results -name '*.sarif' -type f 2>/dev/null || true)
+        if [ -z "$SARIF_FILES" ]; then
+          echo "No SARIF files found"
+          exit 0
+        fi
+
+        FINDINGS_COUNT=$(jq -s '[.[].runs[].results[]] | length' $SARIF_FILES)
+        echo "CodeQL findings: $FINDINGS_COUNT"
+
+        if [ "$FINDINGS_COUNT" -gt 0 ]; then
+          echo ""
+          jq -rs '.[].runs[].results[] | "::error file=\(.locations[0].physicalLocation.artifactLocation.uri // "unknown"),line=\(.locations[0].physicalLocation.region.startLine // 1)::\(.ruleId): \(.message.text)"' $SARIF_FILES
           exit 1
-        else
-          echo "No CodeQL findings detected."
         fi
