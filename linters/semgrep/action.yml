@@ -1,0 +1,56 @@
+---
+name: 'Semgrep'
+description: 'Execute Semgrep security scanner'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github_token:
+    description: 'github token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      run: if echo "${{ inputs.linters }}" | grep SEMGREP &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - name: Checkout
+      uses: actions/checkout@v4
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: true
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-python
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        python-version: '3.x'
+
+    - name: Install Semgrep
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: pip install semgrep
+
+    - name: Run Semgrep
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: semgrep scan --config=auto --sarif --output=semgrep.sarif --error .
+
+    # https://github.com/github/codeql-action
+    - name: Upload SARIF to GitHub Security
+      uses: github/codeql-action/upload-sarif@v4
+      if: ${{ steps.check.outputs.continue == 'true' && always() }}
+      with:
+        sarif_file: semgrep.sarif
+        category: semgrep

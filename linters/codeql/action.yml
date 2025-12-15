@@ -36,9 +36,25 @@ runs:
     # https://github.com/github/codeql-action
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
+      if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         languages: ${{ inputs.languages }}
+
     - name: Run CodeQL Analysis
       uses: github/codeql-action/analyze@v4
+      if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         category: "/language:${{ inputs.languages }}"
+        output: codeql-results
+
+    - name: Check for CodeQL findings
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: |
+        if find codeql-results -name '*.sarif' -exec cat {} \; | jq -e '[.runs[].results[]] | length > 0' > /dev/null 2>&1; then
+          echo "::error::CodeQL found security vulnerabilities!"
+          find codeql-results -name '*.sarif' -exec cat {} \; | jq -r '.runs[].results[] | "- \(.ruleId): \(.message.text) at \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"'
+          exit 1
+        else
+          echo "No CodeQL findings detected."
+        fi

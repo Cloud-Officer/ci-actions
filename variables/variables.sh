@@ -278,6 +278,10 @@ if [ -f .rubocop.yml ]; then
   LINTERS="${LINTERS} RUBOCOP"
 fi
 
+if [ -f .semgrep.yml ] || [ -d .semgrep ]; then
+  LINTERS="${LINTERS} SEMGREP"
+fi
+
 if [ -f .shellcheckrc ]; then
   LINTERS="${LINTERS} SHELLCHECK"
 fi
