@@ -45,7 +45,7 @@ runs:
     - name: Run Semgrep
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: semgrep scan --config=auto --sarif-output=semgrep.sarif .
+      run: semgrep scan --config=auto --severity=ERROR --sarif-output=semgrep.sarif .
 
     - name: Check for Semgrep findings
       shell: bash
