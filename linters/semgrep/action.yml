@@ -66,6 +66,7 @@ runs:
     - name: Upload SARIF to GitHub Security
       uses: github/codeql-action/upload-sarif@v4
       if: ${{ steps.check.outputs.continue == 'true' && always() }}
+      continue-on-error: true
       with:
         sarif_file: semgrep.sarif
         category: semgrep
