@@ -19,7 +19,9 @@ runs:
     - name: Check if FLAKE8 is enabled
       id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep FLAKE8 &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep FLAKE8 &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout

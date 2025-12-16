@@ -23,7 +23,9 @@ runs:
     - name: Check if RUBOCOP is enabled
       id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep RUBOCOP &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep RUBOCOP &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout

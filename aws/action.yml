@@ -40,4 +40,6 @@ runs:
 
     - name: Run Shell Commands
       shell: bash
-      run: ${{ inputs.shell-commands }}
+      env:
+        SHELL_COMMANDS: ${{ inputs.shell-commands }}
+      run: eval "${SHELL_COMMANDS}"
