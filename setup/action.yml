@@ -502,9 +502,11 @@ runs:
     - name: Install APT Packages
       shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
         sudo apt-get --yes update
-        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
+        sudo apt-get --yes --no-install-recommends install ${APT_PACKAGES}
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
