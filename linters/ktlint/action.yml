@@ -19,7 +19,9 @@ runs:
     - name: Check if KTLint is enabled
       id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep KTLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep KTLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout

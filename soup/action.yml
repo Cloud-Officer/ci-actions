@@ -36,8 +36,10 @@ runs:
     - name: Get SOUP Code
       shell: bash
       id: soup
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        latest_tag="$(curl --silent --header "Authorization: Bearer ${{ inputs.github-token }}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
+        latest_tag="$(curl --silent --header "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
         echo "Latest soup tag: ${latest_tag}"
         asset_url=""https://github.com/Cloud-Officer/soup/archive/refs/tags/${latest_tag}.zip""
         curl -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
@@ -57,9 +59,11 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        SOUP_LOCATION: ${{ env.soup_location }}
+        PARAMETERS: ${{ inputs.parameters }}
       run: |
-        pushd "${{env.soup_location}}"
+        pushd "${SOUP_LOCATION}"
         bundle config unset deployment
         bundle install
         popd
-        "${{env.soup_location}}/bin/soup.rb" ${{ inputs.parameters }}
+        eval "${SOUP_LOCATION}/bin/soup.rb" ${PARAMETERS}

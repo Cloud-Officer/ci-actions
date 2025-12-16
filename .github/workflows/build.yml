@@ -37,6 +37,7 @@ jobs:
       SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
       UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
       LINTERS: "${{steps.variables.outputs.LINTERS}}"
+    timeout-minutes: 30
     steps:
     - name: Prepare variables
       id: variables
@@ -49,6 +50,7 @@ jobs:
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: Actionlint
       id: actionlint
@@ -57,30 +59,13 @@ jobs:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github_token: "${{secrets.GITHUB_TOKEN}}"
-  codeql-javascript-typescript:
-    name: CodeQL Javascript-Typescript Linter
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    runs-on: ubuntu-latest
-    needs:
-    - variables
-    if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
-    steps:
-    - name: CodeQL Javascript-Typescript
-      uses: cloud-officer/ci-actions/linters/codeql@v1
-      with:
-        linters: "${{needs.variables.outputs.LINTERS}}"
-        ssh-key: "${{secrets.SSH_KEY}}"
-        github_token: "${{secrets.GITHUB_TOKEN}}"
-        languages: javascript-typescript
   eslint:
     name: JavaScript ES Linter
     runs-on: ubuntu-latest
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: ESLint
       id: eslint
@@ -95,6 +80,7 @@ jobs:
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: Markdownlint
       id: markdownlint
@@ -113,6 +99,7 @@ jobs:
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: Semgrep
       uses: cloud-officer/ci-actions/linters/semgrep@v1
@@ -126,6 +113,7 @@ jobs:
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: ShellCheck
       id: shellcheck
@@ -140,6 +128,7 @@ jobs:
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_LINTERS != '1' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')}}"
+    timeout-minutes: 30
     steps:
     - name: Yamllint
       id: yamllint

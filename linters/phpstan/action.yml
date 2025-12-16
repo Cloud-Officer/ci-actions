@@ -39,7 +39,9 @@ runs:
     - name: Check if PHPStan is enabled
       id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
@@ -62,9 +64,11 @@ runs:
     - name: Install APT Packages
       shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
         sudo apt-get --yes update
-        sudo apt-get --yes --no-install-recommends install ${{ inputs.apt-packages }}
+        sudo apt-get --yes --no-install-recommends install ${APT_PACKAGES}
 
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
@@ -92,10 +96,14 @@ runs:
     - name: Run Composer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: ${{ inputs.composer-command }}
+      env:
+        COMPOSER_COMMAND: ${{ inputs.composer-command }}
+      run: eval "${COMPOSER_COMMAND}"
 
     # https://phpstan.org/
     - name: Run PHPStan
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: ${{ inputs.php-stan-command }}
+      env:
+        PHPSTAN_COMMAND: ${{ inputs.php-stan-command }}
+      run: eval "${PHPSTAN_COMMAND}"

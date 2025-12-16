@@ -39,7 +39,9 @@ runs:
     - name: Check if PHPCS is enabled
       id: check
       shell: bash
-      run: if echo "${{ inputs.linters }}" | grep PHPCS &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep PHPCS &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
@@ -63,20 +65,26 @@ runs:
     - name: Setup php-cs-fixer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command == 'none'}}
+      env:
+        PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
       run: |
-        if [ "${{ inputs.php-cs-fixer-version }}" == "latest" ] ;then
+        if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
           curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer && chmod a+x php-cs-fixer
         else
-          curl -L https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${{ inputs.php-cs-fixer-version }}/php-cs-fixer.phar -o php-cs-fixer && chmod a+x php-cs-fixer
+          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar" -o php-cs-fixer && chmod a+x php-cs-fixer
         fi
 
     - name: Run Composer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none'}}
-      run: ${{ inputs.composer-command }}
+      env:
+        COMPOSER_COMMAND: ${{ inputs.composer-command }}
+      run: eval "${COMPOSER_COMMAND}"
 
     # https://cs.symfony.com/doc/usage.html
     - name: Run php-cs-fixer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: ${{ inputs.php-cs-fixer-command }}
+      env:
+        PHP_CS_FIXER_COMMAND: ${{ inputs.php-cs-fixer-command }}
+      run: eval "${PHP_CS_FIXER_COMMAND}"
