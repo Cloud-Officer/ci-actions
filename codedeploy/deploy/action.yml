@@ -42,6 +42,7 @@ runs:
         DEPLOYMENT_GROUP_NAME: ${{ inputs.deployment-group-name }}
         S3_BUCKET: ${{ inputs.s3-bucket }}
         S3_KEY_TEMPLATE: ${{ inputs.s3-key }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
         eval "S3_KEY=${S3_KEY_TEMPLATE}"
         deployment=$(aws deploy create-deployment --application-name "${APPLICATION_NAME}" --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name "${DEPLOYMENT_GROUP_NAME}" --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location "bucket=${S3_BUCKET},bundleType=zip,key=${S3_KEY}" --query 'deploymentId' --output text)
