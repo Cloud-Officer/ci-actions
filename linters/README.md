@@ -13,7 +13,9 @@ A collection of Linter Github Actions.
 * [phpcs](phpcs/README.md) the PHP Coding Standards Fixer (PHP CS Fixer) tool fixes your code to follow standards
 * [phpstan](phpstan/README.md) PHPStan scans your whole codebase and looks for both obvious & tricky bugs
 * [pmd](pmd/README.md) is a source code analyzer
+* [protolint](protolint/README.md) a pluggable linter and fixer to enforce Protocol Buffer style and conventions
 * [rubocop](rubocop/README.md) is a Ruby static code analyzer and code formatter
+* [semgrep](semgrep/README.md) a static analysis security scanner that finds bugs and enforces code standards
 * [shellcheck](shellcheck/README.md) is a tool that gives warnings and suggestions for bash/sh shell scripts
 * [swiftlint](swiftlint/README.md) a tool to enforce Swift style and conventions
 * [yamllint](yamllint/README.md) a linter for YAML files
