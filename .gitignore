@@ -458,4 +458,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,emacs,jetbrains,linux,macos,netbeans,nova,sublimetext,vim,visualstudiocode,webstorm,windows
-
+# AI Assistants
+# Claude Code
+.claude/
