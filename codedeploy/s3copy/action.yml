@@ -31,4 +31,7 @@ runs:
 
     - name: Sync S3
       shell: bash
-      run: aws s3 sync ${{ inputs.source }} ${{ inputs.target }}
+      env:
+        SOURCE: ${{ inputs.source }}
+        TARGET: ${{ inputs.target }}
+      run: aws s3 sync "${SOURCE}" "${TARGET}"

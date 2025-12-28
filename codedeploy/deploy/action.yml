@@ -37,35 +37,40 @@ runs:
 
     - name: Deploy to CodeDeploy
       shell: bash
+      env:
+        APPLICATION_NAME: ${{ inputs.application-name }}
+        DEPLOYMENT_GROUP_NAME: ${{ inputs.deployment-group-name }}
+        S3_BUCKET: ${{ inputs.s3-bucket }}
+        S3_KEY: ${{ inputs.s3-key }}
       run: |
-        deployment=$(aws deploy create-deployment --application-name ${{ inputs.application-name }} --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ${{ inputs.deployment-group-name }} --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location bucket="${{ inputs.s3-bucket }},bundleType=zip,key=${{ inputs.s3-key }}" --query 'deploymentId' --output text)
+        deployment=$(aws deploy create-deployment --application-name "${APPLICATION_NAME}" --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name "${DEPLOYMENT_GROUP_NAME}" --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location "bucket=${S3_BUCKET},bundleType=zip,key=${S3_KEY}" --query 'deploymentId' --output text)
         echo "Deployment ID=${deployment}"
         counter=1
 
         while [ ${counter} -lt 120 ]; do
-          status=$(aws deploy get-deployment --deployment-id ${deployment} --query 'deploymentInfo.status' --output text)
-        
+          status=$(aws deploy get-deployment --deployment-id "${deployment}" --query 'deploymentInfo.status' --output text)
+
           case ${status} in
             Succeeded)
             echo "Deployment succeeded"
             exit 0
             ;;
-          
+
             Failed)
             echo "Deployment failed"
             exit 1
             ;;
-          
+
             Stopped)
             echo "Deployment stopped"
             exit 1
             ;;
-        
+
             Ready)
             echo "Deployment ready"
             exit 0
             ;;
-        
+
             *)
             ((counter++))
             echo "Deployment status=${status}..."
@@ -73,5 +78,5 @@ runs:
             ;;
           esac
         done
-        
+
         echo "Aborting deployment monitoring as > 5 mins!"

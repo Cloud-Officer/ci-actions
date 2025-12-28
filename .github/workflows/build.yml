@@ -1,3 +1,4 @@
+# github-build --organization Cloud-Officer --skip_license_check --skip_slack
 ---
 name: Build
 'on':
