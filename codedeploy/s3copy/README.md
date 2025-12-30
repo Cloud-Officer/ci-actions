@@ -6,6 +6,10 @@ This action uploads an archive to an AWS S3 bucket.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   aws-access-key-id:
     description: 'aws access key id'
     required: true

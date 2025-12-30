@@ -13,7 +13,7 @@ inputs:
   github-token:
     description: 'github token'
     required: false
-    default: ''
+    default: ${{ github.token }}
   parameters:
     description: 'soup parameters'
     required: false

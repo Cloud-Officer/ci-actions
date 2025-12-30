@@ -6,6 +6,10 @@ This action checkout the code in preparation for the archive creation.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   ssh-key:
     description: 'ssh key'
     required: true

@@ -9,9 +9,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -20,14 +21,16 @@ runs:
       id: check
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
       run: if echo "${LINTERS}" | grep YAMLLINT &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -36,6 +39,8 @@ runs:
     - name: Remove submodules
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
 
     # https://github.com/marketplace/actions/run-yamllint-with-reviewdog
@@ -45,7 +50,7 @@ runs:
       with:
         fail_level: any
         filter_mode: nofilter
-        github_token: ${{ inputs.github_token }}
+        github_token: ${{ inputs.github-token }}
         level: info
         reporter: github-pr-review
         # reviewdog_flags:

@@ -3,6 +3,10 @@ name: 'Deploy'
 description: 'Deploy to code deploy target group'
 
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   aws-access-key-id:
     description: 'aws access key id'
     required: true
@@ -29,7 +33,7 @@ runs:
   steps:
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v5
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
@@ -38,6 +42,7 @@ runs:
     - name: Deploy to CodeDeploy
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         APPLICATION_NAME: ${{ inputs.application-name }}
         DEPLOYMENT_GROUP_NAME: ${{ inputs.deployment-group-name }}
         S3_BUCKET: ${{ inputs.s3-bucket }}

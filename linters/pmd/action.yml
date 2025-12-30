@@ -9,9 +9,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -20,14 +21,16 @@ runs:
       id: check
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
       run: if echo "${LINTERS}" | grep PMD &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -42,15 +45,18 @@ runs:
 
     # https://github.com/marketplace/actions/setup-java-jdk
     - name: Setup Java
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         distribution: adopt
         java-version: 15
         check-latest: true
 
     - name: Setup PMD
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: wget -nc -O /opt/pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.52.0/pmd-bin-6.52.0.zip && unzip -d /opt /opt/pmd.zip && rm -f /opt/pmd.zip && mv /opt/pmd-bin-6.52.0 /opt/pmd && chmod +x /opt/pmd/*
 
@@ -58,5 +64,5 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       run: /opt/pmd/bin/run.sh pmd -dir . -rulesets ".pmd.xml" | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info"

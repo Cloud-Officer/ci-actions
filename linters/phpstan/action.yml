@@ -9,9 +9,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
   apt-packages:
     description: 'additional apt packages to install'
     required: false
@@ -40,14 +41,16 @@ runs:
       id: check
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
       run: if echo "${LINTERS}" | grep PHPSTAN &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -65,6 +68,7 @@ runs:
       shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
         sudo apt-get --yes update
@@ -83,10 +87,12 @@ runs:
     - name: Cache - Composer Location
       id: composer-cache
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ inputs.php-version != 'none' }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
     - name: Cache - Composer
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
@@ -97,6 +103,7 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
       run: eval "${COMPOSER_COMMAND}"
 
@@ -105,5 +112,6 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PHPSTAN_COMMAND: ${{ inputs.php-stan-command }}
       run: eval "${PHPSTAN_COMMAND}"

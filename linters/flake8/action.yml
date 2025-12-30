@@ -9,9 +9,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -20,14 +21,16 @@ runs:
       id: check
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
       run: if echo "${LINTERS}" | grep FLAKE8 &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -43,6 +46,8 @@ runs:
     # flake8-docstrings
     - name: Install flake8-docstrings
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
         sudo rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
@@ -50,6 +55,6 @@ runs:
     - name: Run flake8
       shell: bash
       env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: flake8 . 2>&1 | reviewdog -f=flake8 -name=flake8 -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info

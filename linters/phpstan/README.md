@@ -12,9 +12,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
   apt-packages:
     description: 'additional apt packages to install'
     required: false
@@ -88,7 +89,7 @@ jobs:
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
-          github_token: "${{secrets.GITHUB_TOKEN}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
           php-version: "${{env.PHP-VERSION}}"
           php-extensions: "${{env.PHP-EXTENSIONS}}"
           composer-command: composer install --optimize-autoloader --no-interaction --no-suggest --prefer-dist

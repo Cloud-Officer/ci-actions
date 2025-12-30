@@ -3,6 +3,10 @@ name: 'Prepare variables'
 description: 'Prepare variables for all other parallel jobs.'
 
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   ssh-key:
     description: 'ssh key'
     required: true
@@ -59,8 +63,9 @@ runs:
   steps:
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -68,9 +73,13 @@ runs:
 
     - name: Output Action Path
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: echo "${{ github.action_path }}" >> ${GITHUB_PATH}
 
     - name: Run Prepare Variables
       id: variables
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: variables.sh

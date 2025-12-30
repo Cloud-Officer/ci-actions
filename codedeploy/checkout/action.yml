@@ -3,6 +3,10 @@ name: 'Checkout'
 description: 'Checkout'
 
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   ssh-key:
     description: 'ssh key'
     required: true
@@ -11,8 +15,9 @@ runs:
   steps:
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true

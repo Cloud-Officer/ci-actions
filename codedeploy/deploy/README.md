@@ -6,6 +6,10 @@ This action triggers a CodeDeploy deployment.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   aws-access-key-id:
     description: 'aws access key id'
     required: true
