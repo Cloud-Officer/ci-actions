@@ -40,6 +40,8 @@ runs:
     - name: Run Shellcheck with Reviewdog
       uses: reviewdog/action-shellcheck@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       with:
         exclude: "./git/*"
         fail_level: any

@@ -39,6 +39,8 @@ runs:
     - name: Actionlint
       uses: reviewdog/action-actionlint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       with:
         # https://github.com/rhysd/actionlint
         #actionlint_flags:
