@@ -42,7 +42,7 @@ jobs:
     steps:
     - name: Prepare variables
       id: variables
-      uses: cloud-officer/ci-actions/variables@master
+      uses: cloud-officer/ci-actions/variables@v2
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
@@ -56,7 +56,7 @@ jobs:
     steps:
     - name: Actionlint
       id: actionlint
-      uses: cloud-officer/ci-actions/linters/actionlint@v1
+      uses: cloud-officer/ci-actions/linters/actionlint@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -71,7 +71,7 @@ jobs:
     steps:
     - name: ESLint
       id: eslint
-      uses: cloud-officer/ci-actions/linters/eslint@v1
+      uses: cloud-officer/ci-actions/linters/eslint@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -86,7 +86,7 @@ jobs:
     steps:
     - name: Markdownlint
       id: markdownlint
-      uses: cloud-officer/ci-actions/linters/markdownlint@v1
+      uses: cloud-officer/ci-actions/linters/markdownlint@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -104,7 +104,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Semgrep
-      uses: cloud-officer/ci-actions/linters/semgrep@v1
+      uses: cloud-officer/ci-actions/linters/semgrep@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -119,7 +119,7 @@ jobs:
     steps:
     - name: ShellCheck
       id: shellcheck
-      uses: cloud-officer/ci-actions/linters/shellcheck@v1
+      uses: cloud-officer/ci-actions/linters/shellcheck@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -134,7 +134,7 @@ jobs:
     steps:
     - name: Yamllint
       id: yamllint
-      uses: cloud-officer/ci-actions/linters/yamllint@v1
+      uses: cloud-officer/ci-actions/linters/yamllint@v2
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
