@@ -9,9 +9,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
   php-version:
     description: 'php version'
     required: false
@@ -40,14 +41,16 @@ runs:
       id: check
       shell: bash
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
       run: if echo "${LINTERS}" | grep PHPCS &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
         lfs: true
@@ -66,6 +69,7 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command == 'none'}}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
       run: |
         if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
@@ -78,6 +82,7 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none'}}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
       run: eval "${COMPOSER_COMMAND}"
 
@@ -86,5 +91,6 @@ runs:
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_COMMAND: ${{ inputs.php-cs-fixer-command }}
       run: eval "${PHP_CS_FIXER_COMMAND}"

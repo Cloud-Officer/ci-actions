@@ -6,6 +6,10 @@ This action execute AWS CLI or shell commands.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   ssh-key:
     description: 'ssh key'
     required: true

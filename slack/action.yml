@@ -3,6 +3,10 @@ name: 'Slack'
 description: 'Send action status to slack'
 
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   webhook-url:
     description: 'Slack incoming webhook URL'
     required: true

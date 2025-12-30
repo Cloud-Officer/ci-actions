@@ -22,6 +22,10 @@ corresponding [cache](https://github.com/marketplace/actions/cache) action(s) wi
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   fetch-depth:
     description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
     default: 1
@@ -187,10 +191,6 @@ inputs:
   java-mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
-  node-always-auth:
-    description: 'Set always-auth in npmrc.'
-    required: false
-    default: 'false'
   node-version:
     description: 'Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
     required: false

@@ -6,6 +6,10 @@ This action publishes Docker image linux/amd64 and linux/arm64 to DockerHub.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   username:
     description: 'Username used to log against the Docker registry'
     required: true

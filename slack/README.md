@@ -6,6 +6,10 @@ This action sends action status to slack.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   webhook-url:
     description: 'Slack incoming webhook URL'
     required: true
@@ -65,7 +69,7 @@ jobs:
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
-          github_token: "${{secrets.GITHUB_TOKEN}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
   slack:
     name: Publish Statuses
     runs-on: ubuntu-latest

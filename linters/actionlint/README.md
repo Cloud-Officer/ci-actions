@@ -17,9 +17,10 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: true
-  github_token:
+  github-token:
     description: 'github token'
-    required: true
+    required: false
+    default: ${{ github.token }}
 ```
 
 ## Example usage
@@ -73,5 +74,5 @@ jobs:
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
-          github_token: "${{secrets.GITHUB_TOKEN}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
 ```

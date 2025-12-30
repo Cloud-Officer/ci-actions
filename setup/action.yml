@@ -3,6 +3,10 @@ name: 'Setup'
 description: 'Setup tools'
 
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   fetch-depth:
     description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
     default: 1
@@ -168,10 +172,6 @@ inputs:
   java-mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
-  node-always-auth:
-    description: 'Set always-auth in npmrc.'
-    required: false
-    default: 'false'
   node-version:
     description: 'Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
     required: false
@@ -456,8 +456,9 @@ runs:
   steps:
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
+        token: ${{ inputs.github-token }}
         fetch-depth: ${{ inputs.fetch-depth }}
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: true
@@ -473,7 +474,7 @@ runs:
 
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v5
       if: ${{ inputs.aws-access-key-id != '' }}
       with:
         aws-region: ${{ inputs.aws-region }}
@@ -503,6 +504,7 @@ runs:
       shell: bash
       if: ${{ inputs.apt-packages != 'none' }}
       env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
         sudo apt-get --yes update
@@ -510,7 +512,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       if: ${{ inputs.go-version != 'none' }}
       with:
         go-version: ${{ inputs.go-version }}
@@ -523,7 +525,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Go
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.go-version != 'none' }}
       with:
         path: |
@@ -534,7 +536,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-java-jdk
     - name: Setup Java
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       if: ${{ inputs.java-version != 'none' }}
       with:
         java-version: ${{ inputs.java-version }}
@@ -560,7 +562,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Gradle
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.java-version != 'none' }}
       with:
         path: |
@@ -571,7 +573,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Maven
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.java-version != 'none' }}
       with:
         path: ~/.m2/repository
@@ -580,10 +582,9 @@ runs:
 
     # https://github.com/marketplace/actions/setup-node-js-environment
     - name: Setup Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       if: ${{ inputs.node-version != 'none' }}
       with:
-        always-auth: ${{ inputs.node-always-auth }}
         node-version: ${{ inputs.node-version }}
         node-version-file: ${{ inputs.node-version-file }}
         architecture: ${{ inputs.node-architecture }}
@@ -612,9 +613,11 @@ runs:
       id: composer-cache
       shell: bash
       if: ${{ inputs.php-version != 'none' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
     - name: Cache - Composer
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.php-version != 'none' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
@@ -623,7 +626,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       if: ${{ inputs.python-version != 'none' }}
       with:
         python-version: ${{ inputs.python-version }}
@@ -641,9 +644,11 @@ runs:
       id: pip-cache
       shell: bash
       if: ${{ inputs.python-version != 'none' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: echo "dir=$(pip cache dir)" >> "${GITHUB_OUTPUT}"
     - name: Cache - PIP
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.python-version != 'none' }}
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
@@ -687,7 +692,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Carthage
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Carthage
@@ -696,7 +701,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - CocoaPods
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: Pods
@@ -705,7 +710,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - SPM
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:
         path: .build
@@ -714,7 +719,7 @@ runs:
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Tuist
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: tuist
       if: ${{ inputs.xcode-version != 'none' && runner.os == 'macOS'}}
       with:

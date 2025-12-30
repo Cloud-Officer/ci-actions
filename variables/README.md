@@ -6,6 +6,10 @@ This action prepare variables for all other parallel jobs.
 
 ```yml
 inputs:
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
   ssh-key:
     description: 'ssh key'
     required: true
@@ -115,5 +119,5 @@ jobs:
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
-          github_token: "${{secrets.GITHUB_TOKEN}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
 ```
