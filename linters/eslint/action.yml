@@ -56,8 +56,6 @@ runs:
     - name: Run ESLint with Reviewdog
       uses: reviewdog/action-eslint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       with:
         # https://github.com/eslint/eslint
         eslint_flags: "."

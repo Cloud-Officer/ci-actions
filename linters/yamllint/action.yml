@@ -47,8 +47,6 @@ runs:
     - name: Run Yamllint with Reviewdog
       uses: reviewdog/action-yamllint@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       with:
         fail_level: any
         filter_mode: nofilter
