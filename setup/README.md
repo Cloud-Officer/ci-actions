@@ -15,8 +15,23 @@ This action performs setup of many common tools all at once. Please see the indi
 * [setup-rabbitmq](https://github.com/marketplace/actions/rabbitmq-in-github-actions)
 * [setup-redis](https://github.com/marketplace/actions/actions-setup-redis)
 
-Take note that when you enable the setup action for a language, the
-corresponding [cache](https://github.com/marketplace/actions/cache) action(s) will also be automatically enabled.
+Take note that when you enable the setup action for a language, the corresponding [cache](https://github.com/marketplace/actions/cache) action(s) will also be automatically enabled.
+
+## Auto-detection of Language Versions
+
+This action automatically detects language version files in your repository and installs the corresponding languages without requiring explicit version inputs:
+
+| Language | Version File              |
+|----------|---------------------------|
+| Go       | `.go-version`             |
+| Java     | `.java-version`           |
+| Node     | `.nvmrc`, `.node-version` |
+| PHP      | `.php-version`            |
+| Python   | `.python-version`         |
+| Ruby     | `.ruby-version`           |
+
+If a version file is present, the language will be installed using the version specified in the file. Explicit version inputs (e.g.,
+`ruby-version: '3.2'`) will override auto-detection.
 
 ## Inputs
 
