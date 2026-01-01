@@ -472,6 +472,8 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
+        # Detect Language Versions
+
         # Go
         if [[ -f ".go-version" ]]; then
           echo "go-file=.go-version" >> "${GITHUB_OUTPUT}"
