@@ -465,6 +465,45 @@ runs:
         lfs: true
         submodules: recursive
 
+    # Detect language version files
+    - name: Detect Language Versions
+      id: detect-versions
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        # Go
+        if [[ -f ".go-version" ]]; then
+          echo "go-file=.go-version" >> "${GITHUB_OUTPUT}"
+        fi
+
+        # Java
+        if [[ -f ".java-version" ]]; then
+          echo "java-file=.java-version" >> "${GITHUB_OUTPUT}"
+        fi
+
+        # Node (check multiple files in priority order)
+        if [[ -f ".nvmrc" ]]; then
+          echo "node-file=.nvmrc" >> "${GITHUB_OUTPUT}"
+        elif [[ -f ".node-version" ]]; then
+          echo "node-file=.node-version" >> "${GITHUB_OUTPUT}"
+        fi
+
+        # PHP
+        if [[ -f ".php-version" ]]; then
+          echo "php-file=.php-version" >> "${GITHUB_OUTPUT}"
+        fi
+
+        # Python
+        if [[ -f ".python-version" ]]; then
+          echo "python-file=.python-version" >> "${GITHUB_OUTPUT}"
+        fi
+
+        # Ruby
+        if [[ -f ".ruby-version" ]]; then
+          echo "ruby-file=.ruby-version" >> "${GITHUB_OUTPUT}"
+        fi
+
     # https://github.com/marketplace/actions/webfactory-ssh-agent
     - name: SSH Agent
       uses: webfactory/ssh-agent@v0.9.1
@@ -513,10 +552,10 @@ runs:
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
       uses: actions/setup-go@v6
-      if: ${{ inputs.go-version != 'none' }}
+      if: ${{ inputs.go-version != 'none' || steps.detect-versions.outputs.go-file }}
       with:
-        go-version: ${{ inputs.go-version }}
-        go-version-file: ${{ inputs.go-version-file }}
+        go-version: ${{ inputs.go-version != 'none' && inputs.go-version || '' }}
+        go-version-file: ${{ inputs.go-version == 'none' && steps.detect-versions.outputs.go-file || inputs.go-version-file }}
         check-latest: ${{ inputs.go-check-latest }}
         token: ${{ inputs.go-token }}
         cache: ${{ inputs.go-cache }}
@@ -526,7 +565,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Go
       uses: actions/cache@v5
-      if: ${{ inputs.go-version != 'none' }}
+      if: ${{ inputs.go-version != 'none' || steps.detect-versions.outputs.go-file }}
       with:
         path: |
           ~/.cache/go-build
@@ -537,10 +576,10 @@ runs:
     # https://github.com/marketplace/actions/setup-java-jdk
     - name: Setup Java
       uses: actions/setup-java@v5
-      if: ${{ inputs.java-version != 'none' }}
+      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
       with:
-        java-version: ${{ inputs.java-version }}
-        java-version-file: ${{ inputs.java-version-file }}
+        java-version: ${{ inputs.java-version != 'none' && inputs.java-version || '' }}
+        java-version-file: ${{ inputs.java-version == 'none' && steps.detect-versions.outputs.java-file || inputs.java-version-file }}
         distribution: ${{ inputs.java-distribution }}
         java-package: ${{ inputs.java-package }}
         architecture: ${{ inputs.java-architecture }}
@@ -563,7 +602,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Gradle
       uses: actions/cache@v5
-      if: ${{ inputs.java-version != 'none' }}
+      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
       with:
         path: |
           ~/.gradle/caches
@@ -574,7 +613,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Maven
       uses: actions/cache@v5
-      if: ${{ inputs.java-version != 'none' }}
+      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -583,10 +622,10 @@ runs:
     # https://github.com/marketplace/actions/setup-node-js-environment
     - name: Setup Node
       uses: actions/setup-node@v6
-      if: ${{ inputs.node-version != 'none' }}
+      if: ${{ inputs.node-version != 'none' || steps.detect-versions.outputs.node-file }}
       with:
-        node-version: ${{ inputs.node-version }}
-        node-version-file: ${{ inputs.node-version-file }}
+        node-version: ${{ inputs.node-version != 'none' && inputs.node-version || '' }}
+        node-version-file: ${{ inputs.node-version == 'none' && steps.detect-versions.outputs.node-file || inputs.node-version-file }}
         architecture: ${{ inputs.node-architecture }}
         check-latest: ${{ inputs.node-check-latest }}
         registry-url: ${{ inputs.node-registry-url }}
@@ -598,10 +637,10 @@ runs:
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ inputs.php-version != 'none' }}
+      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
       with:
-        php-version: ${{ inputs.php-version }}
-        php-version-file: ${{ inputs.php-version-file }}
+        php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
+        php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
         extensions: ${{ inputs.php-extensions }}
         ini-file: ${{ inputs.php-ini-file }}
         ini-values: ${{ inputs.php-ini-values }}
@@ -612,13 +651,13 @@ runs:
     - name: Cache - Composer Location
       id: composer-cache
       shell: bash
-      if: ${{ inputs.php-version != 'none' }}
+      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
     - name: Cache - Composer
       uses: actions/cache@v5
-      if: ${{ inputs.php-version != 'none' }}
+      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -627,10 +666,10 @@ runs:
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
       uses: actions/setup-python@v6
-      if: ${{ inputs.python-version != 'none' }}
+      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
       with:
-        python-version: ${{ inputs.python-version }}
-        python-version-file: ${{ inputs.python-version-file }}
+        python-version: ${{ inputs.python-version != 'none' && inputs.python-version || '' }}
+        python-version-file: ${{ inputs.python-version == 'none' && steps.detect-versions.outputs.python-file || inputs.python-version-file }}
         cache: ${{ inputs.python-cache }}
         architecture: ${{ inputs.python-architecture }}
         check-latest: ${{ inputs.python-check-latest }}
@@ -643,13 +682,13 @@ runs:
     - name: Cache - PIP Location
       id: pip-cache
       shell: bash
-      if: ${{ inputs.python-version != 'none' }}
+      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: echo "dir=$(pip cache dir)" >> "${GITHUB_OUTPUT}"
     - name: Cache - PIP
       uses: actions/cache@v5
-      if: ${{ inputs.python-version != 'none' }}
+      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -658,9 +697,9 @@ runs:
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
       uses: ruby/setup-ruby@master
-      if: ${{ inputs.ruby-version != 'none' }}
+      if: ${{ inputs.ruby-version != 'none' || steps.detect-versions.outputs.ruby-file }}
       with:
-        ruby-version: ${{ inputs.ruby-version }}
+        ruby-version: ${{ inputs.ruby-version != 'none' && inputs.ruby-version || '' }}
         rubygems: ${{ inputs.ruby-rubygems }}
         bundler: ${{ inputs.ruby-bundler }}
         bundler-cache: ${{ inputs.ruby-bundler-cache }}
