@@ -278,7 +278,7 @@ if [ -f .rubocop.yml ]; then
   LINTERS="${LINTERS} RUBOCOP"
 fi
 
-if [ -f .semgrep.yml ] || [ -d .semgrep ]; then
+if [ -f .semgrepignore ]; then
   LINTERS="${LINTERS} SEMGREP"
 fi
 
