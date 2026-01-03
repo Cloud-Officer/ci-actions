@@ -55,30 +55,4 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: semgrep scan --config=auto --severity=ERROR --sarif-output=semgrep.sarif .
-
-    - name: Check for Semgrep findings
-      shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: |
-        if [ ! -f "semgrep.sarif" ]; then
-          echo "No SARIF file found"
-          exit 0
-        fi
-
-        FINDINGS_COUNT=$(jq '[.runs[].results[]] | length' semgrep.sarif)
-
-        if [ "$FINDINGS_COUNT" -gt 0 ]; then
-          exit 1
-        fi
-
-    # https://github.com/github/codeql-action
-    - name: Upload SARIF to GitHub Security
-      uses: github/codeql-action/upload-sarif@v4
-      if: ${{ steps.check.outputs.continue == 'true' && always() }}
-      continue-on-error: true
-      with:
-        sarif_file: semgrep.sarif
-        category: semgrep
+      run: semgrep scan --config=auto --severity=ERROR --error .
