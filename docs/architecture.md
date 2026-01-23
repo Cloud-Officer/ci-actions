@@ -278,6 +278,16 @@ The actions depend on the following third-party GitHub Actions:
 | namoshek/rabbitmq-github-action | master | RabbitMQ setup |
 | shogo82148/actions-setup-redis | v1 | Redis setup |
 | reviewdog/action-eslint | v1 | ESLint with reviewdog |
+| reviewdog/action-setup | v1 | Reviewdog CLI setup |
+| reviewdog/action-golangci-lint | v2 | Go linting with reviewdog |
+| reviewdog/action-yamllint | v1 | YAML linting with reviewdog |
+| reviewdog/action-shellcheck | v1 | Shell script linting with reviewdog |
+| reviewdog/action-hadolint | v1 | Dockerfile linting with reviewdog |
+| reviewdog/action-rubocop | v2 | Ruby linting with reviewdog |
+| reviewdog/action-actionlint | v1 | GitHub Actions linting with reviewdog |
+| yoheimuta/action-protolint | v1 | Protocol Buffers linting |
+| ScaCap/action-ktlint | v1 | Kotlin linting |
+| norio-nomura/action-swiftlint | 3.2.1 | Swift linting |
 | tj-actions/bandit | v5 | Python security linter |
 
 ## Critical algorithms
@@ -287,7 +297,7 @@ The actions depend on the following third-party GitHub Actions:
 **Purpose:** Compute build identifiers and detect workflow configuration from
 commit messages and repository state.
 
-**Location:** `variables/variables.sh:110-300`
+**Location:** `variables/variables.sh` in environment variable computation block
 
 **Algorithm:**
 
@@ -304,7 +314,7 @@ commit messages and repository state.
 
 **Purpose:** Monitor AWS CodeDeploy deployment until completion or timeout.
 
-**Location:** `codedeploy/deploy/action.yml:51-87`
+**Location:** `codedeploy/deploy/action.yml` in "Deploy to CodeDeploy" step
 
 **Algorithm:**
 
@@ -319,7 +329,7 @@ commit messages and repository state.
 
 **Purpose:** Build Slack Block Kit message with job statuses.
 
-**Location:** `slack/index.js:1-139`
+**Location:** `slack/index.js`
 
 **Algorithm:**
 
