@@ -294,21 +294,6 @@ if [ -f .yamllint.yml ]; then
   LINTERS="${LINTERS} YAMLLINT"
 fi
 
-if find . -type f \( \
-    -name "*.cpp" -o -name "*.c++" -o -name "*.cxx" -o -name "*.hpp" -o -name "*.hh" -o -name "*.h++" -o -name "*.hxx" -o -name "*.c" -o -name "*.cc" -o -name "*.h" \
-    -o -name "*.sln" -o -name "*.csproj" -o -name "*.cs" -o -name "*.cshtml" -o -name "*.xaml" \
-    -o -name "*.go" \
-    -o -name "*.java" \
-    -o -name "*.kt" \
-    -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.es" -o -name "*.es6" -o -name "*.htm" -o -name "*.html" -o -name "*.xhtm" -o -name "*.xhtml" -o -name "*.vue" -o -name "*.hbs" -o -name "*.ejs" -o -name "*.njk" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" -o -name "*.raml" -o -name "*.xml" \
-    -o -name "*.py" \
-    -o -name "*.rb" -o -name "*.erb" -o -name "*.gemspec" -o -name "Gemfile" \
-    -o -name "*.swift" \
-    -o -name "*.ts" -o -name "*.tsx" -o -name "*.mts" -o -name "*.cts" \
-    \) | grep -q .; then
-  LINTERS="${LINTERS} CODEQL"
-fi
-
 for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
   echo "${github}=${!github}" >> "${GITHUB_ENV}"
   echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"

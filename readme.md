@@ -10,7 +10,18 @@
 
 ## Introduction
 
-A collection of Github Actions for CI.
+A collection of GitHub Actions for CI/CD workflows.
+
+### Features
+
+* **Setup**: Unified tool setup for consistent build environments
+* **Linters**: Code quality checks for multiple languages (Python, Go, PHP, Ruby, Swift, Kotlin, and more)
+* **Docker**: Build and publish Docker images to DockerHub
+* **AWS**: Execute AWS CLI or shell commands
+* **CodeDeploy**: AWS CodeDeploy integration for deployments
+* **Slack**: Build status notifications
+* **SOUP**: Open source license compliance and dependency tracking
+* **Variables**: Environment variable preparation for parallel jobs
 
 ## Installation
 
@@ -18,15 +29,14 @@ Nothing to install.
 
 ## Usage
 
-* [aws](aws/README.md): GenericAWS CLI or shell commands
-* [codedeploy](codedeploy/README.md): Github Actions for AWS CodeDeploy
-* [docker](docker/README.md): Github Actions for DockerHub
-* [linters](linters/README.md): Github Actions for various linters
-* [setup](setup/README.md): Github Action to setup tools all at once
-* [slack](slack/README.md): Github Action to report build status to slack
-* [soup](soup/README.md): Github Action for open source licenses check and can generate/check the SOUP list against
-  dependencies
-* [variables](variables/README.md): Github Action to prepare environment variables for subsequent steps
+* [aws](aws/README.md): Execute AWS CLI or shell commands
+* [codedeploy](codedeploy/README.md): AWS CodeDeploy actions (checkout, deploy, s3copy)
+* [docker](docker/README.md): Publish Docker images
+* [linters](linters/README.md): Code quality linters for multiple languages
+* [setup](setup/README.md): Setup tools for build environments
+* [slack](slack/README.md): Send action status to Slack
+* [soup](soup/README.md): Open source license compliance and SOUP list generation
+* [variables](variables/README.md): Prepare variables for parallel jobs
 
 ## Contributing
 
