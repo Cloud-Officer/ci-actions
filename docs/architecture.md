@@ -287,7 +287,7 @@ The actions depend on the following third-party GitHub Actions:
 **Purpose:** Compute build identifiers and detect workflow configuration from
 commit messages and repository state.
 
-**Location:** `variables/variables.sh:110-315`
+**Location:** `variables/variables.sh:110-300`
 
 **Algorithm:**
 
@@ -349,7 +349,7 @@ commit messages and repository state.
 
 #### Code Analysis
 
-- Semgrep security scanning with `--severity=ERROR`
+- Semgrep security scanning with `--error` flag
 - Bandit Python security linting
 - ESLint for JavaScript patterns
 - Multiple language-specific linters for code quality
