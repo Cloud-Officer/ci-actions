@@ -55,4 +55,4 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: semgrep scan --config=auto --severity=ERROR --error .
+      run: semgrep scan --config=auto --severity=ERROR --error --quiet .
