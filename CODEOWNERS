@@ -1,0 +1,15 @@
+# https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
+
+*                        @ydesgagn
+
+# build/deploy related files
+
+.eslintrc.json           @ydesgagn
+.github/                 @ydesgagn
+.gitignore               @ydesgagn
+.markdownlint.yml        @ydesgagn
+.shellcheckrc            @ydesgagn
+.yamllint.yml            @ydesgagn
+codeowners               @ydesgagn
+codedeploy/              @ydesgagn
+*.sh                     @ydesgagn
