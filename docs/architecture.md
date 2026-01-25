@@ -244,51 +244,52 @@ See [soup.md](soup.md) for the complete SOUP list.
 
 ### Critical Dependencies
 
-| Package | Version | License | Purpose |
-| :--- | :--- | :--- | :--- |
-| @actions/core | 1.11.1 | MIT | GitHub Actions toolkit core |
-| axios | 1.13.2 | MIT | HTTP client for Slack webhook |
+| Package | License | Purpose |
+| :--- | :--- | :--- |
+| @actions/core | MIT | GitHub Actions toolkit core |
+| axios | MIT | HTTP client for Slack webhook |
 
 ### External Action Dependencies
 
-The actions depend on the following third-party GitHub Actions:
+The actions depend on the following third-party GitHub Actions (see individual action.yml
+files for current versions):
 
-| Action | Version | Purpose |
-| :--- | :--- | :--- |
-| actions/checkout | v6 | Repository checkout |
-| actions/setup-go | v6 | Go runtime setup |
-| actions/setup-java | v5 | Java runtime setup |
-| actions/setup-node | v6 | Node.js runtime setup |
-| actions/setup-python | v6 | Python runtime setup |
-| actions/cache | v5 | Dependency caching |
-| actions/attest-build-provenance | v3 | Build attestation |
-| aws-actions/configure-aws-credentials | v5 | AWS credential configuration |
-| docker/login-action | v3 | Docker registry login |
-| docker/setup-buildx-action | v3 | Docker Buildx setup |
-| docker/metadata-action | v5 | Docker metadata extraction |
-| docker/build-push-action | v6 | Docker build and push |
-| ruby/setup-ruby | master | Ruby runtime setup |
-| shivammathur/setup-php | v2 | PHP runtime setup |
-| webfactory/ssh-agent | v0.9.1 | SSH agent setup |
-| amyu/setup-android | v4 | Android SDK setup |
-| maxim-lobanov/setup-xcode | v1 | Xcode setup |
-| miyataka/elasticsearch-github-actions | master | Elasticsearch setup |
-| supercharge/mongodb-github-action | 1.12.0 | MongoDB setup |
-| shogo82148/actions-setup-mysql | v1 | MySQL setup |
-| namoshek/rabbitmq-github-action | master | RabbitMQ setup |
-| shogo82148/actions-setup-redis | v1 | Redis setup |
-| reviewdog/action-eslint | v1 | ESLint with reviewdog |
-| reviewdog/action-setup | v1 | Reviewdog CLI setup |
-| reviewdog/action-golangci-lint | v2 | Go linting with reviewdog |
-| reviewdog/action-yamllint | v1 | YAML linting with reviewdog |
-| reviewdog/action-shellcheck | v1 | Shell script linting with reviewdog |
-| reviewdog/action-hadolint | v1 | Dockerfile linting with reviewdog |
-| reviewdog/action-rubocop | v2 | Ruby linting with reviewdog |
-| reviewdog/action-actionlint | v1 | GitHub Actions linting with reviewdog |
-| yoheimuta/action-protolint | v1 | Protocol Buffers linting |
-| ScaCap/action-ktlint | v1 | Kotlin linting |
-| norio-nomura/action-swiftlint | 3.2.1 | Swift linting |
-| tj-actions/bandit | v5 | Python security linter |
+| Action | Purpose |
+| :--- | :--- |
+| actions/checkout | Repository checkout |
+| actions/setup-go | Go runtime setup |
+| actions/setup-java | Java runtime setup |
+| actions/setup-node | Node.js runtime setup |
+| actions/setup-python | Python runtime setup |
+| actions/cache | Dependency caching |
+| actions/attest-build-provenance | Build attestation |
+| aws-actions/configure-aws-credentials | AWS credential configuration |
+| docker/login-action | Docker registry login |
+| docker/setup-buildx-action | Docker Buildx setup |
+| docker/metadata-action | Docker metadata extraction |
+| docker/build-push-action | Docker build and push |
+| ruby/setup-ruby | Ruby runtime setup |
+| shivammathur/setup-php | PHP runtime setup |
+| webfactory/ssh-agent | SSH agent setup |
+| amyu/setup-android | Android SDK setup |
+| maxim-lobanov/setup-xcode | Xcode setup |
+| miyataka/elasticsearch-github-actions | Elasticsearch setup |
+| supercharge/mongodb-github-action | MongoDB setup |
+| shogo82148/actions-setup-mysql | MySQL setup |
+| namoshek/rabbitmq-github-action | RabbitMQ setup |
+| shogo82148/actions-setup-redis | Redis setup |
+| reviewdog/action-eslint | ESLint with reviewdog |
+| reviewdog/action-setup | Reviewdog CLI setup |
+| reviewdog/action-golangci-lint | Go linting with reviewdog |
+| reviewdog/action-yamllint | YAML linting with reviewdog |
+| reviewdog/action-shellcheck | Shell script linting with reviewdog |
+| reviewdog/action-hadolint | Dockerfile linting with reviewdog |
+| reviewdog/action-rubocop | Ruby linting with reviewdog |
+| reviewdog/action-actionlint | GitHub Actions linting with reviewdog |
+| yoheimuta/action-protolint | Protocol Buffers linting |
+| ScaCap/action-ktlint | Kotlin linting |
+| norio-nomura/action-swiftlint | Swift linting |
+| tj-actions/bandit | Python security linter |
 
 ## Critical algorithms
 

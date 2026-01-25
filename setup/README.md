@@ -274,7 +274,6 @@ inputs:
   python-architecture:
     description: 'The target architecture (x86, x64) of the Python interpreter.'
     required: false
-    default: 'x64'
   python-check-latest:
     description: "Set this option if you want the action to check for the latest available version that satisfies the version spec."
     required: false
@@ -346,6 +345,9 @@ inputs:
     required: false
   android-cmake-version:
     description: 'cmake version'
+    required: false
+  android-command-line-tools-version:
+    description: 'command line tools version'
     required: false
   android-cache-disabled:
     description: 'disabled cache'

@@ -312,6 +312,9 @@ inputs:
   android-cmake-version:
     description: 'cmake version'
     required: false
+  android-command-line-tools-version:
+    description: 'command line tools version'
+    required: false
   android-cache-disabled:
     description: 'disabled cache'
     required: false
@@ -697,7 +700,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
-      uses: ruby/setup-ruby@master
+      uses: ruby/setup-ruby@v1
       if: ${{ inputs.ruby-version != 'none' || steps.detect-versions.outputs.ruby-file }}
       with:
         ruby-version: ${{ inputs.ruby-version != 'none' && inputs.ruby-version || '' }}
@@ -711,13 +714,14 @@ runs:
 
     # https://github.com/marketplace/actions/setup-android-sdk-for-self-hosted-runner
     - name: Setup Android
-      uses: amyu/setup-android@v4
+      uses: amyu/setup-android@v5
       if: ${{ inputs.android-sdk-version != 'none'}}
       with:
         sdk-version: ${{ inputs.android-sdk-version }}
         build-tools-version: ${{ inputs.android-build-tools-version }}
         ndk-version: ${{ inputs.android-ndk-version }}
         cmake-version: ${{ inputs.android-cmake-version }}
+        command-line-tools-version: ${{ inputs.android-command-line-tools-version }}
         cache-disabled: ${{ inputs.android-cache-disabled }}
         cache-key: ${{ inputs.android-cache-key }}
         generate-job-summary: ${{ inputs.android-generate-job-summary }}
@@ -771,7 +775,7 @@ runs:
 
     # https://github.com/marketplace/actions/run-elasticsearch-with-plugins
     - name: Setup Elasticsearch
-      uses: miyataka/elasticsearch-github-actions@master
+      uses: miyataka/elasticsearch-github-actions@1
       if: ${{ inputs.elasticsearch-version != 'none' }}
       with:
         stack-version: ${{ inputs.elasticsearch-version }}
@@ -804,7 +808,7 @@ runs:
 
     # https://github.com/marketplace/actions/rabbitmq-in-github-actions
     - name: Setup RabbitMQ
-      uses: namoshek/rabbitmq-github-action@master
+      uses: namoshek/rabbitmq-github-action@v1
       if: ${{ inputs.rabbitmq-version != 'none'}}
       with:
         version: ${{ inputs.rabbitmq-version }}

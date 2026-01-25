@@ -1,20 +1,32 @@
 const core = require('@actions/core');
 const axios = require("axios");
 
+const COLORS = {
+    info: '#439FE0',
+    success: '#5cb589',
+    failure: '#d5001a',
+    warning: '#f8c753'
+};
+
 try {
     const webhook_url = core.getInput('webhook-url');
-    const jobs = JSON.parse(core.getInput('jobs'));
+    const jobsInput = core.getInput('jobs');
+    let jobs;
+    try {
+        jobs = JSON.parse(jobsInput);
+    } catch (parseError) {
+        throw new Error(`Failed to parse 'jobs' input as JSON: ${parseError.message}. Input was: ${jobsInput.substring(0, 100)}${jobsInput.length > 100 ? '...' : ''}`);
+    }
     let fields;
-    let i;
 
     fields = [];
-    for (i in jobs.variables.outputs) {
-      if (i.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
-        if (jobs.variables.outputs[i] == '1') {
+    for (const key of Object.keys(jobs.variables.outputs)) {
+      if (key.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
+        if (jobs.variables.outputs[key] == '1') {
           fields.push({
             "type": "plain_text",
             "emoji": true,
-            "text": `:heavy_check_mark: ${i}`
+            "text": `:heavy_check_mark: ${key}`
           })
         }
       }
@@ -22,7 +34,7 @@ try {
 
     let data = {"attachments": [
       {
-        "color": "#439FE0",
+        "color": COLORS.info,
         "blocks": [
           {
             "type": "section",
@@ -66,25 +78,25 @@ try {
       });
     }
 
-    let color = '#5cb589';
+    let color = COLORS.success;
     fields = [];
-    for (i in jobs) {
-      if (i == 'variables') {
+    for (const jobName of Object.keys(jobs)) {
+      if (jobName === 'variables') {
         continue;
       }
 
-      var emoji = ':question:';
-      switch (jobs[i].result) {
+      let emoji = ':question:';
+      switch (jobs[jobName].result) {
         case 'success':
           emoji = ':white_check_mark:';
           break;
         case 'failure':
           emoji = ':x:';
-          color = '#d5001a';
+          color = COLORS.failure;
           break;
         case 'cancelled':
           emoji = ':hand:'
-          color = '#f8c753';
+          color = COLORS.warning;
           break;
         case 'skipped':
           emoji = ':heavy_minus_sign:'
@@ -94,7 +106,7 @@ try {
       fields.push({
         "type": "plain_text",
         'emoji': true,
-        "text": `${emoji} ${i}`
+        "text": `${emoji} ${jobName}`
       });
 
       if (fields.length >= 2) {
@@ -108,7 +120,7 @@ try {
           ]
         });
         fields = [];
-        color = '#5cb589';
+        color = COLORS.success;
       }
     }
 
@@ -125,14 +137,13 @@ try {
     }
     console.log(JSON.stringify(data, undefined, 2));
 
-    const res = axios.post(webhook_url, data)
-        .catch((error) => {
-          console.error('Error', error);
-          console.info('URL', webhook_url);
-          core.setFailed(error.message);
+    axios.post(webhook_url, data)
+        .then((response) => {
+          console.log(JSON.stringify(response.data, undefined, 2));
         })
-        .then(() => {
-          console.log(JSON.stringify(res, undefined, 2));
+        .catch((error) => {
+          console.error('Error', error.message);
+          core.setFailed(error.message);
         })
 } catch (error) {
     core.setFailed(error.message);

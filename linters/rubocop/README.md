@@ -20,6 +20,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  ruby-version:
+    description: 'ruby version'
+    required: false
+    default: '4.0'
 ```
 
 ## Example usage

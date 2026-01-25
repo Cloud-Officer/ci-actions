@@ -1,109 +1,55 @@
 #!/usr/bin/env bash
-#set -ex
 
-function on_beta()
+# Generic function to check for commit message triggers
+# Usage: has_trigger "keyword"
+function has_trigger()
 {
-  echo "${COMMIT_MESSAGE}" | grep -iF '#beta-deploy' &> /dev/null
+  echo "${COMMIT_MESSAGE}" | grep -iF "#$1" &> /dev/null
 }
 
-function on_rc()
+# Generic function to execute command if trigger is present
+# Usage: execute_if_trigger "keyword" command args...
+function execute_if_trigger()
 {
-  echo "${COMMIT_MESSAGE}" | grep -iF '#rc-deploy' &> /dev/null
-}
-
-function on_prod()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#prod-deploy' &> /dev/null
-}
-
-function on_macos()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#macos' &> /dev/null
-}
-
-function on_tvos()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#tvos' &> /dev/null
-}
-
-function deploy_options()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#deploy-options' &> /dev/null
-}
-
-function skip_all()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-all' &> /dev/null
-}
-
-function skip_licenses()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-licenses' &> /dev/null
-}
-
-function skip_linters()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-linters' &> /dev/null
-}
-
-function skip_tests()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#skip-tests' &> /dev/null
-}
-
-function update_packages()
-{
-  echo "${COMMIT_MESSAGE}" | grep -iF '#update-packages' &> /dev/null
-}
-
-function execute_if_on_beta()
-{
-  if on_beta; then
+  local trigger="$1"
+  shift
+  if has_trigger "${trigger}"; then
     "$@"
   fi
 }
 
-function execute_if_on_rc()
+# Generic function to execute command if trigger is NOT present
+# Usage: execute_unless_trigger "keyword" command args...
+function execute_unless_trigger()
 {
-  if on_rc; then
+  local trigger="$1"
+  shift
+  if ! has_trigger "${trigger}"; then
     "$@"
   fi
 }
 
-function execute_if_on_prod()
-{
-  if on_prod; then
-    "$@"
-  fi
-}
+# Convenience aliases for backward compatibility
+function on_beta() { has_trigger "beta-deploy"; }
+function on_rc() { has_trigger "rc-deploy"; }
+function on_prod() { has_trigger "prod-deploy"; }
+function on_macos() { has_trigger "macos"; }
+function on_tvos() { has_trigger "tvos"; }
+function deploy_options() { has_trigger "deploy-options"; }
+function skip_all() { has_trigger "skip-all"; }
+function skip_licenses() { has_trigger "skip-licenses"; }
+function skip_linters() { has_trigger "skip-linters"; }
+function skip_tests() { has_trigger "skip-tests"; }
+function update_packages() { has_trigger "update-packages"; }
 
-function execute_if_on_macos()
-{
-  if on_macos; then
-    "$@"
-  fi
-}
-
-function execute_if_on_tvos()
-{
-  if on_tvos; then
-    "$@"
-  fi
-}
-
-function execute_if_skip_tests()
-{
-  if skip_tests; then
-    "$@"
-  fi
-}
-
-function execute_if_tests()
-{
-  if ! skip_tests; then
-    "$@"
-  fi
-}
+# Convenience wrapper functions for backward compatibility
+function execute_if_on_beta() { execute_if_trigger "beta-deploy" "$@"; }
+function execute_if_on_rc() { execute_if_trigger "rc-deploy" "$@"; }
+function execute_if_on_prod() { execute_if_trigger "prod-deploy" "$@"; }
+function execute_if_on_macos() { execute_if_trigger "macos" "$@"; }
+function execute_if_on_tvos() { execute_if_trigger "tvos" "$@"; }
+function execute_if_skip_tests() { execute_if_trigger "skip-tests" "$@"; }
+function execute_if_tests() { execute_unless_trigger "skip-tests" "$@"; }
 
 # set environment variables
 
@@ -138,161 +84,82 @@ else
   export COMMIT_MESSAGE
 fi
 
-DEPLOY_ON_BETA=0
+# Helper function to set boolean flag from trigger
+# Usage: set_flag_from_trigger VAR_NAME "trigger-keyword"
+function set_flag_from_trigger()
+{
+  local var_name="$1"
+  local trigger="$2"
+  if has_trigger "${trigger}"; then
+    eval "export ${var_name}=1"
+  else
+    eval "export ${var_name}=0"
+  fi
+}
 
-if on_beta; then
-  DEPLOY_ON_BETA=1
-fi
+# Set deployment and skip flags from commit message triggers
+set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
+set_flag_from_trigger DEPLOY_ON_RC "rc-deploy"
+set_flag_from_trigger DEPLOY_MACOS "macos"
+set_flag_from_trigger DEPLOY_TVOS "tvos"
+set_flag_from_trigger SKIP_LICENSES "skip-licenses"
+set_flag_from_trigger SKIP_LINTERS "skip-linters"
+set_flag_from_trigger SKIP_TESTS "skip-tests"
+set_flag_from_trigger UPDATE_PACKAGES "update-packages"
 
-export DEPLOY_ON_BETA
-
-DEPLOY_ON_RC=0
-
-if on_rc; then
-  DEPLOY_ON_RC=1
-fi
-
-export DEPLOY_ON_RC
-
+# DEPLOY_ON_PROD requires both trigger and tag
 DEPLOY_ON_PROD=0
-
 if on_prod && [ "${TAG}" != "" ]; then
   DEPLOY_ON_PROD=1
 fi
-
 export DEPLOY_ON_PROD
 
-DEPLOY_MACOS=0
-
-if on_macos; then
-  DEPLOY_MACOS=1
-fi
-
-export DEPLOY_MACOS
-
-DEPLOY_TVOS=0
-
-if on_tvos; then
-  DEPLOY_TVOS=1
-fi
-
-export DEPLOY_TVOS
-
+# DEPLOY_OPTIONS extracts value from trigger
 DEPLOY_OPTIONS=""
-
 if deploy_options; then
   DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
 fi
-
 export DEPLOY_OPTIONS
 
-SKIP_LICENSES=0
-
-if skip_licenses; then
-  SKIP_LICENSES=1
-fi
-
-export SKIP_LICENSES
-
-SKIP_LINTERS=0
-
-if skip_linters; then
-  SKIP_LINTERS=1
-fi
-
-export SKIP_LINTERS
-
-SKIP_TESTS=0
-
-if skip_tests; then
-  SKIP_TESTS=1
-fi
-
-export SKIP_TESTS
-
+# Handle #skip-all trigger (override individual skip flags)
 if skip_all; then
-  SKIP_LICENSES=1
-  SKIP_LINTERS=1
-  SKIP_TESTS=1
+  export SKIP_LICENSES=1
+  export SKIP_LINTERS=1
+  export SKIP_TESTS=1
 fi
 
-UPDATE_PACKAGES=0
+# Helper function to add linter if config file/directory exists
+# Usage: add_linter_if_file "LINTER_NAME" "config_file"
+#        add_linter_if_dir "LINTER_NAME" "config_dir"
+function add_linter_if_file()
+{
+  [ -f "$2" ] && LINTERS="${LINTERS} $1"
+}
 
-if update_packages; then
-  UPDATE_PACKAGES=1
-fi
+function add_linter_if_dir()
+{
+  [ -d "$2" ] && LINTERS="${LINTERS} $1"
+}
 
-export UPDATE_PACKAGES
-
+# Auto-detect linters based on config file presence
 LINTERS=""
-
-if [ -d .github/workflows ]; then
-  LINTERS="${LINTERS} ACTIONLINT"
-fi
-
-if [ -f .bandit ]; then
-  LINTERS="${LINTERS} BANDIT"
-fi
-
-if [ -f .eslintrc.json ]; then
-  LINTERS="${LINTERS} ESLINT"
-fi
-
-if [ -f .flake8 ]; then
-  LINTERS="${LINTERS} FLAKE8"
-fi
-
-if [ -f .golangci.yml ]; then
-  LINTERS="${LINTERS} GOLANGCI"
-fi
-
-if [ -f .hadolint.yaml ]; then
-  LINTERS="${LINTERS} HADOLINT"
-fi
-
-if [ -f .editorconfig ]; then
-  LINTERS="${LINTERS} KTLINT"
-fi
-
-if [ -f .markdownlint.yml ]; then
-  LINTERS="${LINTERS} MARKDOWNLINT"
-fi
-
-if [  -f .php-cs-fixer.dist.php ]; then
-  LINTERS="${LINTERS} PHPCS"
-fi
-
-if [  -f phpstan.neon ]; then
-  LINTERS="${LINTERS} PHPSTAN"
-fi
-
-if [ -f .pmd.xml ]; then
-  LINTERS="${LINTERS} PMD"
-fi
-
-if [ -f .protolint.yaml ]; then
-  LINTERS="${LINTERS} PROTOLINT"
-fi
-
-if [ -f .rubocop.yml ]; then
-  LINTERS="${LINTERS} RUBOCOP"
-fi
-
-if [ -f .semgrepignore ]; then
-  LINTERS="${LINTERS} SEMGREP"
-fi
-
-if [ -f .shellcheckrc ]; then
-  LINTERS="${LINTERS} SHELLCHECK"
-fi
-
-if [ -f .swiftlint.yml ]; then
-  LINTERS="${LINTERS} SWIFTLINT"
-fi
-
-if [ -f .yamllint.yml ]; then
-  LINTERS="${LINTERS} YAMLLINT"
-fi
+add_linter_if_dir  "ACTIONLINT"    ".github/workflows"
+add_linter_if_file "BANDIT"        ".bandit"
+add_linter_if_file "ESLINT"        ".eslintrc.json"
+add_linter_if_file "FLAKE8"        ".flake8"
+add_linter_if_file "GOLANGCI"      ".golangci.yml"
+add_linter_if_file "HADOLINT"      ".hadolint.yaml"
+add_linter_if_file "KTLINT"        ".editorconfig"
+add_linter_if_file "MARKDOWNLINT"  ".markdownlint.yml"
+add_linter_if_file "PHPCS"         ".php-cs-fixer.dist.php"
+add_linter_if_file "PHPSTAN"       "phpstan.neon"
+add_linter_if_file "PMD"           ".pmd.xml"
+add_linter_if_file "PROTOLINT"     ".protolint.yaml"
+add_linter_if_file "RUBOCOP"       ".rubocop.yml"
+add_linter_if_file "SEMGREP"       ".semgrepignore"
+add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
+add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
+add_linter_if_file "YAMLLINT"      ".yamllint.yml"
 
 for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
   echo "${github}=${!github}" >> "${GITHUB_ENV}"

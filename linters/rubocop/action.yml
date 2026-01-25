@@ -16,7 +16,7 @@ inputs:
   ruby-version:
     description: 'ruby version'
     required: false
-    default: '3.4'
+    default: '4.0'
 
 runs:
   using: "composite"
@@ -42,7 +42,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
-      uses: ruby/setup-ruby@master
+      uses: ruby/setup-ruby@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         ruby-version: ${{ inputs.ruby-version }}

@@ -22,7 +22,7 @@ runs:
       uses: actions/checkout@v6
       with:
         token: ${{ inputs.github-token }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 

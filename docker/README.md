@@ -1,4 +1,4 @@
-# GitHub Action: SOUP
+# GitHub Action: DockerHub
 
 This action publishes Docker image linux/amd64 and linux/arm64 to DockerHub.
 
