@@ -49,7 +49,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
-      uses: ruby/setup-ruby@master
+      uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.4.7
         bundler: 'none'
@@ -66,4 +66,4 @@ runs:
         bundle config unset deployment
         bundle install
         popd
-        eval "${SOUP_LOCATION}/bin/soup.rb" ${PARAMETERS}
+        "${SOUP_LOCATION}/bin/soup.rb" ${PARAMETERS}

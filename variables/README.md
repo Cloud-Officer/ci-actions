@@ -21,7 +21,7 @@ inputs:
 outputs:
   BUILD_NAME:
     description: 'Build name'
-    value:  ${{ steps.variables.outputs.BUILD_NAME }}
+    value: ${{ steps.variables.outputs.BUILD_NAME }}
   BUILD_VERSION:
     description: 'Build version'
     value: ${{ steps.variables.outputs.BUILD_VERSION }}
@@ -64,6 +64,52 @@ outputs:
   LINTERS:
     description: 'List of all enabled linters'
     value: ${{ steps.variables.outputs.LINTERS }}
+```
+
+## Commit Message Triggers
+
+The variables action parses commit messages and tag annotations for special trigger keywords. Include these in your commit message or tag to control workflow behavior:
+
+### Deployment Triggers
+
+| Trigger                   | Output Variable          | Description                             |
+|---------------------------|--------------------------|-----------------------------------------|
+| `#beta-deploy`            | `DEPLOY_ON_BETA=1`       | Deploy to beta environment              |
+| `#rc-deploy`              | `DEPLOY_ON_RC=1`         | Deploy to release candidate environment |
+| `#prod-deploy`            | `DEPLOY_ON_PROD=1`       | Deploy to production (requires tag)     |
+| `#macos`                  | `DEPLOY_MACOS=1`         | Enable macOS deployment                 |
+| `#tvos`                   | `DEPLOY_TVOS=1`          | Enable tvOS deployment                  |
+| `#deploy-options=<value>` | `DEPLOY_OPTIONS=<value>` | Pass custom deployment options          |
+
+### Skip Triggers
+
+| Trigger          | Output Variable         | Description                       |
+|------------------|-------------------------|-----------------------------------|
+| `#skip-licenses` | `SKIP_LICENSES=1`       | Skip open source license checks   |
+| `#skip-linters`  | `SKIP_LINTERS=1`        | Skip linter checks                |
+| `#skip-tests`    | `SKIP_TESTS=1`          | Skip unit tests                   |
+| `#skip-all`      | All skip flags set to 1 | Skip licenses, linters, and tests |
+
+### Other Triggers
+
+| Trigger            | Output Variable     | Description                 |
+|--------------------|---------------------|-----------------------------|
+| `#update-packages` | `UPDATE_PACKAGES=1` | Update packages on instance |
+
+### Example Commit Messages
+
+```bash
+# Deploy to beta
+git commit -m "Add new feature #beta-deploy"
+
+# Skip tests for documentation changes
+git commit -m "Update README #skip-tests"
+
+# Production deploy with options (on a tag)
+git tag -a v1.0.0 -m "Release v1.0.0 #prod-deploy #deploy-options=--force"
+
+# Skip all checks for urgent hotfix
+git commit -m "Emergency fix #skip-all #beta-deploy"
 ```
 
 ## Example usage

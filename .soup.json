@@ -8,8 +8,8 @@
     "website": "https://github.com/actions/toolkit/tree/main/packages/core",
     "last_verified_at": "2025-09-15",
     "risk_level": "Low",
-    "requirements": "Dependency",
-    "verification_reasoning": "Dependency"
+    "requirements": "GitHub Actions toolkit for reading inputs and setting outputs",
+    "verification_reasoning": "Official GitHub Actions SDK"
   },
   "@actions/exec": {
     "language": "JS",
@@ -74,14 +74,14 @@
   "axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.13.2",
+    "version": "1.13.3",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
     "last_verified_at": "2025-09-15",
     "risk_level": "Low",
-    "requirements": "Dependency",
-    "verification_reasoning": "Dependency"
+    "requirements": "HTTP client for Slack webhook API calls",
+    "verification_reasoning": "Industry standard HTTP client with active maintenance"
   },
   "call-bind-apply-helpers": {
     "language": "JS",
