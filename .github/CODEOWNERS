@@ -10,6 +10,5 @@
 .markdownlint.yml        @ydesgagn
 .shellcheckrc            @ydesgagn
 .yamllint.yml            @ydesgagn
-codeowners               @ydesgagn
 codedeploy/              @ydesgagn
 *.sh                     @ydesgagn
