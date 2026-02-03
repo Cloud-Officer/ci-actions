@@ -28,7 +28,7 @@ runs:
       if: ${{ inputs.skip-checkout == 'false' }}
       with:
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
         token: ${{ inputs.github-token }}
@@ -51,7 +51,7 @@ runs:
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.4.7
+        ruby-version: ruby  # Intentionally using latest stable
         bundler: 'none'
 
     # https://github.com/Cloud-Officer/soup

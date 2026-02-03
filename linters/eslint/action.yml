@@ -31,7 +31,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 
@@ -41,16 +41,14 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
-        node-version: latest
+        node-version: latest  # Intentionally using latest to always use newest Node.js
 
     - name: Install ESLint
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: |
-        rm -rf package.json yarn.lock
-        npm install eslint@8.57.0
+      run: npm install eslint@latest  # Intentionally using latest
 
     # https://github.com/marketplace/actions/run-eslint-with-reviewdog
     - name: Run ESLint with Reviewdog

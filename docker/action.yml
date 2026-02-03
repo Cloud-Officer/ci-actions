@@ -44,6 +44,7 @@ runs:
       uses: docker/setup-buildx-action@v3
       with:
         install: true
+        # Intentionally using latest buildkit for newest features and fixes
         driver-opts: image=moby/buildkit:latest,network=host
 
     # https://github.com/marketplace/actions/docker-metadata-action

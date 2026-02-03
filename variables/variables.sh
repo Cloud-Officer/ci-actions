@@ -53,6 +53,8 @@ function execute_if_tests() { execute_unless_trigger "skip-tests" "$@"; }
 
 # set environment variables
 
+# Capture timestamp once to avoid race condition across second boundaries
+TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 SHORT_COMMIT="$(git rev-parse --short HEAD)"
 SAFE_BRANCH="${GITHUB_REF/refs\/heads\//}"
 SAFE_BRANCH="${SAFE_BRANCH/\//_}"
@@ -61,24 +63,24 @@ export MODIFIED_GITHUB_RUN_NUMBER
 
 if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
   TAG="${GITHUB_REF/refs\/tags\//}"
-  BUILD_NAME="${TAG}-${SHORT_COMMIT}-$(date +"%Y%m%d%H%M%S")-${MODIFIED_GITHUB_RUN_NUMBER}"
+  BUILD_NAME="${TAG}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
   export BUILD_NAME
-  BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
+  BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
   export BUILD_VERSION
   git fetch --depth=1 origin +refs/tags/*:refs/tags/*
   COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}" | head -n 1)"
   export COMMIT_MESSAGE
 elif [ -n "${GITHUB_HEAD_REF}" ]; then
-  BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-$(date +"%Y%m%d%H%M%S")-${MODIFIED_GITHUB_RUN_NUMBER}"
+  BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
   export BUILD_NAME
-  BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
+  BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
   export BUILD_VERSION
   COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}" | head -n 1)"
   export COMMIT_MESSAGE
 else
-  BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-$(date +"%Y%m%d%H%M%S")-${MODIFIED_GITHUB_RUN_NUMBER}"
+  BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
   export BUILD_NAME
-  BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-$(date +"%Y%m%d%H%M%S")"
+  BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
   export BUILD_VERSION
   COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}" | head -n 1)"
   export COMMIT_MESSAGE

@@ -8,7 +8,7 @@ const COLORS = {
     warning: '#f8c753'
 };
 
-try {
+async function run() {
     const webhook_url = core.getInput('webhook-url');
     const jobsInput = core.getInput('jobs');
     let jobs;
@@ -20,9 +20,10 @@ try {
     let fields;
 
     fields = [];
-    for (const key of Object.keys(jobs.variables.outputs)) {
+    const variablesOutputs = jobs?.variables?.outputs || {};
+    for (const key of Object.keys(variablesOutputs)) {
       if (key.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
-        if (jobs.variables.outputs[key] == '1') {
+        if (variablesOutputs[key] === '1') {
           fields.push({
             "type": "plain_text",
             "emoji": true,
@@ -57,7 +58,7 @@ try {
             "elements": [
               {
                 "type": "plain_text",
-                "text": `${jobs.variables.outputs.COMMIT_MESSAGE}`
+                "text": `${variablesOutputs.COMMIT_MESSAGE || ''}`
               }
             ]
           },
@@ -137,14 +138,10 @@ try {
     }
     console.log(JSON.stringify(data, undefined, 2));
 
-    axios.post(webhook_url, data)
-        .then((response) => {
-          console.log(JSON.stringify(response.data, undefined, 2));
-        })
-        .catch((error) => {
-          console.error('Error', error.message);
-          core.setFailed(error.message);
-        })
-} catch (error) {
-    core.setFailed(error.message);
+    const response = await axios.post(webhook_url, data, { timeout: 30000 });
+    console.log(JSON.stringify(response.data, undefined, 2));
 }
+
+run().catch((error) => {
+    core.setFailed(error.message);
+});

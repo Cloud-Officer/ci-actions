@@ -28,7 +28,7 @@ inputs:
   php-cs-fixer-version:
     description: 'php-cd-fixer version'
     required: false
-    default: 'latest'
+    default: 'latest'  # Intentionally using latest
   php-cs-fixer-command:
     description: 'php-cs-fixer command(s)'
     required: false
@@ -52,7 +52,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 
@@ -72,11 +72,17 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
       run: |
+        gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys E82B2FB314E9906E
         if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
-          curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer && chmod a+x php-cs-fixer
+          curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer
+          curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar.asc -o php-cs-fixer.asc
         else
-          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar" -o php-cs-fixer && chmod a+x php-cs-fixer
+          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar" -o php-cs-fixer
+          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar.asc" -o php-cs-fixer.asc
         fi
+        gpg --verify php-cs-fixer.asc php-cs-fixer
+        rm -f php-cs-fixer.asc
+        chmod a+x php-cs-fixer
 
     - name: Run Composer
       shell: bash
