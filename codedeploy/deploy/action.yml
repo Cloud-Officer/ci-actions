@@ -84,4 +84,7 @@ runs:
           esac
         done
 
+        # NOTE: Intentionally not exiting with error code here. The deployment is still
+        # running in AWS CodeDeploy - we just stop monitoring to avoid burning GitHub
+        # Actions minutes. Check the AWS CodeDeploy console for final deployment status.
         echo "Aborting deployment monitoring as > 5 mins!"

@@ -32,7 +32,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 
@@ -41,7 +41,7 @@ runs:
       uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        reviewdog_version: latest
+        reviewdog_version: latest  # Intentionally using latest
 
     # https://github.com/marketplace/actions/setup-java-jdk
     - name: Setup Java
@@ -50,7 +50,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         distribution: adopt
-        java-version: 15
+        java-version: 21  # Intentionally using latest LTS
         check-latest: true
 
     - name: Setup PMD
@@ -58,11 +58,22 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: wget -nc -O /opt/pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.52.0/pmd-bin-6.52.0.zip && unzip -d /opt /opt/pmd.zip && rm -f /opt/pmd.zip && mv /opt/pmd-bin-6.52.0 /opt/pmd && chmod +x /opt/pmd/*
+      run: |
+        # Intentionally using latest - fetch latest release from GitHub API
+        PMD_VERSION=$(curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/pmd/pmd/releases/latest | jq -r '.tag_name' | sed 's/pmd_releases\///')
+        echo "Installing PMD version: ${PMD_VERSION}"
+        wget -q -O /opt/pmd.zip "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip"
+        wget -q -O /opt/pmd.zip.asc "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip.asc"
+        gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 98313B2644E62EA447F7C58C08AACF8B0D441047
+        gpg --verify /opt/pmd.zip.asc /opt/pmd.zip
+        unzip -q -d /opt /opt/pmd.zip
+        rm -f /opt/pmd.zip /opt/pmd.zip.asc
+        mv /opt/pmd-bin-${PMD_VERSION} /opt/pmd
+        chmod +x /opt/pmd/bin/*
 
     - name: Run PMD
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
-      run: /opt/pmd/bin/run.sh pmd -dir . -rulesets ".pmd.xml" | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info"
+      run: /opt/pmd/bin/pmd check -d . -R ".pmd.xml" -f text | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info"

@@ -19,6 +19,6 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive

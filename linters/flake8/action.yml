@@ -32,7 +32,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 
@@ -41,7 +41,7 @@ runs:
       uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        reviewdog_version: latest
+        reviewdog_version: latest  # Intentionally using latest
 
     # flake8-docstrings
     - name: Install flake8-docstrings

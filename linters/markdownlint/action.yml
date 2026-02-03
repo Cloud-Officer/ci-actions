@@ -32,7 +32,7 @@ runs:
       with:
         token: ${{ inputs.github-token }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: false
         lfs: true
         submodules: recursive
 
@@ -52,7 +52,7 @@ runs:
       uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        reviewdog_version: latest
+        reviewdog_version: latest  # Intentionally using latest
 
     # https://github.com/marketplace/actions/setup-node-js-environment
     - name: Setup Node
@@ -60,7 +60,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
-        node-version: latest
+        node-version: latest  # Intentionally using latest to always use newest Node.js
 
     - name: Install markdownlint-cli2
       shell: bash
