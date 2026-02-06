@@ -303,8 +303,9 @@ commit messages and repository state.
 **Algorithm:**
 
 1. Parse `GITHUB_REF` to determine if building a tag, PR, or branch
-2. Compute `BUILD_NAME` and `BUILD_VERSION` with format:
-   `{ref}-{short_commit}-{timestamp}-{run_number}`
+2. Compute `BUILD_NAME` with format:
+   `{ref}-{short_commit}-{timestamp}-{modified_run_number}` and `BUILD_VERSION`
+   with format: `{ref}-{modified_run_number}-{timestamp}`
 3. Extract commit message (tag annotation or git log)
 4. Parse commit message for trigger keywords (`#beta-deploy`, `#skip-linters`, etc.)
 5. Detect enabled linters by checking for configuration files in the repository
@@ -322,7 +323,7 @@ commit messages and repository state.
 1. Create deployment via AWS CLI
 2. Poll deployment status every 5 seconds
 3. Exit on terminal states: Succeeded, Failed, Stopped, Ready
-4. Timeout after 120 iterations (~10 minutes)
+4. Timeout after 119 iterations (~10 minutes)
 
 **Complexity:** O(1) bounded by iteration limit
 
