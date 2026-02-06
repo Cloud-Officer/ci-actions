@@ -85,7 +85,7 @@ workflows.
 
 - AWS credential configuration
 - S3 sync operations
-- Deployment creation with status polling (5-second intervals, 120 iterations max)
+- Deployment creation with status polling (5-second intervals, 119 iterations max)
 
 ### docker
 
