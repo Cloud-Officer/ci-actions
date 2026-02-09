@@ -8,7 +8,7 @@
 | JS | @actions/io | 1.1.3 | MIT | Actions io lib | <https://github.com/actions/toolkit/tree/main/packages/io> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | @fastify/busboy | 2.1.1 | MIT | A streaming parser for HTML form data for node.js | <https://github.com/fastify/busboy#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | asynckit | 0.4.0 | MIT | Minimal async jobs utility library, with streams support | <https://github.com/alexindigo/asynckit#readme> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | axios | 1.13.4 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2025-09-15 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
+| JS | axios | 1.13.5 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2025-09-15 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
 | JS | call-bind-apply-helpers | 1.0.2 | MIT | Helper functions around Function call/apply/bind, for use in `call-bind` | <https://github.com/ljharb/call-bind-apply-helpers#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | combined-stream | 1.0.8 | MIT | A stream that emits multiple other streams one after another. | <https://github.com/felixge/node-combined-stream> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | delayed-stream | 1.0.0 | MIT | Buffers events from a stream until you are ready to handle them. | <https://github.com/felixge/node-delayed-stream> | 2025-09-15 | Low | Dependency | Dependency |

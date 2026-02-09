@@ -403,11 +403,5 @@ permissions:
   pull-requests: read
 ```
 
-Semgrep requires additional permissions:
-
-```yaml
-permissions:
-  actions: read
-  contents: read
-  security-events: write
-```
+Semgrep runs locally via CLI and does not require additional permissions beyond
+the defaults.
