@@ -359,6 +359,16 @@ commit messages and repository state.
 - Deployment flags extracted from controlled commit messages
 - JSON parsing for Slack webhook payload
 
+#### Repository Checkout Hardening
+
+- `persist-credentials: false` on all checkout steps to prevent credential leakage
+  (except setup action where credentials are required for Java GPG/Maven operations)
+
+#### GPG Signature Verification
+
+- phpcs: Downloads php-cs-fixer and verifies GPG signature before execution
+- pmd: Downloads PMD release and verifies GPG signature before execution
+
 #### Code Analysis
 
 - Semgrep security scanning with `--error` flag
