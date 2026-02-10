@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.11.1",
     "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
   }
 }

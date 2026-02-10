@@ -142,6 +142,11 @@ async function run() {
     console.log(JSON.stringify(response.data, undefined, 2));
 }
 
-run().catch((error) => {
-    core.setFailed(error.message);
-});
+module.exports = { run, COLORS };
+
+/* istanbul ignore next */
+if (require.main === module) {
+    run().catch((error) => {
+        core.setFailed(error.message);
+    });
+}
