@@ -476,3 +476,6 @@ $RECYCLE.BIN/
 
 # END AI Assistants
 
+# Node.js
+node_modules/
+coverage/
