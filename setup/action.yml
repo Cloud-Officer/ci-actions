@@ -783,7 +783,7 @@ runs:
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
     - name: Setup MongoDB
-      uses: supercharge/mongodb-github-action@1.12.0
+      uses: supercharge/mongodb-github-action@1.12.1
       if: ${{ inputs.mongodb-version != 'none' }}
       with:
         mongodb-version: ${{ inputs.mongodb-version }}
