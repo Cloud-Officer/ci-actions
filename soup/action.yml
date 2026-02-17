@@ -43,7 +43,7 @@ runs:
         echo "Latest soup tag: ${latest_tag}"
         asset_url=""https://github.com/Cloud-Officer/soup/archive/refs/tags/${latest_tag}.zip""
         curl -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
-        unzip -qo "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
+        unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
         rm -rf "${RUNNER_TEMP}/soup.zip"
         echo "soup_location=${RUNNER_TEMP}/soup-${latest_tag}" >> ${GITHUB_ENV}
 
