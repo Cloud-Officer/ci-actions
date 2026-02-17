@@ -41,10 +41,9 @@ runs:
       run: |
         latest_tag="$(curl --silent --header "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
         echo "Latest soup tag: ${latest_tag}"
-        rm -rf "${RUNNER_TEMP}/soup-${latest_tag}"
         asset_url=""https://github.com/Cloud-Officer/soup/archive/refs/tags/${latest_tag}.zip""
         curl -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
-        unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
+        unzip -qo "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
         rm -rf "${RUNNER_TEMP}/soup.zip"
         echo "soup_location=${RUNNER_TEMP}/soup-${latest_tag}" >> ${GITHUB_ENV}
 
