@@ -412,6 +412,3 @@ permissions:
   contents: read
   pull-requests: read
 ```
-
-Semgrep runs locally via CLI and does not require additional permissions beyond
-the defaults.
