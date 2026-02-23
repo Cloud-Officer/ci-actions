@@ -60,7 +60,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
         # Intentionally using latest - fetch latest release from GitHub API
-        PMD_VERSION=$(curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/pmd/pmd/releases/latest | jq -r '.tag_name' | sed 's/pmd_releases\///')
+        PMD_VERSION=$(curl --fail -s -H "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/pmd/pmd/releases/latest | jq -r '.tag_name' | sed 's/pmd_releases\///')
         echo "Installing PMD version: ${PMD_VERSION}"
         wget -q -O /opt/pmd.zip "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip"
         wget -q -O /opt/pmd.zip.asc "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip.asc"
