@@ -249,7 +249,7 @@ modules.xml
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
 
 # Thumbnails
 ._*
@@ -479,3 +479,6 @@ $RECYCLE.BIN/
 # Node.js
 node_modules/
 coverage/
+
+# GitHub Actions bundled output
+!slack/dist/
