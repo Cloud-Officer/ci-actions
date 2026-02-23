@@ -1,6 +1,6 @@
 # GitHub Action: Variables
 
-This action prepare variables for all other parallel jobs.
+This action prepares variables for all other parallel jobs.
 
 ## Inputs
 

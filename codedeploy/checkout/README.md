@@ -1,6 +1,6 @@
 # GitHub Action: Checkout
 
-This action checkout the code in preparation for the archive creation.
+This action checks out the code in preparation for the archive creation.
 
 ## Inputs
 

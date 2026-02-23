@@ -1,6 +1,6 @@
 # GitHub Action: Deploy
 
-This action execute AWS CLI or shell commands.
+This action executes AWS CLI or shell commands.
 
 ## Inputs
 
