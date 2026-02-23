@@ -81,7 +81,6 @@ jobs:
     permissions:
       actions: read
       contents: read
-      security-events: write
     if: "${{(github.event_name == 'pull_request') || (github.event_name == 'pull_request_target')}}"
     steps:
       - name: Semgrep
