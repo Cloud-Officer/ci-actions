@@ -1,6 +1,6 @@
 # GitHub Action: Slack
 
-This action sends action status to slack.
+This action sends action status to Slack.
 
 ## Inputs
 

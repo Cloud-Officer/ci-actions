@@ -1,31 +1,30 @@
 # Linter GitHub Actions
 
-A collection of Linter Github Actions.
+A collection of Linter GitHub Actions.
 
 * [actionlint](actionlint/README.md) is a static checker for GitHub Actions workflow files
-* [bandit](bandit/README.md) a security linter from PyCQA
+* [bandit](bandit/README.md) is a security linter from PyCQA
 * [eslint](eslint/README.md) is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code
 * [flake8](flake8/README.md) is a wrapper around PyFlakes, pycodestyle and Ned Batchelder's McCabe script
 * [golangci](golangci/README.md) is a fast Go linters runner
-* [hadolint](hadolint/README.md) a smarter Dockerfile linter that helps you build best practice Docker images
-* [ktlint](ktlint/README.md) an anti-bikeshedding Kotlin linter with built-in formatter
-* [markdownlint](markdownlint/README.md) a style checker and lint tool for Markdown/CommonMark files
+* [hadolint](hadolint/README.md) is a smarter Dockerfile linter that helps you build best practice Docker images
+* [ktlint](ktlint/README.md) is an anti-bikeshedding Kotlin linter with built-in formatter
+* [markdownlint](markdownlint/README.md) is a style checker and lint tool for Markdown/CommonMark files
 * [phpcs](phpcs/README.md) the PHP Coding Standards Fixer (PHP CS Fixer) tool fixes your code to follow standards
 * [phpstan](phpstan/README.md) PHPStan scans your whole codebase and looks for both obvious & tricky bugs
 * [pmd](pmd/README.md) is a source code analyzer
-* [protolint](protolint/README.md) a pluggable linter and fixer to enforce Protocol Buffer style and conventions
+* [protolint](protolint/README.md) is a pluggable linter and fixer to enforce Protocol Buffer style and conventions
 * [rubocop](rubocop/README.md) is a Ruby static code analyzer and code formatter
-* [semgrep](semgrep/README.md) a static analysis security scanner that finds bugs and enforces code standards
+* [semgrep](semgrep/README.md) is a static analysis security scanner that finds bugs and enforces code standards
 * [shellcheck](shellcheck/README.md) is a tool that gives warnings and suggestions for bash/sh shell scripts
-* [swiftlint](swiftlint/README.md) a tool to enforce Swift style and conventions
-* [yamllint](yamllint/README.md) a linter for YAML files
+* [swiftlint](swiftlint/README.md) is a tool to enforce Swift style and conventions
+* [yamllint](yamllint/README.md) is a linter for YAML files
 
 ---
 
 ## Maintenance Guidelines
 
-All linter actions follow a **common structure
-** to ensure consistency. When adding or updating linters, follow these guidelines.
+All linter actions follow a **common structure** to ensure consistency. When adding or updating linters, follow these guidelines.
 
 ### Common Structure
 

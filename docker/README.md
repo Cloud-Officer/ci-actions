@@ -1,6 +1,6 @@
 # GitHub Action: DockerHub
 
-This action publishes Docker image linux/amd64 and linux/arm64 to DockerHub.
+This action publishes Docker images for linux/amd64 and linux/arm64 to DockerHub.
 
 ## Inputs
 
