@@ -148,15 +148,15 @@ Linters are auto-detected in `variables/variables.sh` based on config file prese
 | ESLINT       | `.eslintrc.json`                 |
 | FLAKE8       | `.flake8`                        |
 | GOLANGCI     | `.golangci.yml`                  |
-| HADOLINT     | `Dockerfile` or `.hadolint.yaml` |
+| HADOLINT     | `.hadolint.yaml`                 |
 | KTLINT       | `.editorconfig` (Kotlin)         |
 | MARKDOWNLINT | `.markdownlint.yml`              |
-| PHPCS        | `.php-cs-fixer.php`              |
+| PHPCS        | `.php-cs-fixer.dist.php`         |
 | PHPSTAN      | `phpstan.neon`                   |
 | PMD          | `.pmd.xml`                       |
 | PROTOLINT    | `.protolint.yaml`                |
 | RUBOCOP      | `.rubocop.yml`                   |
-| SEMGREP      | `.semgrep.yml`                   |
-| SHELLCHECK   | `.shellcheckrc` or shell scripts |
+| SEMGREP      | `.semgrepignore`                 |
+| SHELLCHECK   | `.shellcheckrc`                  |
 | SWIFTLINT    | `.swiftlint.yml`                 |
 | YAMLLINT     | `.yamllint.yml`                  |
