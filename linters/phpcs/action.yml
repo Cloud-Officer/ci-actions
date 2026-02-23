@@ -26,7 +26,7 @@ inputs:
     required: false
     default: 'none'
   php-cs-fixer-version:
-    description: 'php-cd-fixer version'
+    description: 'php-cs-fixer version'
     required: false
     default: 'latest'  # Intentionally using latest
   php-cs-fixer-command:
