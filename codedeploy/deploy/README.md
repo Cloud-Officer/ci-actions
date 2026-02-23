@@ -31,6 +31,10 @@ inputs:
   s3-key:
     description: 'aws deploy s3 key'
     required: true
+  deployment-strategy:
+    description: 'aws deploy deployment strategy'
+    required: false
+    default: 'CodeDeployDefault.OneAtATime'
 ```
 
 ## Example usage
