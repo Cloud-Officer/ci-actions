@@ -236,19 +236,6 @@ input variable, which is populated by the variables action.
 
 See [soup.md](soup.md) for the complete SOUP list.
 
-### Summary
-
-| Language | Package Count | Primary Use |
-| :--- | :--- | :--- |
-| JavaScript | 30 | Slack notification action |
-
-### Critical Dependencies
-
-| Package | License | Purpose |
-| :--- | :--- | :--- |
-| @actions/core | MIT | GitHub Actions toolkit core |
-| axios | MIT | HTTP client for Slack webhook |
-
 ### External Action Dependencies
 
 The actions depend on the following third-party GitHub Actions (see individual action.yml

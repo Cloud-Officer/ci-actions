@@ -1,4 +1,4 @@
-# github-build --organization Cloud-Officer --skip_license_check --skip_slack
+# github-build --organization Cloud-Officer --mono_repo --skip_license_check --skip_slack
 ---
 name: Build
 'on':
@@ -18,6 +18,8 @@ name: Build
 permissions:
   contents: read
   pull-requests: read
+env:
+  NODE-VERSION: 25.6.0
 jobs:
   variables:
     name: Prepare Variables
@@ -93,6 +95,9 @@ jobs:
         github-token: "${{secrets.GH_PAT}}"
   semgrep:
     name: Semgrep Security Scanner
+    permissions:
+      actions: read
+      contents: read
     runs-on: ubuntu-latest
     needs:
     - variables
@@ -135,37 +140,56 @@ jobs:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
-  slack-tests:
-    name: Slack Action Tests
+  js_unit_tests:
+    name: JavaScript Unit Tests
     runs-on: ubuntu-latest
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_TESTS != '1'}}"
     timeout-minutes: 30
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup
+      uses: cloud-officer/ci-actions/setup@v2
       with:
-        node-version: '20'
-    - name: Install dependencies
+        ssh-key: "${{secrets.SSH_KEY}}"
+        github-token: "${{secrets.GH_PAT}}"
+        aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
+        aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
+        aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
+        node-version: "${{env.NODE-VERSION}}"
+    - name: NPM (slack)
+      shell: bash
       run: cd slack && npm ci
-    - name: Run Slack Tests
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+    - name: Jest (slack)
+      shell: bash
       run: cd slack && npm test
-  variables-tests:
-    name: Variables Script Tests
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+  shell_script_unit_tests:
+    name: Shell Script Unit Tests
     runs-on: ubuntu-latest
     needs:
     - variables
     if: "${{needs.variables.outputs.SKIP_TESTS != '1'}}"
     timeout-minutes: 30
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Install Bats
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats
-    - name: Run Variables Tests
-      run: bats variables/tests/
+    - name: Setup
+      uses: cloud-officer/ci-actions/setup@v2
+      with:
+        ssh-key: "${{secrets.SSH_KEY}}"
+        github-token: "${{secrets.GH_PAT}}"
+        aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
+        aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
+        aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
+    - name: Bats Install (variables)
+      shell: bash
+      run: cd variables && sudo apt-get update && sudo apt-get install -y bats
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+    - name: Bats (variables)
+      shell: bash
+      run: cd variables && bats tests/
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
