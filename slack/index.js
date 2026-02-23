@@ -8,8 +8,8 @@ const COLORS = {
     warning: '#f8c753'
 };
 
-async function run() {
-    const webhook_url = core.getInput('webhook-url');
+function parseInputs() {
+    const webhookUrl = core.getInput('webhook-url');
     const jobsInput = core.getInput('jobs');
     let jobs;
     try {
@@ -17,10 +17,11 @@ async function run() {
     } catch (parseError) {
         throw new Error(`Failed to parse 'jobs' input as JSON: ${parseError.message}. Input was: ${jobsInput.substring(0, 100)}${jobsInput.length > 100 ? '...' : ''}`);
     }
-    let fields;
+    return { webhookUrl, jobs };
+}
 
-    fields = [];
-    const variablesOutputs = jobs?.variables?.outputs || {};
+function buildVariableFields(variablesOutputs) {
+    const fields = [];
     for (const key of Object.keys(variablesOutputs)) {
       if (key.match(/^(DEPLOY|SKIP|UPDATE)_/)) {
         if (variablesOutputs[key] === '1') {
@@ -32,55 +33,59 @@ async function run() {
         }
       }
     }
+    return fields;
+}
 
-    let data = {"attachments": [
+function buildHeaderAttachment(variablesOutputs, variableFields) {
+    const blocks = [
       {
-        "color": COLORS.info,
-        "blocks": [
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `*<${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}|Build #${process.env.GITHUB_RUN_NUMBER} (${process.env.GITHUB_SHA}) ${process.env.GITHUB_EVENT_NAME}>*`
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
           {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": `*<${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}|Build #${process.env.GITHUB_RUN_NUMBER} (${process.env.GITHUB_SHA}) ${process.env.GITHUB_EVENT_NAME}>*`
-            }
-          },
-          {
-            "type": "context",
-            "elements": [
-              {
-                "type": "mrkdwn",
-                "text": `${process.env.GITHUB_REPOSITORY}@${process.env.GITHUB_REF} by *${process.env.GITHUB_ACTOR}*`
-              }
-            ]
-          },
-          {
-            "type": "context",
-            "elements": [
-              {
-                "type": "plain_text",
-                "text": `${variablesOutputs.COMMIT_MESSAGE || ''}`
-              }
-            ]
-          },
-          {
-            "type": "divider"
+            "type": "mrkdwn",
+            "text": `${process.env.GITHUB_REPOSITORY}@${process.env.GITHUB_REF} by *${process.env.GITHUB_ACTOR}*`
           }
         ]
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "plain_text",
+            "text": `${variablesOutputs.COMMIT_MESSAGE || ''}`
+          }
+        ]
+      },
+      {
+        "type": "divider"
       }
-    ]};
+    ];
 
-    if (fields.length > 0) {
-      data.attachments[0].blocks.push({
+    if (variableFields.length > 0) {
+      blocks.push({
         "type": "section",
-          "fields": fields
+          "fields": variableFields
       });
-      data.attachments[0].blocks.push({
+      blocks.push({
         "type": "divider"
       });
     }
 
+    return { "color": COLORS.info, "blocks": blocks };
+}
+
+function buildJobAttachments(jobs) {
+    const attachments = [];
     let color = COLORS.success;
-    fields = [];
+    let fields = [];
+
     for (const jobName of Object.keys(jobs)) {
       if (jobName === 'variables') {
         continue;
@@ -111,7 +116,7 @@ async function run() {
       });
 
       if (fields.length >= 2) {
-        data.attachments.push({
+        attachments.push({
           "color": color,
           "blocks": [
             {
@@ -126,7 +131,7 @@ async function run() {
     }
 
     if (fields.length > 0) {
-      data.attachments.push({
+      attachments.push({
         "color": color,
         "blocks": [
           {
@@ -136,10 +141,24 @@ async function run() {
         ]
       });
     }
-    console.log(JSON.stringify(data, undefined, 2));
 
-    const response = await axios.post(webhook_url, data, { timeout: 30000 });
+    return attachments;
+}
+
+async function sendWebhook(webhookUrl, data) {
+    console.log(JSON.stringify(data, undefined, 2));
+    const response = await axios.post(webhookUrl, data, { timeout: 30000 });
     console.log(JSON.stringify(response.data, undefined, 2));
+}
+
+async function run() {
+    const { webhookUrl, jobs } = parseInputs();
+    const variablesOutputs = jobs?.variables?.outputs || {};
+    const variableFields = buildVariableFields(variablesOutputs);
+    const headerAttachment = buildHeaderAttachment(variablesOutputs, variableFields);
+    const jobAttachments = buildJobAttachments(jobs);
+    const data = { "attachments": [headerAttachment, ...jobAttachments] };
+    await sendWebhook(webhookUrl, data);
 }
 
 module.exports = { run, COLORS };
