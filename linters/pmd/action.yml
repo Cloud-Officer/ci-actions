@@ -49,7 +49,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
-        distribution: adopt
+        distribution: temurin
         java-version: 21  # Intentionally using latest LTS
         check-latest: true
 
