@@ -69,6 +69,16 @@ workflows.
 - `aws-access-key-id`, `aws-secret-access-key`, `aws-region`: AWS credentials
 - `shell-commands`: Commands to execute
 
+### cis
+
+**Purpose:** CIS (Center for Internet Security) benchmark compliance resource.
+
+**Location:** `cis/`
+
+**Key Components:**
+
+- `PolicyBanner.rtf`: Login policy banner for CIS benchmark compliance
+
 ### codedeploy
 
 **Purpose:** AWS CodeDeploy operations including checkout, S3 copy, and deployment.
@@ -368,7 +378,7 @@ commit messages and repository state.
 | Component | Error Handling |
 | :--- | :--- |
 | CodeDeploy | Status polling with timeout, explicit failure states |
-| Slack | Axios catch block with error logging |
+| Slack | Promise rejection handler with core.setFailed |
 | Linters | Early exit if not enabled, reviewdog for PR comments |
 | Setup | Conditional step execution based on inputs |
 

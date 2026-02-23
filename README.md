@@ -84,9 +84,9 @@ When you submit code changes, your submissions are understood to be under the sa
 
 ## Debugging
 
-Please refer to the [Github Enabling debug logging guide](https://docs.github.com/en/github-ae@latest/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+Please refer to the [Github Enabling debug logging guide](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
 to set secrets to enable runner and steps debug logs.
 
 You can always enable a tmate debug session to connect to a running runner instance and try things manually if debug logs are not enough. See [Debug your GitHub Actions by using tmate](https://github.com/mxschmitt/action-tmate).
 
-The documentation for all the [runner environments](https://github.com/actions/virtual-environments/tree/main/images).
+The documentation for all the [runner environments](https://github.com/actions/runner-images/tree/main/images).
