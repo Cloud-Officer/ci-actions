@@ -41,7 +41,7 @@ runs:
       uses: reviewdog/action-golangci-lint@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        fail_level: true
+        fail_level: error
         filter_mode: nofilter
         github_token: ${{ inputs.github-token }}
         # https://github.com/golangci/golangci-lint
