@@ -187,7 +187,7 @@ input variable, which is populated by the variables action.
 
 **Key Components:**
 
-- `action.yml`: Action definition (Node.js 20 runtime)
+- `action.yml`: Action definition (Node.js 24 runtime)
 - `index.js`: Notification logic using Slack webhook
 
 **Features:**

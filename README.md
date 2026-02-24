@@ -25,13 +25,19 @@ A collection of GitHub Actions for CI/CD workflows.
 
 ## Installation
 
-Nothing to install.
+Reference the actions directly in your GitHub Actions workflow files:
+
+```yaml
+uses: Cloud-Officer/ci-actions/setup@v2
+```
+
+See individual action documentation below for detailed inputs and examples.
 
 ## Usage
 
 * [aws](aws/README.md): Execute AWS CLI or shell commands
 * [codedeploy](codedeploy/README.md): AWS CodeDeploy actions (checkout, deploy, s3copy)
-* [docker](docker/README.md): Publish Docker images
+* [docker](docker/README.md): Build and publish Docker images
 * [linters](linters/README.md): Code quality linters for multiple languages
 * [setup](setup/README.md): Setup tools for build environments
 * [slack](slack/README.md): Send action status to Slack
