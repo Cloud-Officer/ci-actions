@@ -19,7 +19,7 @@ permissions:
   contents: read
   pull-requests: read
 env:
-  NODE-VERSION: 25.6.1
+  NODE-VERSION: 25.7.0
 jobs:
   variables:
     name: Prepare Variables
