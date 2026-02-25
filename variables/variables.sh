@@ -147,6 +147,8 @@ function add_linter_if_dir()
 LINTERS=""
 add_linter_if_dir  "ACTIONLINT"    ".github/workflows"
 add_linter_if_file "BANDIT"        ".bandit"
+add_linter_if_file "CFNLINT"       ".cfnlintrc"
+add_linter_if_file "CHECKOV"       ".checkov.yaml"
 add_linter_if_file "ESLINT"        ".eslintrc.json"
 add_linter_if_file "FLAKE8"        ".flake8"
 add_linter_if_file "GOLANGCI"      ".golangci.yml"
@@ -161,6 +163,7 @@ add_linter_if_file "RUBOCOP"       ".rubocop.yml"
 add_linter_if_file "SEMGREP"       ".semgrepignore"
 add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
 add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
+add_linter_if_file "TRIVY"         ".trivyignore"
 add_linter_if_file "YAMLLINT"      ".yamllint.yml"
 
 for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do

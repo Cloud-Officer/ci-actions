@@ -1,0 +1,60 @@
+---
+name: 'Checkov'
+description: 'Execute checkov'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check if CHECKOV is enabled
+      id: check
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        LINTERS: ${{ inputs.linters }}
+      run: if echo "${LINTERS}" | grep CHECKOV &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+
+    # https://github.com/marketplace/actions/checkout
+    - name: Checkout
+      uses: actions/checkout@v6
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        token: ${{ inputs.github-token }}
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: false
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        reviewdog_version: latest  # Intentionally using latest
+
+    # checkov
+    - name: Install checkov
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: |
+        sudo rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
+        pip install --upgrade checkov
+    - name: Run checkov
+      shell: bash
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: checkov -d . -o sarif --soft-fail 2>&1 | reviewdog -f=sarif -name=checkov -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info
