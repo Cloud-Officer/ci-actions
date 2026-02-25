@@ -76,4 +76,4 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
-      run: /opt/pmd/bin/pmd check -d . -R ".pmd.xml" -f text | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-on-error="true" -level="info"
+      run: /opt/pmd/bin/pmd check -d . -R ".pmd.xml" -f text | reviewdog -efm="%f:%l:%m" -name="linter-name (pmd)" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"
