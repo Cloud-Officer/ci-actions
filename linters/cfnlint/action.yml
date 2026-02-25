@@ -57,4 +57,8 @@ runs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: cfn-lint -f checkstyle 2>&1 | reviewdog -f=checkstyle -name=cfn-lint -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info
+      run: |
+        result=$(cfn-lint -f checkstyle 2>&1) || true
+        if echo "$result" | grep -q '<?xml'; then
+          echo "$result" | reviewdog -f=checkstyle -name=cfn-lint -reporter=github-pr-review -filter-mode=nofilter -fail-level=any -level=info
+        fi

@@ -56,4 +56,4 @@ runs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: trivy fs --format sarif --exit-code 0 . 2>&1 | reviewdog -f=sarif -name=trivy -reporter=github-pr-review -filter-mode=nofilter -fail-on-error=true -level=info
+      run: trivy fs --format sarif --exit-code 0 . | jq '.version = (.version | tostring)' | reviewdog -f=sarif -name=trivy -reporter=github-pr-review -filter-mode=nofilter -fail-level=any -level=info
