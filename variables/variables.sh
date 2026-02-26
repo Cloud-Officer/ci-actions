@@ -162,7 +162,16 @@ add_linter_if_file "RUBOCOP"       ".rubocop.yml"
 add_linter_if_file "SEMGREP"       ".semgrepignore"
 add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
 add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
-add_linter_if_file "TRIVY"         ".trivyignore"
+# TRIVY - enabled when IaC files or package manager files are present
+if [ -f ".cfnlintrc" ] || [ -f ".hadolint.yaml" ] || \
+   compgen -G "*.tf" > /dev/null 2>&1 || \
+   [ -f "package-lock.json" ] || [ -f "yarn.lock" ] || [ -f "pnpm-lock.yaml" ] || \
+   [ -f "go.sum" ] || [ -f "requirements.txt" ] || [ -f "Pipfile.lock" ] || \
+   [ -f "poetry.lock" ] || [ -f "Gemfile.lock" ] || [ -f "composer.lock" ] || \
+   [ -f "pom.xml" ] || [ -f "build.gradle" ] || [ -f "build.gradle.kts" ] || \
+   [ -f "Cargo.lock" ] || [ -f "Package.resolved" ]; then
+  LINTERS="${LINTERS} TRIVY"
+fi
 add_linter_if_file "YAMLLINT"      ".yamllint.yml"
 
 for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do

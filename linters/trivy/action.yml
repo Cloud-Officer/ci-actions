@@ -36,6 +36,37 @@ runs:
         lfs: true
         submodules: recursive
 
+    - name: Detect Trivy scanners
+      id: scanners
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        LINTERS: ${{ inputs.linters }}
+      run: |
+        scanners="secret"
+
+        # Enable misconfig when IaC files are detected
+        if echo "${LINTERS}" | grep -qE "CFNLINT|HADOLINT" || \
+           find . -maxdepth 3 -name "*.tf" -print -quit 2>/dev/null | grep -q . || \
+           find . -maxdepth 3 -name "Dockerfile*" -print -quit 2>/dev/null | grep -q .; then
+          scanners="${scanners},misconfig"
+        fi
+
+        # Enable vuln when package manager lock files are detected
+        for lock_file in package-lock.json yarn.lock pnpm-lock.yaml go.sum \
+                         requirements.txt Pipfile.lock poetry.lock \
+                         Gemfile.lock composer.lock \
+                         pom.xml build.gradle build.gradle.kts \
+                         Cargo.lock Package.resolved; do
+          if [ -f "${lock_file}" ]; then
+            scanners="${scanners},vuln"
+            break
+          fi
+        done
+
+        echo "scanners=${scanners}" >> "${GITHUB_OUTPUT}"
+        echo "Trivy scanners: ${scanners}"
+
     # https://github.com/marketplace/actions/aqua-security-trivy
     - name: Run Trivy
       uses: aquasecurity/trivy-action@0.34.0
@@ -43,5 +74,6 @@ runs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
+        scanners: ${{ steps.scanners.outputs.scanners }}
         format: 'table'
         exit-code: '1'
