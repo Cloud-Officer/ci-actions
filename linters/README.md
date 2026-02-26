@@ -164,5 +164,5 @@ Linters are auto-detected in `variables/variables.sh` based on config file prese
 | SEMGREP      | `.semgrepignore`                 |
 | SHELLCHECK   | `.shellcheckrc`                  |
 | SWIFTLINT    | `.swiftlint.yml`                 |
-| TRIVY        | `.trivyignore`                   |
+| TRIVY        | IaC or package manager files     |
 | YAMLLINT     | `.yamllint.yml`                  |

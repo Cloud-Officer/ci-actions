@@ -142,7 +142,7 @@ workflows.
 | semgrep | Security scanning | `.semgrepignore` |
 | shellcheck | Shell scripts | `.shellcheckrc` |
 | swiftlint | Swift | `.swiftlint.yml` |
-| trivy | Container & IaC vulnerability scanning | `.trivyignore` |
+| trivy | Container & IaC vulnerability scanning | IaC or package manager files |
 | yamllint | YAML | `.yamllint.yml` |
 
 **Pattern:** Each linter action checks if it should run based on the `LINTERS`
