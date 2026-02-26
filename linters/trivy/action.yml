@@ -36,24 +36,12 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/setup-reviewdog
-    - name: Setup Reviewdog
-      uses: reviewdog/action-setup@v1
+    # https://github.com/marketplace/actions/aqua-security-trivy
+    - name: Run Trivy
+      uses: aquasecurity/trivy-action@0.34.0
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        reviewdog_version: latest  # Intentionally using latest
-
-    # trivy
-    - name: Install trivy
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      run: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-    - name: Run trivy
-      shell: bash
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      run: trivy fs --format sarif --exit-code 0 . 2>/dev/null | jq '.version = (.version | tostring)' | reviewdog -f=sarif -name=trivy -reporter=github-pr-review -filter-mode=nofilter -fail-level=any -level=info > /dev/null
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'table'
+        exit-code: '1'

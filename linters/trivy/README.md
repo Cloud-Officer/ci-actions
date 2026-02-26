@@ -1,9 +1,8 @@
-# GitHub Action: Run trivy with reviewdog
+# GitHub Action: Run trivy
 
-This action runs [trivy](https://github.com/aquasecurity/trivy) with
-[reviewdog](https://github.com/reviewdog/reviewdog) on pull requests to scan containers and Infrastructure-as-Code for vulnerabilities and misconfigurations.
+This action runs [trivy](https://github.com/aquasecurity/trivy) on pull requests to scan containers and Infrastructure-as-Code for vulnerabilities and misconfigurations.
 
-Based on [reviewdog/action-setup](https://github.com/reviewdog/action-setup).
+Based on [aquasecurity/trivy-action](https://github.com/aquasecurity/trivy-action).
 
 ## Inputs
 

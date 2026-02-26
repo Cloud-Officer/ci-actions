@@ -1,9 +1,8 @@
-# GitHub Action: Run cfn-lint with reviewdog
+# GitHub Action: Run cfn-lint
 
-This action runs [cfn-lint](https://github.com/aws-cloudformation/cfn-lint) with
-[reviewdog](https://github.com/reviewdog/reviewdog) on pull requests to lint AWS CloudFormation templates.
+This action runs [cfn-lint](https://github.com/aws-cloudformation/cfn-lint) on pull requests to lint AWS CloudFormation templates.
 
-Based on [reviewdog/action-setup](https://github.com/reviewdog/action-setup).
+Based on [ScottBrenner/cfn-lint-action](https://github.com/ScottBrenner/cfn-lint-action).
 
 ## Inputs
 

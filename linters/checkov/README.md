@@ -1,9 +1,8 @@
-# GitHub Action: Run checkov with reviewdog
+# GitHub Action: Run checkov
 
-This action runs [checkov](https://github.com/bridgecrewio/checkov) with
-[reviewdog](https://github.com/reviewdog/reviewdog) on pull requests to scan Infrastructure-as-Code for security misconfigurations.
+This action runs [checkov](https://github.com/bridgecrewio/checkov) on pull requests to scan Infrastructure-as-Code for security misconfigurations.
 
-Based on [reviewdog/action-setup](https://github.com/reviewdog/action-setup).
+Based on [bridgecrewio/checkov-action](https://github.com/bridgecrewio/checkov-action).
 
 ## Inputs
 
