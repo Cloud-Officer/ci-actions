@@ -44,4 +44,4 @@ runs:
     - name: Run cfn-lint
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: cfn-lint
+      run: cfn-lint --non-zero-exit-code error

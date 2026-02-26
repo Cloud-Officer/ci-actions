@@ -5,7 +5,6 @@ A collection of Linter GitHub Actions.
 * [actionlint](actionlint/README.md) is a static checker for GitHub Actions workflow files
 * [bandit](bandit/README.md) is a security linter from PyCQA
 * [cfnlint](cfnlint/README.md) is a linter for AWS CloudFormation templates that validates syntax, resource properties, and best practices
-* [checkov](checkov/README.md) is an Infrastructure-as-Code security scanner for Terraform, CloudFormation, Kubernetes, and Dockerfiles
 * [eslint](eslint/README.md) is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code
 * [flake8](flake8/README.md) is a wrapper around PyFlakes, pycodestyle and Ned Batchelder's McCabe script
 * [golangci](golangci/README.md) is a fast Go linters runner
@@ -100,12 +99,11 @@ runs:
 
 ### Checklist: Updating Common Sections
 
-When updating the checkout action version or common inputs, **all 20 linter actions must be updated**:
+When updating the checkout action version or common inputs, **all 19 linter actions must be updated**:
 
 * [ ] actionlint/action.yml
 * [ ] bandit/action.yml
 * [ ] cfnlint/action.yml
-* [ ] checkov/action.yml
 * [ ] eslint/action.yml
 * [ ] flake8/action.yml
 * [ ] golangci/action.yml
@@ -152,7 +150,6 @@ Linters are auto-detected in `variables/variables.sh` based on config file prese
 | ACTIONLINT   | `.github/workflows/`             |
 | BANDIT       | `.bandit`                        |
 | CFNLINT      | `.cfnlintrc`                     |
-| CHECKOV      | `.checkov.yaml`                  |
 | ESLINT       | `.eslintrc.json`                 |
 | FLAKE8       | `.flake8`                        |
 | GOLANGCI     | `.golangci.yml`                  |

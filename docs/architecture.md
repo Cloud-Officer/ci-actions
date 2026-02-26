@@ -128,7 +128,6 @@ workflows.
 | actionlint | GitHub Actions workflows | `.github/workflows/` |
 | bandit | Python security | `.bandit` |
 | cfnlint | AWS CloudFormation | `.cfnlintrc` |
-| checkov | IaC security scanning | `.checkov.yaml` |
 | eslint | JavaScript/TypeScript | `.eslintrc.json` |
 | flake8 | Python style | `.flake8` |
 | golangci | Go | `.golangci.yml` |
@@ -290,9 +289,8 @@ files for current versions):
 | ScaCap/action-ktlint | Kotlin linting |
 | norio-nomura/action-swiftlint | Swift linting |
 | tj-actions/bandit | Python security linter |
-| checkov (pip) | IaC security scanner |
-| trivy (curl) | Container & IaC vulnerability scanner |
-| cfn-lint (pip) | AWS CloudFormation linter |
+| aquasecurity/trivy-action | Container & IaC vulnerability scanner |
+| ScottBrenner/cfn-lint-action | AWS CloudFormation linter |
 
 ## Critical algorithms
 
