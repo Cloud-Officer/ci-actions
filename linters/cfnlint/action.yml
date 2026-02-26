@@ -36,25 +36,12 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/setup-reviewdog
-    - name: Setup Reviewdog
-      uses: reviewdog/action-setup@v1
+    # https://github.com/marketplace/actions/cfn-lint-action
+    - name: Setup cfn-lint
+      uses: ScottBrenner/cfn-lint-action@v2
       if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        reviewdog_version: latest  # Intentionally using latest
 
-    # cfn-lint
-    - name: Install cfn-lint
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      run: |
-        sudo rm -f /usr/lib/python3*/EXTERNALLY-MANAGED
-        pip install --upgrade cfn-lint
     - name: Run cfn-lint
       shell: bash
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: cfn-lint --format parseable --non-zero-exit-code none | reviewdog -efm='%f:%l:%c:%e:%k:%t%n:%m' -name=cfn-lint -reporter=github-pr-review -filter-mode=nofilter -fail-level=any -level=info > /dev/null
+      run: cfn-lint
