@@ -62,7 +62,7 @@
   "axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.13.5",
+    "version": "1.13.6",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
