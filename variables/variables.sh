@@ -163,13 +163,17 @@ add_linter_if_file "SEMGREP"       ".semgrepignore"
 add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
 add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
 # TRIVY - enabled when IaC files or package manager files are present
-if [ -f ".cfnlintrc" ] || [ -f ".hadolint.yaml" ] || \
-   compgen -G "*.tf" > /dev/null 2>&1 || \
-   [ -f "package-lock.json" ] || [ -f "yarn.lock" ] || [ -f "pnpm-lock.yaml" ] || \
-   [ -f "go.sum" ] || [ -f "requirements.txt" ] || [ -f "Pipfile.lock" ] || \
-   [ -f "poetry.lock" ] || [ -f "Gemfile.lock" ] || [ -f "composer.lock" ] || \
-   [ -f "pom.xml" ] || [ -f "build.gradle" ] || [ -f "build.gradle.kts" ] || \
-   [ -f "Cargo.lock" ] || [ -f "Package.resolved" ]; then
+if find . -maxdepth 3 \( \
+   -name "Dockerfile*" -o -name "*.tf" -o \
+   -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
+   -name "package.json" -o -name "package-lock.json" -o \
+   -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
+   -name "go.sum" -o -name "requirements.txt" -o \
+   -name "Pipfile.lock" -o -name "poetry.lock" -o \
+   -name "Gemfile.lock" -o -name "composer.lock" -o \
+   -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
+   -name "Cargo.lock" -o -name "Package.resolved" \
+   \) -print -quit 2>/dev/null | grep -q .; then
   LINTERS="${LINTERS} TRIVY"
 fi
 add_linter_if_file "YAMLLINT"      ".yamllint.yml"
