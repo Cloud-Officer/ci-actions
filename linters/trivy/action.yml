@@ -67,9 +67,21 @@ runs:
         echo "scanners=${scanners}" >> "${GITHUB_OUTPUT}"
         echo "Trivy scanners: ${scanners}"
 
+    # Install Trivy from deb repository (aquasecurity/trivy-repo)
+    # setup-trivy cannot be used because aquasecurity/trivy repo was wiped on 2026-03-01
+    - name: Install Trivy
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: |
+        sudo apt-get install -y wget apt-transport-https gnupg
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb noble main" | sudo tee /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install -y trivy
+
     # https://github.com/marketplace/actions/aqua-security-trivy
     - name: Run Trivy
-      uses: aquasecurity/trivy-action@0.34.0
+      uses: aquasecurity/trivy-action@0.34.1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         scan-type: 'fs'
@@ -77,3 +89,4 @@ runs:
         scanners: ${{ steps.scanners.outputs.scanners }}
         format: 'table'
         exit-code: '1'
+        skip-setup-trivy: true
