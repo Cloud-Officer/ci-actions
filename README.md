@@ -6,7 +6,6 @@
 * [Installation](#installation)
 * [Usage](#usage)
 * [Contributing](#contributing)
-* [Debugging](#debugging)
 
 ## Introduction
 
@@ -68,6 +67,15 @@ Example commit message:
 Add new feature #beta-deploy #skip-tests
 ```
 
+### Debugging
+
+Please refer to the [Github Enabling debug logging guide](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
+to set secrets to enable runner and steps debug logs.
+
+You can always enable a tmate debug session to connect to a running runner instance and try things manually if debug logs are not enough. See [Debug your GitHub Actions by using tmate](https://github.com/mxschmitt/action-tmate).
+
+The documentation for all the [runner environments](https://github.com/actions/runner-images/tree/main/images).
+
 ## Contributing
 
 We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
@@ -87,12 +95,3 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 5. Issue that pull request!
 
 When you submit code changes, your submissions are understood to be under the same [License](LICENSE) that covers the project. Feel free to contact the maintainers if that's a concern.
-
-## Debugging
-
-Please refer to the [Github Enabling debug logging guide](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
-to set secrets to enable runner and steps debug logs.
-
-You can always enable a tmate debug session to connect to a running runner instance and try things manually if debug logs are not enough. See [Debug your GitHub Actions by using tmate](https://github.com/mxschmitt/action-tmate).
-
-The documentation for all the [runner environments](https://github.com/actions/runner-images/tree/main/images).
