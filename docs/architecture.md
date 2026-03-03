@@ -176,7 +176,8 @@ input variable, which is populated by the variables action.
 **Features:**
 
 - Automatic language version detection from version files
-- Caching for Go, Gradle, Maven, Composer, PIP, Carthage, CocoaPods, SPM, Tuist
+- Caching for Go, Gradle, Maven, Node.js, Composer, PIP, Bundler, Carthage,
+  CocoaPods, SPM, Tuist, Android
 - AWS credential configuration
 - SSH agent setup
 - APT package installation
@@ -195,7 +196,7 @@ input variable, which is populated by the variables action.
 **Features:**
 
 - Displays build metadata (repository, branch, commit, actor)
-- Shows deployment flags (DEPLOY_ON_BETA, DEPLOY_ON_RC, etc.)
+- Shows enabled variable flags (DEPLOY_\*, SKIP_\*, UPDATE_\*)
 - Color-coded job status (success, failure, cancelled, skipped)
 
 ### soup
