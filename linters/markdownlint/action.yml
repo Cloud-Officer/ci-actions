@@ -76,4 +76,5 @@ runs:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
+        set +o pipefail
         markdownlint-cli2 "**/*.md" 2>&1 | reviewdog -efm="%f:%l:%c %m" -efm="%f:%l %m" -name="markdownlint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"
