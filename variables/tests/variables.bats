@@ -578,6 +578,7 @@ extract_functions() {
   touch "${TEST_DIR}/.hadolint.yaml"
   touch "${TEST_DIR}/.editorconfig"
   touch "${TEST_DIR}/.markdownlint-cli2.yaml"
+  touch "${TEST_DIR}/.markdownlint.yml"
   touch "${TEST_DIR}/.php-cs-fixer.dist.php"
   touch "${TEST_DIR}/phpstan.neon"
   touch "${TEST_DIR}/.pmd.xml"
