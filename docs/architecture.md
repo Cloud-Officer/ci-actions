@@ -133,7 +133,7 @@ workflows.
 | golangci | Go | `.golangci.yml` |
 | hadolint | Dockerfile | `.hadolint.yaml` |
 | ktlint | Kotlin | `.editorconfig` |
-| markdownlint | Markdown | `.markdownlint.yml` |
+| markdownlint | Markdown | `.markdownlint-cli2.yaml` |
 | phpcs | PHP coding standards | `.php-cs-fixer.dist.php` |
 | phpstan | PHP static analysis | `phpstan.neon` |
 | pmd | Java/multi-language | `.pmd.xml` |

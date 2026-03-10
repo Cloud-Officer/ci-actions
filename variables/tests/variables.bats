@@ -469,7 +469,14 @@ extract_functions() {
   [[ "$LINTERS" == *"KTLINT"* ]]
 }
 
-@test "linter detection: MARKDOWNLINT detected from .markdownlint.yml file" {
+@test "linter detection: MARKDOWNLINT detected from .markdownlint-cli2.yaml file" {
+  touch "${TEST_DIR}/.markdownlint-cli2.yaml"
+  LINTERS=""
+  add_linter_if_file "MARKDOWNLINT" "${TEST_DIR}/.markdownlint-cli2.yaml"
+  [[ "$LINTERS" == *"MARKDOWNLINT"* ]]
+}
+
+@test "linter detection: MARKDOWNLINT detected from .markdownlint.yml file (v1 backward compat)" {
   touch "${TEST_DIR}/.markdownlint.yml"
   LINTERS=""
   add_linter_if_file "MARKDOWNLINT" "${TEST_DIR}/.markdownlint.yml"
@@ -548,6 +555,7 @@ extract_functions() {
   add_linter_if_file "GOLANGCI"      "${TEST_DIR}/.golangci.yml" || true
   add_linter_if_file "HADOLINT"      "${TEST_DIR}/.hadolint.yaml" || true
   add_linter_if_file "KTLINT"        "${TEST_DIR}/.editorconfig" || true
+  add_linter_if_file "MARKDOWNLINT"  "${TEST_DIR}/.markdownlint-cli2.yaml" || true
   add_linter_if_file "MARKDOWNLINT"  "${TEST_DIR}/.markdownlint.yml" || true
   add_linter_if_file "PHPCS"         "${TEST_DIR}/.php-cs-fixer.dist.php" || true
   add_linter_if_file "PHPSTAN"       "${TEST_DIR}/phpstan.neon" || true
@@ -569,6 +577,7 @@ extract_functions() {
   touch "${TEST_DIR}/.golangci.yml"
   touch "${TEST_DIR}/.hadolint.yaml"
   touch "${TEST_DIR}/.editorconfig"
+  touch "${TEST_DIR}/.markdownlint-cli2.yaml"
   touch "${TEST_DIR}/.markdownlint.yml"
   touch "${TEST_DIR}/.php-cs-fixer.dist.php"
   touch "${TEST_DIR}/phpstan.neon"
@@ -587,6 +596,7 @@ extract_functions() {
   add_linter_if_file "GOLANGCI"      "${TEST_DIR}/.golangci.yml"
   add_linter_if_file "HADOLINT"      "${TEST_DIR}/.hadolint.yaml"
   add_linter_if_file "KTLINT"        "${TEST_DIR}/.editorconfig"
+  add_linter_if_file "MARKDOWNLINT"  "${TEST_DIR}/.markdownlint-cli2.yaml"
   add_linter_if_file "MARKDOWNLINT"  "${TEST_DIR}/.markdownlint.yml"
   add_linter_if_file "PHPCS"         "${TEST_DIR}/.php-cs-fixer.dist.php"
   add_linter_if_file "PHPSTAN"       "${TEST_DIR}/phpstan.neon"
