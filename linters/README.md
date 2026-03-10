@@ -155,7 +155,7 @@ Linters are auto-detected in `variables/variables.sh` based on config file prese
 | GOLANGCI     | `.golangci.yml`                  |
 | HADOLINT     | `.hadolint.yaml`                 |
 | KTLINT       | `.editorconfig` (Kotlin)         |
-| MARKDOWNLINT | `.markdownlint.yml`              |
+| MARKDOWNLINT | `.markdownlint-cli2.yaml`        |
 | PHPCS        | `.php-cs-fixer.dist.php`         |
 | PHPSTAN      | `phpstan.neon`                   |
 | PMD          | `.pmd.xml`                       |
