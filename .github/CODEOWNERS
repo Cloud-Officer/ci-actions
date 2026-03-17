@@ -8,6 +8,7 @@
 .github/                 @ydesgagn
 .gitignore               @ydesgagn
 .markdownlint-cli2.yaml  @ydesgagn
+.ruby-version            @ydesgagn
 .shellcheckrc            @ydesgagn
 .yamllint.yml            @ydesgagn
 codedeploy/              @ydesgagn
