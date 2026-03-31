@@ -62,7 +62,7 @@
   "axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.13.6",
+    "version": "1.14.0",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
@@ -314,7 +314,7 @@
   "proxy-from-env": {
     "language": "JS",
     "package": "proxy-from-env",
-    "version": "1.1.0",
+    "version": "2.1.0",
     "license": "MIT",
     "description": "Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables.",
     "website": "https://github.com/Rob--W/proxy-from-env#readme",

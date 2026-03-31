@@ -7,7 +7,7 @@
 | JS | @actions/http-client | 3.0.2 | MIT | Actions Http Client | <https://github.com/actions/toolkit/tree/main/packages/http-client> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | @actions/io | 2.0.0 | MIT | Actions io lib | <https://github.com/actions/toolkit/tree/main/packages/io> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | asynckit | 0.4.0 | MIT | Minimal async jobs utility library, with streams support | <https://github.com/alexindigo/asynckit#readme> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | axios | 1.13.6 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2025-09-15 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
+| JS | axios | 1.14.0 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2025-09-15 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
 | JS | call-bind-apply-helpers | 1.0.2 | MIT | Helper functions around Function call/apply/bind, for use in `call-bind` | <https://github.com/ljharb/call-bind-apply-helpers#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | combined-stream | 1.0.8 | MIT | A stream that emits multiple other streams one after another. | <https://github.com/felixge/node-combined-stream> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | delayed-stream | 1.0.0 | MIT | Buffers events from a stream until you are ready to handle them. | <https://github.com/felixge/node-delayed-stream> | 2025-09-15 | Low | Dependency | Dependency |
@@ -28,6 +28,6 @@
 | JS | math-intrinsics | 1.1.0 | MIT | ES Math-related intrinsics and helpers, robustly cached. | <https://github.com/es-shims/math-intrinsics#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | mime-db | 1.52.0 | MIT | Media Type Database | <https://github.com/jshttp/mime-db#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | mime-types | 2.1.35 | MIT | The ultimate javascript content-type utility. | <https://github.com/jshttp/mime-types#readme> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | proxy-from-env | 1.1.0 | MIT | Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables. | <https://github.com/Rob--W/proxy-from-env#readme> | 2025-09-15 | Low | Dependency | Dependency |
+| JS | proxy-from-env | 2.1.0 | MIT | Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables. | <https://github.com/Rob--W/proxy-from-env#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | tunnel | 0.0.6 | MIT | Node HTTP/HTTPS Agents for tunneling proxies | <https://github.com/koichik/node-tunnel/> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | undici | 6.24.1 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2025-09-15 | Low | Dependency | Dependency |
