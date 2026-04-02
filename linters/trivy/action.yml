@@ -52,13 +52,20 @@ runs:
           scanners="${scanners},misconfig"
         fi
 
-        # Enable vuln when package manager lock files are detected
+        # Enable vuln when package manager lock files are detected (search subfolders, skip submodules)
+        submodule_paths=()
+        if [ -f .gitmodules ]; then
+          while IFS= read -r line; do
+            submodule_paths+=("-path" "./${line}" "-prune" "-o")
+          done < <(grep 'path = ' .gitmodules | sed 's/.*path = //')
+        fi
+
         for lock_file in package-lock.json yarn.lock pnpm-lock.yaml go.sum \
                          requirements.txt Pipfile.lock poetry.lock \
                          Gemfile.lock composer.lock \
                          pom.xml build.gradle build.gradle.kts \
                          Cargo.lock Package.resolved; do
-          if [ -f "${lock_file}" ]; then
+          if find . "${submodule_paths[@]}" -name "${lock_file}" -print -quit 2>/dev/null | grep -q .; then
             scanners="${scanners},vuln"
             break
           fi
