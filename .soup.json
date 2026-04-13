@@ -170,7 +170,7 @@
   "follow-redirects": {
     "language": "JS",
     "package": "follow-redirects",
-    "version": "1.15.11",
+    "version": "1.16.0",
     "license": "MIT",
     "description": "HTTP and HTTPS modules that follow redirects.",
     "website": "https://github.com/follow-redirects/follow-redirects",
