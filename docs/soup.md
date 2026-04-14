@@ -30,4 +30,4 @@
 | JS | mime-types | 2.1.35 | MIT | The ultimate javascript content-type utility. | <https://github.com/jshttp/mime-types#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | proxy-from-env | 2.1.0 | MIT | Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables. | <https://github.com/Rob--W/proxy-from-env#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | tunnel | 0.0.6 | MIT | Node HTTP/HTTPS Agents for tunneling proxies | <https://github.com/koichik/node-tunnel/> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | undici | 6.24.1 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2025-09-15 | Low | Dependency | Dependency |
+| JS | undici | 6.25.0 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2025-09-15 | Low | Dependency | Dependency |
