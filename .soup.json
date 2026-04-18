@@ -266,7 +266,7 @@
   "hasown": {
     "language": "JS",
     "package": "hasown",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "license": "MIT",
     "description": "A robust, ES3 compatible, \"has own property\" predicate.",
     "website": "https://github.com/inspect-js/hasOwn#readme",
