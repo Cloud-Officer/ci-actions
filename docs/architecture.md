@@ -95,7 +95,7 @@ workflows.
 
 - AWS credential configuration
 - S3 sync operations
-- Deployment creation with status polling (5-second intervals, 119 iterations max)
+- Deployment creation with status polling (5-second intervals, 120 iterations max)
 
 ### docker
 
@@ -325,7 +325,7 @@ commit messages and repository state.
 1. Create deployment via AWS CLI
 2. Poll deployment status every 5 seconds
 3. Exit on terminal states: Succeeded, Failed, Stopped, Ready
-4. Timeout after 119 iterations (~10 minutes)
+4. Timeout after 120 iterations (~10 minutes)
 
 **Complexity:** O(1) bounded by iteration limit
 

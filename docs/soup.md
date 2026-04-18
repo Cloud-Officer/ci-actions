@@ -24,7 +24,7 @@
 | JS | gopd | 1.2.0 | MIT | `Object.getOwnPropertyDescriptor`, but accounts for IE's broken implementation. | <https://github.com/ljharb/gopd#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | has-symbols | 1.1.0 | MIT | Determine if the JS environment has Symbol support. Supports spec, or shams. | <https://github.com/ljharb/has-symbols#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | has-tostringtag | 1.0.2 | MIT | Determine if the JS environment has `Symbol.toStringTag` support. Supports spec, or shams. | <https://github.com/inspect-js/has-tostringtag#readme> | 2025-09-15 | Low | Dependency | Dependency |
-| JS | hasown | 2.0.2 | MIT | A robust, ES3 compatible, "has own property" predicate. | <https://github.com/inspect-js/hasOwn#readme> | 2025-09-15 | Low | Dependency | Dependency |
+| JS | hasown | 2.0.3 | MIT | A robust, ES3 compatible, "has own property" predicate. | <https://github.com/inspect-js/hasOwn#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | math-intrinsics | 1.1.0 | MIT | ES Math-related intrinsics and helpers, robustly cached. | <https://github.com/es-shims/math-intrinsics#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | mime-db | 1.52.0 | MIT | Media Type Database | <https://github.com/jshttp/mime-db#readme> | 2025-09-15 | Low | Dependency | Dependency |
 | JS | mime-types | 2.1.35 | MIT | The ultimate javascript content-type utility. | <https://github.com/jshttp/mime-types#readme> | 2025-09-15 | Low | Dependency | Dependency |
