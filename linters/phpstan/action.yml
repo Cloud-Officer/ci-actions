@@ -105,7 +105,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
-      run: eval "${COMPOSER_COMMAND}"
+      run: |
+        composer config --global --auth github-oauth.github.com "${GITHUB_TOKEN}"
+        eval "${COMPOSER_COMMAND}"
 
     # https://phpstan.org/
     - name: Run PHPStan
