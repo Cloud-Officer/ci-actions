@@ -247,51 +247,9 @@ input variable, which is populated by the variables action.
 
 ## Software of Unknown Provenance
 
-See [soup.md](soup.md) for the complete SOUP list.
-
-### External Action Dependencies
-
-The actions depend on the following third-party GitHub Actions (see individual action.yml
-files for current versions):
-
-| Action | Purpose |
-| :--- | :--- |
-| actions/checkout | Repository checkout |
-| actions/setup-go | Go runtime setup |
-| actions/setup-java | Java runtime setup |
-| actions/setup-node | Node.js runtime setup |
-| actions/setup-python | Python runtime setup |
-| actions/cache | Dependency caching |
-| actions/attest-build-provenance | Build attestation |
-| aws-actions/configure-aws-credentials | AWS credential configuration |
-| docker/login-action | Docker registry login |
-| docker/setup-buildx-action | Docker Buildx setup |
-| docker/metadata-action | Docker metadata extraction |
-| docker/build-push-action | Docker build and push |
-| ruby/setup-ruby | Ruby runtime setup |
-| shivammathur/setup-php | PHP runtime setup |
-| webfactory/ssh-agent | SSH agent setup |
-| amyu/setup-android | Android SDK setup |
-| maxim-lobanov/setup-xcode | Xcode setup |
-| miyataka/elasticsearch-github-actions | Elasticsearch setup |
-| supercharge/mongodb-github-action | MongoDB setup |
-| shogo82148/actions-setup-mysql | MySQL setup |
-| namoshek/rabbitmq-github-action | RabbitMQ setup |
-| shogo82148/actions-setup-redis | Redis setup |
-| reviewdog/action-eslint | ESLint with reviewdog |
-| reviewdog/action-setup | Reviewdog CLI setup |
-| reviewdog/action-golangci-lint | Go linting with reviewdog |
-| reviewdog/action-yamllint | YAML linting with reviewdog |
-| reviewdog/action-shellcheck | Shell script linting with reviewdog |
-| reviewdog/action-hadolint | Dockerfile linting with reviewdog |
-| reviewdog/action-rubocop | Ruby linting with reviewdog |
-| reviewdog/action-actionlint | GitHub Actions linting with reviewdog |
-| yoheimuta/action-protolint | Protocol Buffers linting |
-| ScaCap/action-ktlint | Kotlin linting |
-| norio-nomura/action-swiftlint | Swift linting |
-| tj-actions/bandit | Python security linter |
-| aquasecurity/trivy-action | Container & IaC vulnerability scanner |
-| ScottBrenner/cfn-lint-action | AWS CloudFormation linter |
+See [soup.md](soup.md) for the complete list of third-party dependencies. Third-party
+GitHub Actions referenced by composite actions are declared in their respective
+`action.yml` files.
 
 ## Critical algorithms
 
