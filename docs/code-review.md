@@ -78,6 +78,7 @@ A developer can edit `slack/index.js`, get green tests, and merge without regene
 
 **Recommended Fix:**
 Add a CI step in `js_unit_tests`:
+
 ```yaml
 - name: Verify dist is in sync
   run: |
@@ -325,6 +326,7 @@ Wasted runner-minutes (free for public repos but noisy for the user) and slower 
 
 **Recommended Fix:**
 Add to `build.yml`:
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -340,6 +342,7 @@ concurrency:
 **Effort:** XS (<30min)
 
 **Issue:**
+
 - Line 1 reads `# GitHub Action: Deploy` but line 3 describes "executes AWS CLI or shell commands" — title doesn't match purpose.
 - The `variables` job in the example (lines 46-49) is indented at 2 spaces while the parallel `aws` job uses 4 spaces, making the YAML structurally invalid.
 
@@ -392,11 +395,13 @@ Pick one style and apply consistently. Adding the human-readable `name:` is the 
 No security risk (data contains only non-secret GitHub context), but logs are noisy.
 
 **Recommended Fix:**
+
 ```js
 core.debug(JSON.stringify(data, undefined, 2));
 const response = await axios.post(webhookUrl, data, { timeout: 30000 });
 core.debug(JSON.stringify(response.data, undefined, 2));
 ```
+
 The dumps then only appear when the consumer enables Actions Step Debug (`ACTIONS_STEP_DEBUG=true`).
 
 ---
@@ -669,9 +674,6 @@ This repo is in genuinely good shape. The team has invested in security hygiene,
 
 ### Files Reviewed
 
-<details>
-<summary>Click to expand</summary>
-
 - All 28 `action.yml` files
 - `slack/index.js`, `slack/index.test.js`, `slack/package.json`, `slack/action.yml`
 - `variables/variables.sh`, `variables/tests/variables.bats`, `variables/action.yml`
@@ -681,8 +683,6 @@ This repo is in genuinely good shape. The team has invested in security hygiene,
 - All linter configs: `.eslintrc.json`, `.yamllint.yml`, `.markdownlint-cli2.yaml`, `.shellcheckrc`, `.semgrep.yml`, `.semgrepignore`, `.trivyignore`
 - `.gitignore`, `.ruby-version`
 - Cross-referenced against sibling repo `github-build` for consumer impact
-
-</details>
 
 ### Filtered (Low Confidence)
 
