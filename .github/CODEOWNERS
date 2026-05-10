@@ -1,15 +1,15 @@
 # https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
 
-*                        @ydesgagn
+*                        @Cloud-Officer/Maintainers
 
 # build/deploy related files
 
-.eslintrc.json           @ydesgagn
-.github/                 @ydesgagn
-.gitignore               @ydesgagn
-.markdownlint-cli2.yaml  @ydesgagn
-.ruby-version            @ydesgagn
-.shellcheckrc            @ydesgagn
-.yamllint.yml            @ydesgagn
-codedeploy/              @ydesgagn
-*.sh                     @ydesgagn
+.eslintrc.json           @Cloud-Officer/maintainers
+.github/                 @Cloud-Officer/maintainers
+.gitignore               @Cloud-Officer/maintainers
+.markdownlint-cli2.yaml  @Cloud-Officer/maintainers
+.ruby-version            @Cloud-Officer/maintainers
+.shellcheckrc            @Cloud-Officer/maintainers
+.yamllint.yml            @Cloud-Officer/maintainers
+codedeploy/              @Cloud-Officer/maintainers
+*.sh                     @Cloud-Officer/maintainers
