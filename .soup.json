@@ -47,6 +47,18 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
+  "agent-base": {
+    "language": "JS",
+    "package": "agent-base",
+    "version": "6.0.2",
+    "license": "MIT",
+    "description": "Turn a function into an `http.Agent` instance",
+    "website": "https://github.com/TooTallNate/node-agent-base#readme",
+    "last_verified_at": "2026-05-13",
+    "risk_level": "Low",
+    "requirements": "Dependency",
+    "verification_reasoning": "Dependency"
+  },
   "asynckit": {
     "language": "JS",
     "package": "asynckit",
@@ -62,7 +74,7 @@
   "axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.16.0",
+    "version": "1.16.1",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
@@ -91,6 +103,18 @@
     "description": "A stream that emits multiple other streams one after another.",
     "website": "https://github.com/felixge/node-combined-stream",
     "last_verified_at": "2025-09-15",
+    "risk_level": "Low",
+    "requirements": "Dependency",
+    "verification_reasoning": "Dependency"
+  },
+  "debug": {
+    "language": "JS",
+    "package": "debug",
+    "version": "4.4.3",
+    "license": "MIT",
+    "description": "Lightweight debugging utility for Node.js and the browser",
+    "website": "https://github.com/debug-js/debug#readme",
+    "last_verified_at": "2026-05-13",
     "risk_level": "Low",
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
@@ -275,6 +299,18 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
+  "https-proxy-agent": {
+    "language": "JS",
+    "package": "https-proxy-agent",
+    "version": "5.0.1",
+    "license": "MIT",
+    "description": "An HTTP(s) proxy `http.Agent` implementation for HTTPS",
+    "website": "https://github.com/TooTallNate/node-https-proxy-agent#readme",
+    "last_verified_at": "2026-05-13",
+    "risk_level": "Low",
+    "requirements": "Dependency",
+    "verification_reasoning": "Dependency"
+  },
   "math-intrinsics": {
     "language": "JS",
     "package": "math-intrinsics",
@@ -307,6 +343,18 @@
     "description": "The ultimate javascript content-type utility.",
     "website": "https://github.com/jshttp/mime-types#readme",
     "last_verified_at": "2025-09-15",
+    "risk_level": "Low",
+    "requirements": "Dependency",
+    "verification_reasoning": "Dependency"
+  },
+  "ms": {
+    "language": "JS",
+    "package": "ms",
+    "version": "2.1.3",
+    "license": "MIT",
+    "description": "Tiny millisecond conversion utility",
+    "website": "https://github.com/vercel/ms#readme",
+    "last_verified_at": "2026-05-13",
     "risk_level": "Low",
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
