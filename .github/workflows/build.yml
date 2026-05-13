@@ -1,4 +1,4 @@
-# github-build --organization Cloud-Officer --mono_repo --skip_license_check --skip_slack
+# github-build --organization Cloud-Officer --sync_required_status_checks --mono_repo --skip_license_check --skip_slack
 ---
 name: Build
 'on':
