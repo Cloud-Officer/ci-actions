@@ -66,14 +66,22 @@ function set_flag_from_trigger()
 # Helper function to add linter if config file/directory exists
 # Usage: add_linter_if_file "LINTER_NAME" "config_file"
 #        add_linter_if_dir "LINTER_NAME" "config_dir"
+# Note: explicit `if`/`return 0` rather than `[ -f x ] && ...` so a missing
+# config file is a no-op, not a non-zero return that aborts under `set -e`.
 function add_linter_if_file()
 {
-  [ -f "$2" ] && LINTERS="${LINTERS} $1"
+  if [ -f "$2" ]; then
+    LINTERS="${LINTERS} $1"
+  fi
+  return 0
 }
 
 function add_linter_if_dir()
 {
-  [ -d "$2" ] && LINTERS="${LINTERS} $1"
+  if [ -d "$2" ]; then
+    LINTERS="${LINTERS} $1"
+  fi
+  return 0
 }
 
 # Resolve build identifiers and skip/deploy flags from the environment and the
@@ -82,38 +90,51 @@ function add_linter_if_dir()
 # triggering git calls or writing to the runner files.
 function main()
 {
+  # Fail fast: abort on any command error, unset variable, or failed pipe so a
+  # shallow clone / network blip / missing tag surfaces instead of silently
+  # producing empty build vars and skipped deploys. Scoped to main so sourcing
+  # this file for the test suite does not change the caller's shell options.
+  set -euo pipefail
+
   # set environment variables
 
   # Capture timestamp once to avoid race condition across second boundaries
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
   SHORT_COMMIT="$(git rev-parse --short HEAD)"
-  SAFE_BRANCH="${GITHUB_REF/refs\/heads\//}"
+  SAFE_BRANCH="${GITHUB_REF:-/refs/heads/}"
+  SAFE_BRANCH="${SAFE_BRANCH/refs\/heads\//}"
   SAFE_BRANCH="${SAFE_BRANCH/\//_}"
-  MODIFIED_GITHUB_RUN_NUMBER=$((GITHUB_RUN_NUMBER + 15000))
+  MODIFIED_GITHUB_RUN_NUMBER=$(( ${GITHUB_RUN_NUMBER:-0} + 15000 ))
   export MODIFIED_GITHUB_RUN_NUMBER
+  TAG=""
 
-  if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
+  if echo "${GITHUB_REF:-}" | grep tags &> /dev/null; then
     TAG="${GITHUB_REF/refs\/tags\//}"
     BUILD_NAME="${TAG}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
     export BUILD_NAME
     BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
     export BUILD_VERSION
     git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-    COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}" | head -n 1)"
+    # Capture then take the first line: `git ... | head` would mask a git
+    # failure under pipefail (and head closing the pipe trips pipefail too).
+    COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}")"
+    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
     export COMMIT_MESSAGE
-  elif [ -n "${GITHUB_HEAD_REF}" ]; then
+  elif [ -n "${GITHUB_HEAD_REF:-}" ]; then
     BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
     export BUILD_NAME
     BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
     export BUILD_VERSION
-    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}" | head -n 1)"
+    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}")"
+    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
     export COMMIT_MESSAGE
   else
     BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
     export BUILD_NAME
     BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
     export BUILD_VERSION
-    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}" | head -n 1)"
+    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA:-HEAD}")"
+    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
     export COMMIT_MESSAGE
   fi
 

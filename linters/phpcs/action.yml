@@ -90,7 +90,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
-      run: eval "${COMPOSER_COMMAND}"
+      run: bash -c -- "${COMPOSER_COMMAND}"
 
     # https://cs.symfony.com/doc/usage.html
     - name: Run php-cs-fixer
@@ -99,4 +99,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_COMMAND: ${{ inputs.php-cs-fixer-command }}
-      run: eval "${PHP_CS_FIXER_COMMAND}"
+      run: bash -c -- "${PHP_CS_FIXER_COMMAND}"

@@ -48,4 +48,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         SHELL_COMMANDS: ${{ inputs.shell-commands }}
-      run: bash -c "${SHELL_COMMANDS}"
+      run: bash -c -- "${SHELL_COMMANDS}"
