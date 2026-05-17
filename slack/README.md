@@ -2,6 +2,13 @@
 
 This action sends action status to Slack.
 
+## Requirements
+
+This action runs on the GitHub Actions **Node 24** runtime
+(`runs.using: 'node24'`). GitHub-hosted runners include it; **self-hosted
+runners must have Node 24 installed**, otherwise the action fails to start.
+Track GitHub's runtime deprecation schedule before bumping.
+
 ## Inputs
 
 ```yml

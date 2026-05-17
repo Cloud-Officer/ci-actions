@@ -13,6 +13,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  eslint-version:
+    description: 'ESLint version to install. Pinned to v8.x by default - v9 (flat config) is incompatible with legacy frontend JS (jQuery, etc.)'
+    required: false
+    default: '8.57.0'
 
 runs:
   using: "composite"
@@ -47,8 +51,9 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        ESLINT_VERSION: ${{ inputs.eslint-version }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: npm install eslint@8.57.0  # Pinned to v8.x - v9 is incompatible with legacy frontend JS (jQuery, etc.)
+      run: npm install "eslint@${ESLINT_VERSION}"
 
     # https://github.com/marketplace/actions/run-eslint-with-reviewdog
     - name: Run ESLint with Reviewdog
