@@ -29,7 +29,8 @@ function execute_unless_trigger()
   fi
 }
 
-# Convenience aliases for backward compatibility
+# Named helpers wrapping has_trigger / execute_*_trigger, kept so the script
+# and its test suite can call them by intent rather than by raw keyword.
 function on_beta() { has_trigger "beta-deploy"; }
 function on_rc() { has_trigger "rc-deploy"; }
 function on_prod() { has_trigger "prod-deploy"; }
@@ -41,8 +42,6 @@ function skip_licenses() { has_trigger "skip-licenses"; }
 function skip_linters() { has_trigger "skip-linters"; }
 function skip_tests() { has_trigger "skip-tests"; }
 function update_packages() { has_trigger "update-packages"; }
-
-# Convenience wrapper functions for backward compatibility
 function execute_if_on_beta() { execute_if_trigger "beta-deploy" "$@"; }
 function execute_if_on_rc() { execute_if_trigger "rc-deploy" "$@"; }
 function execute_if_on_prod() { execute_if_trigger "prod-deploy" "$@"; }
@@ -50,41 +49,6 @@ function execute_if_on_macos() { execute_if_trigger "macos" "$@"; }
 function execute_if_on_tvos() { execute_if_trigger "tvos" "$@"; }
 function execute_if_skip_tests() { execute_if_trigger "skip-tests" "$@"; }
 function execute_if_tests() { execute_unless_trigger "skip-tests" "$@"; }
-
-# set environment variables
-
-# Capture timestamp once to avoid race condition across second boundaries
-TIMESTAMP="$(date +%Y%m%d%H%M%S)"
-SHORT_COMMIT="$(git rev-parse --short HEAD)"
-SAFE_BRANCH="${GITHUB_REF/refs\/heads\//}"
-SAFE_BRANCH="${SAFE_BRANCH/\//_}"
-MODIFIED_GITHUB_RUN_NUMBER=$((GITHUB_RUN_NUMBER + 15000))
-export MODIFIED_GITHUB_RUN_NUMBER
-
-if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
-  TAG="${GITHUB_REF/refs\/tags\//}"
-  BUILD_NAME="${TAG}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-  export BUILD_NAME
-  BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-  export BUILD_VERSION
-  git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-  COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}" | head -n 1)"
-  export COMMIT_MESSAGE
-elif [ -n "${GITHUB_HEAD_REF}" ]; then
-  BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-  export BUILD_NAME
-  BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-  export BUILD_VERSION
-  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}" | head -n 1)"
-  export COMMIT_MESSAGE
-else
-  BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-  export BUILD_NAME
-  BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-  export BUILD_VERSION
-  COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}" | head -n 1)"
-  export COMMIT_MESSAGE
-fi
 
 # Helper function to set boolean flag from trigger
 # Usage: set_flag_from_trigger VAR_NAME "trigger-keyword"
@@ -99,37 +63,6 @@ function set_flag_from_trigger()
   fi
 }
 
-# Set deployment and skip flags from commit message triggers
-set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
-set_flag_from_trigger DEPLOY_ON_RC "rc-deploy"
-set_flag_from_trigger DEPLOY_MACOS "macos"
-set_flag_from_trigger DEPLOY_TVOS "tvos"
-set_flag_from_trigger SKIP_LICENSES "skip-licenses"
-set_flag_from_trigger SKIP_LINTERS "skip-linters"
-set_flag_from_trigger SKIP_TESTS "skip-tests"
-set_flag_from_trigger UPDATE_PACKAGES "update-packages"
-
-# DEPLOY_ON_PROD requires both trigger and tag
-DEPLOY_ON_PROD=0
-if on_prod && [ "${TAG}" != "" ]; then
-  DEPLOY_ON_PROD=1
-fi
-export DEPLOY_ON_PROD
-
-# DEPLOY_OPTIONS extracts value from trigger
-DEPLOY_OPTIONS=""
-if deploy_options; then
-  DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
-fi
-export DEPLOY_OPTIONS
-
-# Handle #skip-all trigger (override individual skip flags)
-if skip_all; then
-  export SKIP_LICENSES=1
-  export SKIP_LINTERS=1
-  export SKIP_TESTS=1
-fi
-
 # Helper function to add linter if config file/directory exists
 # Usage: add_linter_if_file "LINTER_NAME" "config_file"
 #        add_linter_if_dir "LINTER_NAME" "config_dir"
@@ -143,43 +76,122 @@ function add_linter_if_dir()
   [ -d "$2" ] && LINTERS="${LINTERS} $1"
 }
 
-# Auto-detect linters based on config file presence
-LINTERS=""
-add_linter_if_dir  "ACTIONLINT"    ".github/workflows"
-add_linter_if_file "BANDIT"        ".bandit"
-add_linter_if_file "CFNLINT"       ".cfnlintrc"
-add_linter_if_file "ESLINT"        ".eslintrc.json"
-add_linter_if_file "FLAKE8"        ".flake8"
-add_linter_if_file "GOLANGCI"      ".golangci.yml"
-add_linter_if_file "HADOLINT"      ".hadolint.yaml"
-add_linter_if_file "KTLINT"        ".editorconfig"
-add_linter_if_file "MARKDOWNLINT"  ".markdownlint-cli2.yaml"
-add_linter_if_file "MARKDOWNLINT"  ".markdownlint.yml"
-add_linter_if_file "PHPCS"         ".php-cs-fixer.dist.php"
-add_linter_if_file "PHPSTAN"       "phpstan.neon"
-add_linter_if_file "PMD"           ".pmd.xml"
-add_linter_if_file "PROTOLINT"     ".protolint.yaml"
-add_linter_if_file "RUBOCOP"       ".rubocop.yml"
-add_linter_if_file "SEMGREP"       ".semgrepignore"
-add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
-add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
-# TRIVY - enabled when IaC files or package manager files are present
-if find . -maxdepth 3 \( \
-   -name "Dockerfile*" -o -name "*.tf" -o \
-   -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
-   -name "package.json" -o -name "package-lock.json" -o \
-   -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
-   -name "go.sum" -o -name "requirements.txt" -o \
-   -name "Pipfile.lock" -o -name "poetry.lock" -o \
-   -name "Gemfile.lock" -o -name "composer.lock" -o \
-   -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
-   -name "Cargo.lock" -o -name "Package.resolved" \
-   \) -print -quit 2>/dev/null | grep -q .; then
-  LINTERS="${LINTERS} TRIVY"
-fi
-add_linter_if_file "YAMLLINT"      ".yamllint.yml"
+# Resolve build identifiers and skip/deploy flags from the environment and the
+# commit message, then export them to GITHUB_ENV / GITHUB_OUTPUT. Wrapped in a
+# function so the test suite can source this file for its helpers without
+# triggering git calls or writing to the runner files.
+function main()
+{
+  # set environment variables
 
-for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
-  echo "${github}=${!github}" >> "${GITHUB_ENV}"
-  echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
-done
+  # Capture timestamp once to avoid race condition across second boundaries
+  TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+  SHORT_COMMIT="$(git rev-parse --short HEAD)"
+  SAFE_BRANCH="${GITHUB_REF/refs\/heads\//}"
+  SAFE_BRANCH="${SAFE_BRANCH/\//_}"
+  MODIFIED_GITHUB_RUN_NUMBER=$((GITHUB_RUN_NUMBER + 15000))
+  export MODIFIED_GITHUB_RUN_NUMBER
+
+  if echo "${GITHUB_REF}" | grep tags &> /dev/null; then
+    TAG="${GITHUB_REF/refs\/tags\//}"
+    BUILD_NAME="${TAG}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
+    export BUILD_NAME
+    BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
+    export BUILD_VERSION
+    git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+    COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}" | head -n 1)"
+    export COMMIT_MESSAGE
+  elif [ -n "${GITHUB_HEAD_REF}" ]; then
+    BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
+    export BUILD_NAME
+    BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
+    export BUILD_VERSION
+    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}" | head -n 1)"
+    export COMMIT_MESSAGE
+  else
+    BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
+    export BUILD_NAME
+    BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
+    export BUILD_VERSION
+    COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA}" | head -n 1)"
+    export COMMIT_MESSAGE
+  fi
+
+  # Set deployment and skip flags from commit message triggers
+  set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
+  set_flag_from_trigger DEPLOY_ON_RC "rc-deploy"
+  set_flag_from_trigger DEPLOY_MACOS "macos"
+  set_flag_from_trigger DEPLOY_TVOS "tvos"
+  set_flag_from_trigger SKIP_LICENSES "skip-licenses"
+  set_flag_from_trigger SKIP_LINTERS "skip-linters"
+  set_flag_from_trigger SKIP_TESTS "skip-tests"
+  set_flag_from_trigger UPDATE_PACKAGES "update-packages"
+
+  # DEPLOY_ON_PROD requires both trigger and tag
+  DEPLOY_ON_PROD=0
+  if on_prod && [ "${TAG}" != "" ]; then
+    DEPLOY_ON_PROD=1
+  fi
+  export DEPLOY_ON_PROD
+
+  # DEPLOY_OPTIONS extracts value from trigger
+  DEPLOY_OPTIONS=""
+  if deploy_options; then
+    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
+  fi
+  export DEPLOY_OPTIONS
+
+  # Handle #skip-all trigger (override individual skip flags)
+  if skip_all; then
+    export SKIP_LICENSES=1
+    export SKIP_LINTERS=1
+    export SKIP_TESTS=1
+  fi
+
+  # Auto-detect linters based on config file presence
+  LINTERS=""
+  add_linter_if_dir  "ACTIONLINT"    ".github/workflows"
+  add_linter_if_file "BANDIT"        ".bandit"
+  add_linter_if_file "CFNLINT"       ".cfnlintrc"
+  add_linter_if_file "ESLINT"        ".eslintrc.json"
+  add_linter_if_file "FLAKE8"        ".flake8"
+  add_linter_if_file "GOLANGCI"      ".golangci.yml"
+  add_linter_if_file "HADOLINT"      ".hadolint.yaml"
+  add_linter_if_file "KTLINT"        ".editorconfig"
+  add_linter_if_file "MARKDOWNLINT"  ".markdownlint-cli2.yaml"
+  add_linter_if_file "MARKDOWNLINT"  ".markdownlint.yml"
+  add_linter_if_file "PHPCS"         ".php-cs-fixer.dist.php"
+  add_linter_if_file "PHPSTAN"       "phpstan.neon"
+  add_linter_if_file "PMD"           ".pmd.xml"
+  add_linter_if_file "PROTOLINT"     ".protolint.yaml"
+  add_linter_if_file "RUBOCOP"       ".rubocop.yml"
+  add_linter_if_file "SEMGREP"       ".semgrepignore"
+  add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
+  add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
+  # TRIVY - enabled when IaC files or package manager files are present
+  if find . -maxdepth 3 \( \
+     -name "Dockerfile*" -o -name "*.tf" -o \
+     -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
+     -name "package.json" -o -name "package-lock.json" -o \
+     -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
+     -name "go.sum" -o -name "requirements.txt" -o \
+     -name "Pipfile.lock" -o -name "poetry.lock" -o \
+     -name "Gemfile.lock" -o -name "composer.lock" -o \
+     -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
+     -name "Cargo.lock" -o -name "Package.resolved" \
+     \) -print -quit 2>/dev/null | grep -q .; then
+    LINTERS="${LINTERS} TRIVY"
+  fi
+  add_linter_if_file "YAMLLINT"      ".yamllint.yml"
+
+  for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
+    echo "${github}=${!github}" >> "${GITHUB_ENV}"
+    echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
+  done
+}
+
+# Only run main when executed directly (via the action's shebang invocation),
+# not when sourced by the bats test suite.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main
+fi

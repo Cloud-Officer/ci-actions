@@ -32,6 +32,10 @@ inputs:
     description: 'aws deploy deployment strategy'
     required: false
     default: 'CodeDeployDefault.OneAtATime'
+  monitor-timeout-minutes:
+    description: 'how long to poll CodeDeploy before failing the step'
+    required: false
+    default: '30'
 runs:
   using: 'composite'
   steps:
@@ -52,13 +56,20 @@ runs:
         S3_BUCKET: ${{ inputs.s3-bucket }}
         S3_KEY: ${{ inputs.s3-key }}
         DEPLOYMENT_STRATEGY: ${{ inputs.deployment-strategy }}
+        MONITOR_TIMEOUT_MINUTES: ${{ inputs.monitor-timeout-minutes }}
       run: |
+        set -euo pipefail
+
         deployment=$(aws deploy create-deployment --application-name "${APPLICATION_NAME}" --deployment-config-name "${DEPLOYMENT_STRATEGY}" --deployment-group-name "${DEPLOYMENT_GROUP_NAME}" --description "Deploy build ${GITHUB_RUN_NUMBER} via Github Actions" --s3-location "bucket=${S3_BUCKET},bundleType=zip,key=${S3_KEY}" --query 'deploymentId' --output text)
         echo "Deployment ID=${deployment}"
-        counter=1
 
-        while [ ${counter} -lt 120 ]; do
-          status=$(aws deploy get-deployment --deployment-id "${deployment}" --query 'deploymentInfo.status' --output text)
+        poll_interval=5
+        max_iterations=$(( MONITOR_TIMEOUT_MINUTES * 60 / poll_interval ))
+
+        for (( counter = 1; counter <= max_iterations; counter++ )); do
+          # Tolerate transient CodeDeploy API errors so a single blip does not
+          # abort monitoring of an otherwise healthy deployment.
+          status=$(aws deploy get-deployment --deployment-id "${deployment}" --query 'deploymentInfo.status' --output text 2>/dev/null || echo "Unknown")
 
           case ${status} in
             Succeeded)
@@ -66,30 +77,25 @@ runs:
             exit 0
             ;;
 
-            Failed)
-            echo "Deployment failed"
+            Failed|Stopped)
+            # Fail the step so downstream jobs and notifications see the failure.
+            echo "::error::CodeDeploy deployment ${status} (id=${deployment})"
             exit 1
-            ;;
-
-            Stopped)
-            echo "Deployment stopped"
-            exit 1
-            ;;
-
-            Ready)
-            echo "Deployment ready"
-            exit 0
             ;;
 
             *)
-            ((counter++))
-            echo "Deployment status=${status}..."
-            sleep 5
+            # Anything else (Created, Queued, InProgress, Ready, Baking, ...) is
+            # non-terminal. "Ready" in blue/green still has BlockTraffic /
+            # AllowTraffic / TerminateBlueInstances phases that can fail, so we
+            # keep polling until a true terminal state is observed.
+            echo "Deployment status=${status}... (${counter}/${max_iterations})"
+            sleep "${poll_interval}"
             ;;
           esac
         done
 
-        # NOTE: Intentionally not exiting with error code here. The deployment is still
-        # running in AWS CodeDeploy - we just stop monitoring to avoid burning GitHub
-        # Actions minutes. Check the AWS CodeDeploy console for final deployment status.
-        echo "Aborting deployment monitoring as > 5 mins!"
+        # Timeout is a real failure signal: the deployment never reached a
+        # terminal state within the monitoring window. Surface it instead of
+        # reporting a green build for an in-flight or failed deployment.
+        echo "::error::Deployment ${deployment} did not reach a terminal state within ${MONITOR_TIMEOUT_MINUTES} minutes. Check the AWS CodeDeploy console."
+        exit 1

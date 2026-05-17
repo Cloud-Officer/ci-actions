@@ -35,7 +35,15 @@ inputs:
     description: 'aws deploy deployment strategy'
     required: false
     default: 'CodeDeployDefault.OneAtATime'
+  monitor-timeout-minutes:
+    description: 'how long to poll CodeDeploy before failing the step'
+    required: false
+    default: '30'
 ```
+
+The step polls until CodeDeploy reaches a terminal state. `Succeeded` exits 0;
+`Failed`/`Stopped` and a monitoring timeout exit non-zero so downstream jobs and
+notifications see the failure.
 
 ## Example usage
 
