@@ -35,11 +35,23 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/bandit-security-linter
-    - name: Bandit
-      uses: tj-actions/bandit@v5
+    # https://github.com/marketplace/actions/setup-python
+    - name: Setup Python
+      uses: actions/setup-python@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        targets: "."
-        # https://github.com/PyCQA/bandit
-        options: "-ll --ini .bandit --silent"
+        python-version: '3.x'
+
+    # https://github.com/PyCQA/bandit
+    # Installed directly rather than via tj-actions/bandit: the tj-actions org
+    # was compromised (CVE-2025-30066), so we avoid that supply-chain path and
+    # mirror how flake8/semgrep are installed in this repo.
+    - name: Install bandit
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: pip install bandit
+
+    - name: Run bandit
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: bandit -ll --ini .bandit --silent .
