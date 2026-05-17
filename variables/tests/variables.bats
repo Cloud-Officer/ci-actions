@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 
-# Setup: source the script functions without running the main logic
+# Setup: source the real variables.sh for its function definitions. The script
+# guards its main body behind `[[ "${BASH_SOURCE[0]}" == "${0}" ]]`, so sourcing
+# here loads the helpers without running git or writing to the runner files.
 setup() {
   # Create temp directory for test files
   export TEST_DIR="$(mktemp -d)"
@@ -9,61 +11,11 @@ setup() {
   export GITHUB_RUN_NUMBER=100
   touch "${GITHUB_ENV}" "${GITHUB_OUTPUT}"
 
-  # Source only the functions from variables.sh
-  # We need to extract just the function definitions
-  extract_functions
+  source "${BATS_TEST_DIRNAME}/../variables.sh"
 }
 
 teardown() {
   rm -rf "${TEST_DIR}"
-}
-
-# Extract only functions from variables.sh without executing the main script
-extract_functions() {
-  # Define the functions manually to avoid side effects
-  export -f has_trigger 2>/dev/null || true
-
-  # has_trigger function
-  has_trigger() {
-    echo "${COMMIT_MESSAGE}" | grep -iF "#$1" &> /dev/null
-  }
-
-  # Convenience aliases
-  on_beta() { has_trigger "beta-deploy"; }
-  on_rc() { has_trigger "rc-deploy"; }
-  on_prod() { has_trigger "prod-deploy"; }
-  on_macos() { has_trigger "macos"; }
-  on_tvos() { has_trigger "tvos"; }
-  deploy_options() { has_trigger "deploy-options"; }
-  skip_all() { has_trigger "skip-all"; }
-  skip_licenses() { has_trigger "skip-licenses"; }
-  skip_linters() { has_trigger "skip-linters"; }
-  skip_tests() { has_trigger "skip-tests"; }
-  update_packages() { has_trigger "update-packages"; }
-
-  # Helper function to set boolean flag from trigger
-  set_flag_from_trigger() {
-    local var_name="$1"
-    local trigger="$2"
-    if has_trigger "${trigger}"; then
-      eval "export ${var_name}=1"
-    else
-      eval "export ${var_name}=0"
-    fi
-  }
-
-  # Linter detection functions
-  add_linter_if_file() {
-    [ -f "$2" ] && LINTERS="${LINTERS} $1"
-  }
-
-  add_linter_if_dir() {
-    [ -d "$2" ] && LINTERS="${LINTERS} $1"
-  }
-
-  export -f has_trigger on_beta on_rc on_prod on_macos on_tvos
-  export -f deploy_options skip_all skip_licenses skip_linters skip_tests update_packages
-  export -f set_flag_from_trigger add_linter_if_file add_linter_if_dir
 }
 
 # ============================================================================
