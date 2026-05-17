@@ -3,6 +3,8 @@ name: 'Setup'
 description: 'Setup tools'
 
 inputs:
+
+  # ===== Core =====
   github-token:
     description: 'github token'
     required: false
@@ -13,6 +15,8 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: false
+
+  # ===== AWS (cloud credentials) =====
   aws-region:
     description: AWS Region, e.g. us-east-2
     required: false
@@ -77,6 +81,8 @@ inputs:
   aws-special-characters-workaround:
     description: Some environments do not support special characters in AWS_SECRET_ACCESS_KEY. This option will retry fetching credentials until the secret access key does not contain special characters. This option overrides disable-retry and retry-max-attempts. This option is disabled by default
     required: false
+
+  # ===== Go =====
   go-version:
     description: 'The Go version to download (if necessary) and use. Supports semver spec and ranges. Be sure to enclose this option in single quotation marks.'
     required: false
@@ -102,6 +108,8 @@ inputs:
   go-architecture:
     description: 'Target architecture for Go to use. Examples: x86, x64. Will use system architecture by default.'
     required: false
+
+  # ===== Java =====
   java-version:
     description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
     required: false
@@ -172,6 +180,8 @@ inputs:
   java-mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
+
+  # ===== Node.js =====
   node-version:
     description: 'Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.'
     required: false
@@ -202,6 +212,8 @@ inputs:
   node-cache-dependency-path:
     description: 'Used to specify the path to a dependency file: package-lock.json, yarn.lock, etc. Supports wildcards or a list of file names for caching multiple dependencies.'
     required: false
+
+  # ===== PHP =====
   php-version:
     description: 'Setup PHP version.'
     required: false
@@ -226,6 +238,8 @@ inputs:
     description: 'Setup popular tools globally'
     required: false
     default: 'composer'
+
+  # ===== Python =====
   python-version:
     description: "Version range or exact version of a Python version to use, using SemVer's version range syntax."
     required: false
@@ -259,6 +273,8 @@ inputs:
     description: "When 'true', a version range passed to 'python-version' input will match prerelease versions if no GA versions are found. Only 'x.y' version range is supported for CPython."
     required: false
     default: false
+
+  # ===== Ruby =====
   ruby-version:
     description: 'Engine and version to use, see the syntax in the README. Reads from .ruby-version or .tool-versions if unset.'
     required: false
@@ -298,6 +314,8 @@ inputs:
       At present, the only other setting than 'default' is 'none', which only adds Ruby to PATH.
       No build tools or packages are installed, nor are any ENV setting changed to activate them.
     required: false
+
+  # ===== Android =====
   android-sdk-version:
     description: 'sdk version'
     required: false
@@ -331,10 +349,14 @@ inputs:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     required: false
     default: ${{ job.status }}
+
+  # ===== Xcode =====
   xcode-version:
     description: 'Version of Xcode to use'
     required: false
     default: 'none'
+
+  # ===== Elasticsearch =====
   elasticsearch-version:
     description: 'The version of Elasticsearch'
     default: 'none'
@@ -343,6 +365,8 @@ inputs:
     description: 'Elasticsearch plugin strings'
     required: false
     default: ''
+
+  # ===== MongoDB =====
   mongodb-version:
     description: 'MongoDB version to use'
     default: 'none'
@@ -367,6 +391,8 @@ inputs:
     description: 'MongoDB root password (default: none)'
     required: false
     default: ''
+
+  # ===== MySQL =====
   mysql-version:
     description: 'The version of MySQL and MariaDB'
     required: false
@@ -392,6 +418,8 @@ inputs:
   mysql-password:
     description: 'password for the new user'
     required: false
+
+  # ===== RabbitMQ =====
   rabbitmq-version:
     description: 'RabbitMQ version to use'
     required: false
@@ -420,6 +448,8 @@ inputs:
     description: 'The name of the spawned Docker container (can be used as hostname when accessed from other containers)'
     required: false
     default: 'rabbitmq'
+
+  # ===== Redis =====
   redis-distribution:
     description: 'the distribution of redis'
     required: false
@@ -443,6 +473,8 @@ inputs:
   redis-conf:
     description: 'extra configurations for redis.conf'
     required: false
+
+  # ===== Misc =====
   apt-packages:
     description: 'additional apt packages to install'
     required: false
