@@ -12,7 +12,15 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/dist/"
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 100,
+        "lines": 90,
+        "statements": 90
+      }
+    }
   },
   "author": "",
   "license": "ISC",

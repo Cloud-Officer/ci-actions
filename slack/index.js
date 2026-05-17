@@ -8,6 +8,13 @@ const COLORS = {
     warning: '#f8c753'
 };
 
+// GitHub Actions populates GITHUB_* at runtime; when run outside Actions
+// (local debugging) they are undefined and would render "https://undefined/..."
+// in the Slack payload. Fall back to a visible placeholder instead.
+function githubEnv(name) {
+    return process.env[name] || '?';
+}
+
 // Lightweight runtime validation of the parsed `jobs` payload. The input is
 // `${{toJSON(needs)}}` - an object keyed by job name whose values are objects
 // (e.g. { "result": "success", "outputs": {...} }). Without this, a shape
@@ -29,6 +36,9 @@ function validateJobs(jobs) {
 
 function parseInputs() {
     const webhookUrl = core.getInput('webhook-url');
+    if (!webhookUrl) {
+        throw new Error("'webhook-url' input is required but was empty");
+    }
     const jobsInput = core.getInput('jobs');
     let jobs;
     try {
@@ -62,7 +72,7 @@ function buildHeaderAttachment(variablesOutputs, variableFields) {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `*<${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}|Build #${process.env.GITHUB_RUN_NUMBER} (${process.env.GITHUB_SHA}) ${process.env.GITHUB_EVENT_NAME}>*`
+          "text": `*<${githubEnv('GITHUB_SERVER_URL')}/${githubEnv('GITHUB_REPOSITORY')}/actions/runs/${githubEnv('GITHUB_RUN_ID')}|Build #${githubEnv('GITHUB_RUN_NUMBER')} (${githubEnv('GITHUB_SHA')}) ${githubEnv('GITHUB_EVENT_NAME')}>*`
         }
       },
       {
@@ -70,7 +80,7 @@ function buildHeaderAttachment(variablesOutputs, variableFields) {
         "elements": [
           {
             "type": "mrkdwn",
-            "text": `${process.env.GITHUB_REPOSITORY}@${process.env.GITHUB_REF} by *${process.env.GITHUB_ACTOR}*`
+            "text": `${githubEnv('GITHUB_REPOSITORY')}@${githubEnv('GITHUB_REF')} by *${githubEnv('GITHUB_ACTOR')}*`
           }
         ]
       },
@@ -181,11 +191,24 @@ async function run() {
     await sendWebhook(webhookUrl, data);
 }
 
-module.exports = { run, COLORS, validateJobs };
+// Surface full failure context before failing the step. The default
+// `core.setFailed(error.message)` dropped the stack and, for axios errors,
+// the Slack API response body (e.g. "invalid_payload") - the most useful
+// part for debugging a 4xx.
+function reportError(error) {
+    if (error && error.stack) {
+        core.error(error.stack);
+    }
+    const responseData = error && error.response && error.response.data;
+    if (responseData !== undefined) {
+        core.error(`Response body: ${JSON.stringify(responseData)}`);
+    }
+    core.setFailed(error && error.message ? error.message : String(error));
+}
+
+module.exports = { run, COLORS, validateJobs, githubEnv, reportError };
 
 /* istanbul ignore next */
 if (require.main === module) {
-    run().catch((error) => {
-        core.setFailed(error.message);
-    });
+    run().catch(reportError);
 }

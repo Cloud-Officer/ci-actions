@@ -4,7 +4,7 @@ const core = require('@actions/core');
 jest.mock('axios');
 jest.mock('@actions/core');
 
-const { run, COLORS } = require('./index');
+const { run, COLORS, validateJobs, githubEnv, reportError } = require('./index');
 
 describe('Slack Action', () => {
   const originalEnv = process.env;
@@ -123,7 +123,7 @@ describe('Slack Action', () => {
         expect.objectContaining({
           attachments: expect.arrayContaining([
             expect.objectContaining({
-              color: '#439FE0'
+              color: COLORS.info
             })
           ])
         }),
@@ -151,7 +151,7 @@ describe('Slack Action', () => {
         expect.objectContaining({
           attachments: expect.arrayContaining([
             expect.objectContaining({
-              color: '#d5001a'
+              color: COLORS.failure
             })
           ])
         }),
@@ -178,7 +178,7 @@ describe('Slack Action', () => {
         expect.objectContaining({
           attachments: expect.arrayContaining([
             expect.objectContaining({
-              color: '#f8c753'
+              color: COLORS.warning
             })
           ])
         }),
@@ -205,7 +205,7 @@ describe('Slack Action', () => {
         expect.objectContaining({
           attachments: expect.arrayContaining([
             expect.objectContaining({
-              color: '#5cb589'
+              color: COLORS.success
             })
           ])
         }),
@@ -568,5 +568,119 @@ describe('built bundle (dist/index.js)', () => {
       expect(() => dist.validateJobs([])).toThrow('must be a JSON object keyed by job name');
       expect(() => dist.validateJobs({ build: { result: 'success' } })).not.toThrow();
     });
+  });
+});
+
+describe('error handling and env hardening', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = {
+      ...originalEnv,
+      GITHUB_SERVER_URL: 'https://github.com',
+      GITHUB_REPOSITORY: 'Cloud-Officer/ci-actions',
+      GITHUB_RUN_ID: '12345',
+      GITHUB_RUN_NUMBER: '42',
+      GITHUB_SHA: 'abc123',
+      GITHUB_EVENT_NAME: 'push',
+      GITHUB_REF: 'refs/heads/main',
+      GITHUB_ACTOR: 'tester'
+    };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('rejects when webhook-url is empty (TEST-005)', async () => {
+    core.getInput.mockImplementation((name) => {
+      if (name === 'webhook-url') return '';
+      if (name === 'jobs') return JSON.stringify({ build: { result: 'success' } });
+      return '';
+    });
+
+    await expect(run()).rejects.toThrow("'webhook-url' input is required but was empty");
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  it('propagates an axios timeout (TEST-005)', async () => {
+    core.getInput.mockImplementation((name) => {
+      if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+      if (name === 'jobs') return JSON.stringify({ build: { result: 'success' } });
+      return '';
+    });
+    const timeout = new Error('timeout of 30000ms exceeded');
+    timeout.code = 'ECONNABORTED';
+    axios.post.mockRejectedValue(timeout);
+
+    await expect(run()).rejects.toThrow('timeout of 30000ms exceeded');
+  });
+
+  it('reportError surfaces the Slack 4xx response body and stack (BUG-023)', () => {
+    const error = new Error('Request failed with status code 400');
+    error.response = { status: 400, data: { error: 'invalid_payload' } };
+
+    reportError(error);
+
+    expect(core.error).toHaveBeenCalledWith(error.stack);
+    expect(core.error).toHaveBeenCalledWith('Response body: {"error":"invalid_payload"}');
+    expect(core.setFailed).toHaveBeenCalledWith('Request failed with status code 400');
+  });
+
+  it('reportError handles a plain error without a response (QUAL-021)', () => {
+    const error = new Error('boom');
+
+    reportError(error);
+
+    expect(core.error).toHaveBeenCalledWith(error.stack);
+    expect(core.setFailed).toHaveBeenCalledWith('boom');
+  });
+
+  it('reportError handles a non-Error rejection value (QUAL-021)', () => {
+    reportError('string failure');
+
+    expect(core.setFailed).toHaveBeenCalledWith('string failure');
+  });
+
+  it('run().catch(reportError) wires a 4xx through to setFailed (BUG-023)', async () => {
+    core.getInput.mockImplementation((name) => {
+      if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+      if (name === 'jobs') return JSON.stringify({ build: { result: 'success' } });
+      return '';
+    });
+    const error = new Error('Request failed with status code 400');
+    error.response = { status: 400, data: { error: 'channel_not_found' } };
+    axios.post.mockRejectedValue(error);
+
+    await run().catch(reportError);
+
+    expect(core.error).toHaveBeenCalledWith('Response body: {"error":"channel_not_found"}');
+    expect(core.setFailed).toHaveBeenCalledWith('Request failed with status code 400');
+  });
+
+  it('githubEnv returns the value when set and a placeholder when unset (BUG-024)', () => {
+    process.env.GITHUB_REPOSITORY = 'Cloud-Officer/ci-actions';
+    delete process.env.GITHUB_SERVER_URL;
+
+    expect(githubEnv('GITHUB_REPOSITORY')).toBe('Cloud-Officer/ci-actions');
+    expect(githubEnv('GITHUB_SERVER_URL')).toBe('?');
+  });
+
+  it('does not render "undefined" in the payload when GITHUB_* are missing (BUG-024)', async () => {
+    delete process.env.GITHUB_SERVER_URL;
+    delete process.env.GITHUB_REPOSITORY;
+    delete process.env.GITHUB_RUN_ID;
+    core.getInput.mockImplementation((name) => {
+      if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+      if (name === 'jobs') return JSON.stringify({ build: { result: 'success' } });
+      return '';
+    });
+    axios.post.mockResolvedValue({ data: { ok: true } });
+
+    await run();
+
+    const payload = JSON.stringify(axios.post.mock.calls[0][1]);
+    expect(payload).not.toContain('undefined');
   });
 });
