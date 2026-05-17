@@ -8,6 +8,25 @@ const COLORS = {
     warning: '#f8c753'
 };
 
+// Lightweight runtime validation of the parsed `jobs` payload. The input is
+// `${{toJSON(needs)}}` - an object keyed by job name whose values are objects
+// (e.g. { "result": "success", "outputs": {...} }). Without this, a shape
+// change (array, renamed key, string value) silently produces wrong output
+// instead of failing fast with an actionable message.
+function validateJobs(jobs) {
+    const describe = (value) => (value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value);
+
+    if (jobs === null || typeof jobs !== 'object' || Array.isArray(jobs)) {
+        throw new Error(`'jobs' input must be a JSON object keyed by job name, but got ${describe(jobs)}`);
+    }
+
+    for (const [jobName, job] of Object.entries(jobs)) {
+        if (job === null || typeof job !== 'object' || Array.isArray(job)) {
+            throw new Error(`'jobs.${jobName}' must be an object (e.g. { "result": "success" }), but got ${describe(job)}`);
+        }
+    }
+}
+
 function parseInputs() {
     const webhookUrl = core.getInput('webhook-url');
     const jobsInput = core.getInput('jobs');
@@ -17,6 +36,7 @@ function parseInputs() {
     } catch (parseError) {
         throw new Error(`Failed to parse 'jobs' input as JSON: ${parseError.message}. Input was: ${jobsInput.substring(0, 100)}${jobsInput.length > 100 ? '...' : ''}`);
     }
+    validateJobs(jobs);
     return { webhookUrl, jobs };
 }
 
@@ -161,7 +181,7 @@ async function run() {
     await sendWebhook(webhookUrl, data);
 }
 
-module.exports = { run, COLORS };
+module.exports = { run, COLORS, validateJobs };
 
 /* istanbul ignore next */
 if (require.main === module) {

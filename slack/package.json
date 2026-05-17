@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "ncc build index.js -o dist --minify",
+    "pretest": "npm run build && git diff --exit-code -- dist",
     "test": "jest --coverage"
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
   },
   "author": "",
   "license": "ISC",
