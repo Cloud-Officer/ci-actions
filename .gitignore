@@ -539,3 +539,7 @@ coverage/
 # GitHub Actions bundled output
 !slack/dist/
 docs/code-review.md
+
+# Python bytecode (tests/action_contracts.py)
+__pycache__/
+*.pyc
