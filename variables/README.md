@@ -66,6 +66,20 @@ outputs:
     value: ${{ steps.variables.outputs.LINTERS }}
 ```
 
+### Output contract (stability)
+
+These 15 outputs are a **public contract** consumed by every downstream
+composite action and by `slack`. Note in particular:
+
+- The boolean-style flags (`DEPLOY_ON_*`, `DEPLOY_MACOS/TVOS`, `SKIP_*`,
+  `UPDATE_PACKAGES`) are the **strings** `'1'` (set) or `'0'` (unset), not
+  real booleans — consumers compare with `== '1'`.
+- `DEPLOY_OPTIONS` is a free-form string and may be empty.
+
+Renaming or removing an output, or changing the `'0'`/`'1'` semantics, is a
+**breaking change** and must be released as a major version bump (use the
+floating `v1`/`v2` tags deliberately).
+
 ## Commit Message Triggers
 
 The variables action parses commit messages and tag annotations for special trigger keywords. Include these in your commit message or tag to control workflow behavior:

@@ -64,7 +64,7 @@ runs:
         echo "Installing PMD version: ${PMD_VERSION}"
         wget -q -O /opt/pmd.zip "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip"
         wget -q -O /opt/pmd.zip.asc "https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-dist-${PMD_VERSION}-bin.zip.asc"
-        gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 98313B2644E62EA447F7C58C08AACF8B0D441047
+        bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" 98313B2644E62EA447F7C58C08AACF8B0D441047
         gpg --verify /opt/pmd.zip.asc /opt/pmd.zip
         unzip -q -d /opt /opt/pmd.zip
         rm -f /opt/pmd.zip /opt/pmd.zip.asc

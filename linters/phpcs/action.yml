@@ -72,7 +72,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
       run: |
-        gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys E82B2FB314E9906E
+        bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" E82B2FB314E9906E
         if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
           curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer
           curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar.asc -o php-cs-fixer.asc
