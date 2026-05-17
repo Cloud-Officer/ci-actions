@@ -51,6 +51,46 @@ describe('Slack Action', () => {
       await expect(run()).rejects.toThrow("Failed to parse 'jobs' input as JSON");
     });
 
+    it('should reject jobs that is a JSON array', async () => {
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify([{ result: 'success' }]);
+        return '';
+      });
+
+      await expect(run()).rejects.toThrow("'jobs' input must be a JSON object keyed by job name, but got array");
+    });
+
+    it('should reject jobs that is a JSON primitive', async () => {
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return '"oops"';
+        return '';
+      });
+
+      await expect(run()).rejects.toThrow("'jobs' input must be a JSON object keyed by job name, but got string");
+    });
+
+    it('should reject jobs that is JSON null', async () => {
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return 'null';
+        return '';
+      });
+
+      await expect(run()).rejects.toThrow("'jobs' input must be a JSON object keyed by job name, but got null");
+    });
+
+    it('should reject a job entry that is not an object', async () => {
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify({ build: 'success' });
+        return '';
+      });
+
+      await expect(run()).rejects.toThrow("'jobs.build' must be an object (e.g. { \"result\": \"success\" }), but got string");
+    });
+
     it('should truncate long invalid JSON in error message', async () => {
       const longInvalidJson = 'x'.repeat(200);
 
@@ -499,6 +539,34 @@ describe('Slack Action', () => {
         block.elements.some(el => el.type === 'plain_text' && el.text === '')
       );
       expect(hasEmptyCommitMessage).toBe(true);
+    });
+  });
+});
+
+// The action runs `dist/index.js` (the ncc bundle), not index.js. `pretest`
+// rebuilds and fails on a stale dist; this asserts the shipped artifact is
+// actually loadable and exposes the expected API, catching a bad ncc upgrade
+// or tree-shake regression that source-only tests would miss.
+describe('built bundle (dist/index.js)', () => {
+  it('loads and exports the public API', () => {
+    jest.isolateModules(() => {
+      const dist = require('./dist/index.js');
+      expect(typeof dist.run).toBe('function');
+      expect(typeof dist.validateJobs).toBe('function');
+      expect(dist.COLORS).toEqual({
+        info: '#439FE0',
+        success: '#5cb589',
+        failure: '#d5001a',
+        warning: '#f8c753'
+      });
+    });
+  });
+
+  it('enforces jobs validation in the bundled code', () => {
+    jest.isolateModules(() => {
+      const dist = require('./dist/index.js');
+      expect(() => dist.validateJobs([])).toThrow('must be a JSON object keyed by job name');
+      expect(() => dist.validateJobs({ build: { result: 'success' } })).not.toThrow();
     });
   });
 });

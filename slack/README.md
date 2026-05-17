@@ -18,6 +18,24 @@ inputs:
     required: true
 ```
 
+### `jobs` shape
+
+`jobs` is a JSON-encoded **object keyed by job name** — pass `${{toJSON(needs)}}`.
+Each value is an object; the action reads `result` (one of `success`,
+`failure`, `cancelled`, `skipped`) and, for the `variables` job, an `outputs`
+map of `'0'`/`'1'` deploy/skip flags:
+
+```json
+{
+  "variables": { "result": "success", "outputs": { "DEPLOY_ON_BETA": "1" } },
+  "build": { "result": "success" },
+  "test": { "result": "failure" }
+}
+```
+
+The action fails fast with an actionable message if `jobs` is not an object
+(array, string, null) or if any entry is not an object.
+
 ## Example usage
 
 ```yml
