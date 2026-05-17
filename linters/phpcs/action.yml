@@ -43,7 +43,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
-      run: if echo "${LINTERS}" | grep PHPCS &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh" PHPCS
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
