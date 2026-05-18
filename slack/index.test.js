@@ -4,7 +4,7 @@ const core = require('@actions/core');
 jest.mock('axios');
 jest.mock('@actions/core');
 
-const { run, COLORS, validateJobs, githubEnv, reportError } = require('./index');
+const { run, COLORS, githubEnv, reportError } = require('./index');
 
 describe('Slack Action', () => {
   const originalEnv = process.env;
