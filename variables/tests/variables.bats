@@ -598,60 +598,42 @@ teardown() {
 }
 
 # ============================================================================
-# Main body: GITHUB_ENV and GITHUB_OUTPUT writing tests
+# Main body: end-to-end subprocess run of variables.sh
 # ============================================================================
 
-@test "variables are written to GITHUB_ENV and GITHUB_OUTPUT" {
-  export COMMIT_MESSAGE="Deploy #beta-deploy"
-  export TAG=""
+@test "running variables.sh resolves triggers and writes GITHUB_ENV/OUTPUT" {
+  # Drive the real main() as a subprocess against a throwaway git repo, so the
+  # actual sequencing (trigger resolution + the GITHUB_ENV/OUTPUT write loop)
+  # is exercised rather than a re-implementation of it.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "Test commit #beta-deploy #skip-tests"
+  )
 
-  # Set all flags as the main body does
-  set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
-  set_flag_from_trigger DEPLOY_ON_RC "rc-deploy"
-  set_flag_from_trigger DEPLOY_MACOS "macos"
-  set_flag_from_trigger DEPLOY_TVOS "tvos"
-  set_flag_from_trigger SKIP_LICENSES "skip-licenses"
-  set_flag_from_trigger SKIP_LINTERS "skip-linters"
-  set_flag_from_trigger SKIP_TESTS "skip-tests"
-  set_flag_from_trigger UPDATE_PACKAGES "update-packages"
+  run bash -c "cd '${repo}' && \
+    GITHUB_REF=refs/heads/feature GITHUB_HEAD_REF=feature \
+    GITHUB_RUN_NUMBER=100 GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
 
-  DEPLOY_ON_PROD=0
-  if on_prod && [ "${TAG}" != "" ]; then
-    DEPLOY_ON_PROD=1
-  fi
+  [ "${status}" -eq 0 ]
 
-  DEPLOY_OPTIONS=""
-  if deploy_options; then
-    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
-  fi
-
-  if skip_all; then
-    SKIP_LICENSES=1
-    SKIP_LINTERS=1
-    SKIP_TESTS=1
-  fi
-
-  LINTERS=""
-  BUILD_NAME="test-build"
-  BUILD_VERSION="test-version"
-  MODIFIED_GITHUB_RUN_NUMBER=15100
-
-  # Write to GITHUB_ENV and GITHUB_OUTPUT as the main body does
-  for github in BUILD_NAME BUILD_VERSION COMMIT_MESSAGE MODIFIED_GITHUB_RUN_NUMBER DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_ON_PROD DEPLOY_MACOS DEPLOY_TVOS DEPLOY_OPTIONS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES LINTERS; do
-    echo "${github}=${!github}" >> "${GITHUB_ENV}"
-    echo "${github}=${!github}" >> "${GITHUB_OUTPUT}"
-  done
-
-  # Verify GITHUB_ENV contents
-  grep -q "DEPLOY_ON_BETA=1" "${GITHUB_ENV}"
-  grep -q "DEPLOY_ON_RC=0" "${GITHUB_ENV}"
-  grep -q "DEPLOY_ON_PROD=0" "${GITHUB_ENV}"
-  grep -q "SKIP_LICENSES=0" "${GITHUB_ENV}"
-  grep -q "BUILD_NAME=test-build" "${GITHUB_ENV}"
-  grep -q "LINTERS=" "${GITHUB_ENV}"
-
-  # Verify GITHUB_OUTPUT contents
+  # Values resolved by the real script from the commit-message triggers
   grep -q "DEPLOY_ON_BETA=1" "${GITHUB_OUTPUT}"
+  grep -q "SKIP_TESTS=1" "${GITHUB_OUTPUT}"
   grep -q "DEPLOY_ON_RC=0" "${GITHUB_OUTPUT}"
+  grep -q "DEPLOY_ON_PROD=0" "${GITHUB_OUTPUT}"
   grep -q "MODIFIED_GITHUB_RUN_NUMBER=15100" "${GITHUB_OUTPUT}"
+  grep -q "COMMIT_MESSAGE=Test commit #beta-deploy #skip-tests" "${GITHUB_OUTPUT}"
+  grep -qE "BUILD_NAME=feature-.+" "${GITHUB_OUTPUT}"
+
+  # Same content mirrored to GITHUB_ENV
+  grep -q "DEPLOY_ON_BETA=1" "${GITHUB_ENV}"
+  grep -q "SKIP_TESTS=1" "${GITHUB_ENV}"
 }
