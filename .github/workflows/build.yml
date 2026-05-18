@@ -19,7 +19,11 @@ permissions:
   contents: read
   pull-requests: read
 env:
+  NODE-CACHE: npm
   NODE-VERSION: 26.1.0
+concurrency:
+  group: build-${{github.ref}}
+  cancel-in-progress: true
 jobs:
   variables:
     name: Prepare Variables
@@ -227,7 +231,12 @@ jobs:
         aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
     - name: Bats Install (variables)
       shell: bash
-      run: cd variables && sudo apt-get update && sudo apt-get install -y bats
+      run: |-
+        cd variables && if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install bats-core
+        else
+          sudo apt-get update && sudo apt-get install -y bats
+        fi
       env:
         GITHUB_TOKEN: "${{secrets.GH_PAT}}"
     - name: Bats (variables)
