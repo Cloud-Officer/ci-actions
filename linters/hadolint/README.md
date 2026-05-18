@@ -56,7 +56,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   hadolint:
@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: Hadolint
         id: hadolint
-        uses: cloud-officer/ci-actions/linters/hadolint@master
+        uses: cloud-officer/ci-actions/linters/hadolint@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

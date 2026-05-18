@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   phpstan:
@@ -85,7 +85,7 @@ jobs:
     steps:
       - name: PHPStan
         id: phpstan
-        uses: cloud-officer/ci-actions/linters/phpstan@master
+        uses: cloud-officer/ci-actions/linters/phpstan@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

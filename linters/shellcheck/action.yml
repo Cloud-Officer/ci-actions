@@ -49,6 +49,5 @@ runs:
         path: "."
         pattern: "*.sh"
         reporter: github-pr-review
-        # reviewdog_flags:
         # https://github.com/koalaman/shellcheck
         shellcheck_flags: --external-sources

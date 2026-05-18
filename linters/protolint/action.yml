@@ -46,7 +46,5 @@ runs:
         filter_mode: nofilter
         github_token: ${{ inputs.github-token }}
         level: info
-        #protolint_version:
         protolint_flags: "."
         reporter: github-pr-review
-        # reviewdog_flags:

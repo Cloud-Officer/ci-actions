@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   flake8:
@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Flake8
         id: flake8
-        uses: cloud-officer/ci-actions/linters/flake8@master
+        uses: cloud-officer/ci-actions/linters/flake8@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

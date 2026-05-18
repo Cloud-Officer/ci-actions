@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   phpcs:
@@ -84,7 +84,7 @@ jobs:
     steps:
       - name: PHPCS
         id: phpcs
-        uses: cloud-officer/ci-actions/linters/phpcs@master
+        uses: cloud-officer/ci-actions/linters/phpcs@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

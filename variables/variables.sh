@@ -106,37 +106,30 @@ function main()
   SAFE_BRANCH="${SAFE_BRANCH/\//_}"
   MODIFIED_GITHUB_RUN_NUMBER=$(( ${GITHUB_RUN_NUMBER:-0} + 15000 ))
   export MODIFIED_GITHUB_RUN_NUMBER
+  # Resolve the source ref and the raw commit message; only these differ
+  # between a tag build, a PR-head build, and a branch build. BUILD_NAME /
+  # BUILD_VERSION are then derived identically for all three.
   TAG=""
-
   if echo "${GITHUB_REF:-}" | grep tags &> /dev/null; then
     TAG="${GITHUB_REF/refs\/tags\//}"
-    BUILD_NAME="${TAG}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-    export BUILD_NAME
-    BUILD_VERSION="${TAG}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-    export BUILD_VERSION
+    SOURCE_REF="${TAG}"
     git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-    # Capture then take the first line: `git ... | head` would mask a git
-    # failure under pipefail (and head closing the pipe trips pipefail too).
     COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}")"
-    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
-    export COMMIT_MESSAGE
   elif [ -n "${GITHUB_HEAD_REF:-}" ]; then
-    BUILD_NAME="${GITHUB_HEAD_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-    export BUILD_NAME
-    BUILD_VERSION="${GITHUB_HEAD_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-    export BUILD_VERSION
+    SOURCE_REF="${GITHUB_HEAD_REF}"
     COMMIT_MESSAGE="$(git log --format=%B -n 1 "${SHORT_COMMIT}")"
-    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
-    export COMMIT_MESSAGE
   else
-    BUILD_NAME="${SAFE_BRANCH}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
-    export BUILD_NAME
-    BUILD_VERSION="${SAFE_BRANCH}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
-    export BUILD_VERSION
+    SOURCE_REF="${SAFE_BRANCH}"
     COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA:-HEAD}")"
-    COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
-    export COMMIT_MESSAGE
   fi
+
+  # Take only the first line: `git ... | head` would mask a git failure under
+  # pipefail (and head closing the pipe trips pipefail too).
+  COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
+
+  BUILD_NAME="${SOURCE_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
+  BUILD_VERSION="${SOURCE_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
+  export BUILD_NAME BUILD_VERSION COMMIT_MESSAGE
 
   # Set deployment and skip flags from commit message triggers
   set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"

@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   trivy:
@@ -67,7 +67,7 @@ jobs:
     steps:
       - name: Trivy
         id: trivy
-        uses: cloud-officer/ci-actions/linters/trivy@master
+        uses: cloud-officer/ci-actions/linters/trivy@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
