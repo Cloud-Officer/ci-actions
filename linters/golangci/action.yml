@@ -48,6 +48,5 @@ runs:
         golangci_lint_flags: ""
         level: info
         reporter: github-pr-review
-        # reviewdog_flags:
         tool_name: golangci
         workdir: "."

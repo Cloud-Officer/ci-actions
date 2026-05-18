@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   swiftlint:
@@ -66,7 +66,7 @@ jobs:
     steps:
       - name: Swiftlint
         id: swiftlint
-        uses: cloud-officer/ci-actions/linters/swiftlint@master
+        uses: cloud-officer/ci-actions/linters/swiftlint@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

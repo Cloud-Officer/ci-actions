@@ -44,27 +44,27 @@ name: Build
       - created
 jobs:
   variables:
-  name: Prepare Variables
-  runs-on: ubuntu-latest
-  outputs:
-    BUILD_NAME: "${{steps.variables.outputs.BUILD_NAME}}"
-    BUILD_VERSION: "${{steps.variables.outputs.BUILD_VERSION}}"
-    COMMIT_MESSAGE: "${{steps.variables.outputs.COMMIT_MESSAGE}}"
-    DEPLOY_ON_BETA: "${{steps.variables.outputs.DEPLOY_ON_BETA}}"
-    DEPLOY_ON_RC: "${{steps.variables.outputs.DEPLOY_ON_RC}}"
-    DEPLOY_ON_PROD: "${{steps.variables.outputs.DEPLOY_ON_PROD}}"
-    DEPLOY_MACOS: "${{steps.variables.outputs.DEPLOY_MACOS}}"
-    DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
-    SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
-    SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
-    UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
-    LINTERS: "${{steps.variables.outputs.LINTERS}}"
-  steps:
-    - name: Prepare variables
-      id: variables
-      uses: cloud-officer/ci-actions/variables@master
-      with:
-        ssh-key: "${{secrets.SSH_KEY}}"
+    name: Prepare Variables
+    runs-on: ubuntu-latest
+    outputs:
+      BUILD_NAME: "${{steps.variables.outputs.BUILD_NAME}}"
+      BUILD_VERSION: "${{steps.variables.outputs.BUILD_VERSION}}"
+      COMMIT_MESSAGE: "${{steps.variables.outputs.COMMIT_MESSAGE}}"
+      DEPLOY_ON_BETA: "${{steps.variables.outputs.DEPLOY_ON_BETA}}"
+      DEPLOY_ON_RC: "${{steps.variables.outputs.DEPLOY_ON_RC}}"
+      DEPLOY_ON_PROD: "${{steps.variables.outputs.DEPLOY_ON_PROD}}"
+      DEPLOY_MACOS: "${{steps.variables.outputs.DEPLOY_MACOS}}"
+      DEPLOY_TVOS: "${{steps.variables.outputs.DEPLOY_TVOS}}"
+      SKIP_LICENSES: "${{steps.variables.outputs.SKIP_LICENSES}}"
+      SKIP_TESTS: "${{steps.variables.outputs.SKIP_TESTS}}"
+      UPDATE_PACKAGES: "${{steps.variables.outputs.UPDATE_PACKAGES}}"
+      LINTERS: "${{steps.variables.outputs.LINTERS}}"
+    steps:
+      - name: Prepare variables
+        id: variables
+        uses: cloud-officer/ci-actions/variables@v2
+        with:
+          ssh-key: "${{secrets.SSH_KEY}}"
   code_deploy:
     name: Code Deploy
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
     if: "${{always() && (needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1') && needs.php_unit_tests.result != 'failure' && needs.python_unit_tests.result != 'failure'}}"
     steps:
       - name: Checkout
-        uses: cloud-officer/ci-actions/codedeploy/checkout@master
+        uses: cloud-officer/ci-actions/codedeploy/checkout@v2
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
@@ -82,7 +82,7 @@ jobs:
         if: "${{needs.variables.outputs.UPDATE_PACKAGES == '1'}}"
         run: touch update-packages
       - name: Setup
-        uses: cloud-officer/ci-actions/setup@master
+        uses: cloud-officer/ci-actions/setup@v2
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           php-version: "${{env.PHP-VERSION}}"
@@ -112,7 +112,7 @@ jobs:
           mkdir deployment
           mv "${{needs.variables.outputs.BUILD_NAME}}.zip" "deployment/${{needs.variables.outputs.BUILD_NAME}}.zip"
       - name: S3Copy
-        uses: cloud-officer/ci-actions/codedeploy/s3copy@master
+        uses: cloud-officer/ci-actions/codedeploy/s3copy@v2
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
@@ -129,7 +129,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_BETA == '1'}}"
     steps:
       - name: Beta Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@master
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
@@ -147,7 +147,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_RC == '1'}}"
     steps:
       - name: Rc Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@master
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
@@ -165,7 +165,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
     steps:
       - name: Prod Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@master
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"

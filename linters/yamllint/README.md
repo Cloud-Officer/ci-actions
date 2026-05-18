@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   yamllint:
@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Yamllint
         id: yamllint
-        uses: cloud-officer/ci-actions/linters/yamllint@master
+        uses: cloud-officer/ci-actions/linters/yamllint@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

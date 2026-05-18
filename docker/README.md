@@ -37,7 +37,7 @@ jobs:
       id-token: write
     steps:
       - name: Publish Docker image
-        uses: cloud-officer/ci-actions/docker@master
+        uses: cloud-officer/ci-actions/docker@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}

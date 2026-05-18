@@ -67,6 +67,5 @@ runs:
         github_token: ${{ inputs.github-token }}
         level: info
         reporter: github-pr-review
-        # reviewdog_flags:
         tool_name: eslint
         workdir: "."

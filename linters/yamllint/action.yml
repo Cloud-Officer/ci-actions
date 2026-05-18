@@ -53,6 +53,5 @@ runs:
         github_token: ${{ inputs.github-token }}
         level: info
         reporter: github-pr-review
-        # reviewdog_flags:
         # https://yamllint.readthedocs.io/en/stable/
         yamllint_flags: "--strict ."

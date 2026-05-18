@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   golangci-lint:
@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Golangci-lint
         id: golangci-lint
-        uses: cloud-officer/ci-actions/linters/golangci@master
+        uses: cloud-officer/ci-actions/linters/golangci@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

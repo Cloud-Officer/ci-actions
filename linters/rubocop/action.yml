@@ -57,10 +57,8 @@ runs:
         github_token: ${{ inputs.github-token }}
         level: info
         reporter: github-pr-review
-        # reviewdog_flags:
         rubocop_extensions: "rubocop-capybara rubocop-graphql rubocop-i18n rubocop-minitest rubocop-performance rubocop-rails rubocop-rake rubocop-rspec rubocop-rspec_rails rubocop-thread_safety"
         # https://rubocop.org/
         rubocop_flags: " --except Layout/LineLength,Metrics/BlockLength"
-        # rubocop_version:
         tool_name: rubocop
         workdir: "."

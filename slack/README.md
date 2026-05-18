@@ -78,7 +78,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   actionlint:
@@ -90,7 +90,7 @@ jobs:
     steps:
       - name: Actionlint
         id: actionlint
-        uses: cloud-officer/ci-actions/linters/actionlint@master
+        uses: cloud-officer/ci-actions/linters/actionlint@v2
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"
@@ -104,7 +104,7 @@ jobs:
     if: always()
     steps:
       - name: Publish Statuses
-        uses: cloud-officer/ci-actions/slack@master
+        uses: cloud-officer/ci-actions/slack@v2
         with:
           webhook-url: "${{secrets.SLACK_WEBHOOK_URL}}"
           jobs: "${{toJSON(needs)}}"

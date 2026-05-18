@@ -59,7 +59,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@master
+        uses: cloud-officer/ci-actions/variables@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   php_unit_tests:
@@ -71,7 +71,7 @@ jobs:
     steps:
       - name: Licenses
         if: "${{(github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && needs.variables.outputs.SKIP_LICENSES != '1'}}"
-        uses: cloud-officer/ci-actions/soup@master
+        uses: cloud-officer/ci-actions/soup@v2
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
           github-token: "${{secrets.GITHUB_TOKEN}}"
