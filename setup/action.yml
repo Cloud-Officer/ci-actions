@@ -690,7 +690,10 @@ runs:
       if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
+      run: |
+        dir="$(composer config cache-files-dir)" || { echo "::error::composer is not available - cannot resolve the Composer cache directory"; exit 1; }
+        [ -n "$dir" ] || { echo "::error::composer config cache-files-dir returned empty"; exit 1; }
+        echo "dir=$dir" >> "${GITHUB_OUTPUT}"
     - name: Cache - Composer
       uses: actions/cache@v5
       if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
@@ -721,7 +724,10 @@ runs:
       if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: echo "dir=$(pip cache dir)" >> "${GITHUB_OUTPUT}"
+      run: |
+        dir="$(pip cache dir)" || { echo "::error::pip is not available - cannot resolve the pip cache directory"; exit 1; }
+        [ -n "$dir" ] || { echo "::error::pip cache dir returned empty"; exit 1; }
+        echo "dir=$dir" >> "${GITHUB_OUTPUT}"
     - name: Cache - PIP
       uses: actions/cache@v5
       if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
