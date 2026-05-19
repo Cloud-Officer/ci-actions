@@ -229,6 +229,21 @@ jobs:
         aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
         aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
         aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
+    - name: Bats Install (codedeploy)
+      shell: bash
+      run: |-
+        cd codedeploy && if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install bats-core
+        else
+          sudo apt-get update && sudo apt-get install -y bats
+        fi
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+    - name: Bats (codedeploy)
+      shell: bash
+      run: cd codedeploy && bats tests/
+      env:
+        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
     - name: Bats Install (variables)
       shell: bash
       run: |-

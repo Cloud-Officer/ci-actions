@@ -90,12 +90,14 @@ workflows.
 - `codedeploy/checkout/action.yml`: Repository checkout with LFS support
 - `codedeploy/s3copy/action.yml`: Sync files to/from S3
 - `codedeploy/deploy/action.yml`: Create and monitor CodeDeploy deployments
+  (polling logic extracted to `codedeploy/deploy/deploy.sh`)
 
 **Key Components:**
 
 - AWS credential configuration
 - S3 sync operations
-- Deployment creation with status polling (5-second intervals, 120 iterations max)
+- Deployment creation with status polling (5-second intervals; monitoring
+  window configurable via the `monitor-timeout-minutes` input, default 30)
 
 ### docker
 
@@ -276,16 +278,21 @@ commit messages and repository state.
 
 **Purpose:** Monitor AWS CodeDeploy deployment until completion or timeout.
 
-**Location:** `codedeploy/deploy/action.yml` in "Deploy to CodeDeploy" step
+**Location:** `codedeploy/deploy/deploy.sh` (`create_deployment` and
+`poll_deployment` functions, driven by `main`)
 
 **Algorithm:**
 
-1. Create deployment via AWS CLI
-2. Poll deployment status every 5 seconds
-3. Exit on terminal states: Succeeded, Failed, Stopped, Ready
-4. Timeout after 120 iterations (~10 minutes)
+1. Create deployment via AWS CLI (`create_deployment`)
+2. Poll deployment status every `POLL_INTERVAL` seconds (default 5),
+   tolerating transient `get-deployment` API errors
+3. Exit on terminal states: Succeeded (0), Failed/Stopped (1). `Ready` and
+   other non-terminal states keep polling, since blue/green still has
+   BlockTraffic/AllowTraffic/TerminateBlueInstances phases that can fail
+4. Timeout after `monitor-timeout-minutes * 60 / POLL_INTERVAL` iterations
+   (default 30 minutes), returning a failure rather than a false-green build
 
-**Complexity:** O(1) bounded by iteration limit
+**Complexity:** O(1) bounded by the computed iteration limit
 
 ### Slack Message Construction
 
@@ -359,7 +366,7 @@ commit messages and repository state.
 | AWS credential expiration | Deployment fails | Use short-lived credentials, OIDC |
 | Slack webhook unavailable | No notification | Non-blocking, error logged |
 | Linter timeout | Job fails | 30-minute timeout per job |
-| CodeDeploy stuck | Monitoring exits | 10-minute polling timeout |
+| CodeDeploy stuck | Monitoring fails the step | Configurable polling timeout (`monitor-timeout-minutes`, default 30) |
 | Docker build failure | No image published | Build logs available |
 | Private repo access denied | Checkout fails | SSH key validation |
 
