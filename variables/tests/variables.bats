@@ -637,3 +637,33 @@ teardown() {
   grep -q "DEPLOY_ON_BETA=1" "${GITHUB_ENV}"
   grep -q "SKIP_TESTS=1" "${GITHUB_ENV}"
 }
+
+@test "branch ref containing 'tags' is not misrouted to the tag path" {
+  # Regression: GITHUB_REF carries the substring 'tags' but is a branch, not
+  # refs/tags/*. The old unanchored `grep tags` routed this through the tag path,
+  # which ran a tag fetch and produced an empty COMMIT_MESSAGE / slash-mangled
+  # BUILD_NAME. The anchored check must keep it on the branch path.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "Branch build commit"
+  )
+
+  run bash -c "cd '${repo}' && \
+    GITHUB_REF=refs/heads/feature/tags-cleanup GITHUB_HEAD_REF='' \
+    GITHUB_SHA=HEAD GITHUB_RUN_NUMBER=100 \
+    GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+
+  [ "${status}" -eq 0 ]
+  grep -q "COMMIT_MESSAGE=Branch build commit" "${GITHUB_OUTPUT}"
+  grep -qE "BUILD_NAME=feature_tags-cleanup-.+" "${GITHUB_OUTPUT}"
+  # BUILD_NAME must not contain a slash (a slash means the tag path mangled it).
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+}

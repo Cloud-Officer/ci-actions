@@ -110,7 +110,11 @@ function main()
   # between a tag build, a PR-head build, and a branch build. BUILD_NAME /
   # BUILD_VERSION are then derived identically for all three.
   TAG=""
-  if echo "${GITHUB_REF:-}" | grep tags &> /dev/null; then
+  # Anchored prefix match: a substring `grep tags` also matched branch refs that
+  # merely contain "tags" (e.g. refs/heads/feature/tags-cleanup), routing them
+  # through the tag path -> empty COMMIT_MESSAGE, slash-mangled BUILD_NAME, and a
+  # spurious tag fetch.
+  if [[ "${GITHUB_REF:-}" == refs/tags/* ]]; then
     TAG="${GITHUB_REF/refs\/tags\//}"
     SOURCE_REF="${TAG}"
     git fetch --depth=1 origin +refs/tags/*:refs/tags/*
