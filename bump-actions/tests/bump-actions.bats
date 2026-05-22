@@ -1,13 +1,13 @@
 #!/usr/bin/env bats
 
-# Tests for scripts/bump-external-actions.sh. A fake `gh` on PATH resolves a
+# Tests for bump-actions/bump-actions.sh. A fake `gh` on PATH resolves a
 # fixed version/tag map (no network), and BUMP_SCAN_ROOT points the scanner at a
 # throwaway fixture tree — mirroring how deploy.bats fakes `aws`. The script is
 # also sourced so its helpers can be unit-tested directly (its body is guarded
 # by `[[ "${BASH_SOURCE[0]}" == "${0}" ]]`).
 
 setup() {
-  SCRIPT="${BATS_TEST_DIRNAME}/../bump-external-actions.sh"
+  SCRIPT="${BATS_TEST_DIRNAME}/../bump-actions.sh"
   FIX="$(mktemp -d)"
   BIN="$(mktemp -d)"
   export BUMP_SCAN_ROOT="${FIX}"

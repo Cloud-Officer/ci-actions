@@ -21,12 +21,13 @@ jobs:
     timeout-minutes: 15
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      # Use our own composite checkout (not actions/checkout) so this workflow
+      # carries no external action ref for the scanner to bump — avoiding a
+      # self-referential loop. cloud-officer/* refs are skipped by the scanner.
+      uses: cloud-officer/ci-actions/codedeploy/checkout@v2
       with:
-        # PAT (repo + workflow scope) so workflow-file edits can be pushed and
-        # the resulting PR triggers this repo's own CI.
-        token: ${{ secrets.GH_PAT }}
-        persist-credentials: true
+        github-token: ${{ secrets.GH_PAT }}
+        ssh-key: ''
     - name: Resolve, apply and open PR
       shell: bash
       env:
@@ -41,7 +42,7 @@ jobs:
         base="$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')"
         body_file="$(mktemp)"
 
-        scripts/bump-external-actions.sh --apply --pr-body-file "${body_file}"
+        bump-actions/bump-actions.sh --apply --pr-body-file "${body_file}"
 
         if git diff --quiet; then
           echo 'No external action bumps available.'
@@ -51,7 +52,11 @@ jobs:
         git checkout -B "${branch}"
         git add -A
         git commit -m 'Bump external action references'
-        git push --force origin "${branch}"
+        # Our checkout composite uses persist-credentials:false, so authenticate
+        # the push explicitly with the PAT (masked in logs as a registered secret).
+        git push --force \
+          "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+          "HEAD:${branch}"
 
         if gh pr view "${branch}" --json state --jq '.state' 2>/dev/null | grep -qx 'OPEN'; then
           echo "Existing PR for ${branch} updated in place."
