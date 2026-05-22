@@ -66,7 +66,7 @@ runs:
     # install apt packages
     - name: Install APT Packages
       shell: bash
-      if: ${{ inputs.apt-packages != 'none' }}
+      if: ${{ inputs.apt-packages != 'none' && steps.check.outputs.continue == 'true' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         APT_PACKAGES: ${{ inputs.apt-packages }}
@@ -89,7 +89,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      if: ${{ inputs.php-version != 'none' }}
+      if: ${{ inputs.php-version != 'none' && steps.check.outputs.continue == 'true' }}
       run: |
         dir="$(composer config cache-files-dir)" || { echo "::error::composer is not available - cannot resolve the Composer cache directory"; exit 1; }
         [ -n "$dir" ] || { echo "::error::composer config cache-files-dir returned empty"; exit 1; }
