@@ -14,7 +14,11 @@ set -euo pipefail
 
 linter_name="${1:?usage: check_enabled.sh LINTER_NAME}"
 
-if echo "${LINTERS:-}" | grep -- "${linter_name}" &> /dev/null; then
+# -w (whole word) + -F (fixed string) so a linter name can only match a complete
+# token in the space-separated list, never a substring of another. Without -wF a
+# future linter whose name is a substring of another (or of a LINTERS token)
+# would silently mis-enable.
+if echo "${LINTERS:-}" | grep -qwF -- "${linter_name}"; then
   echo "continue=true" >> "${GITHUB_OUTPUT}"
 else
   echo "continue=false" >> "${GITHUB_OUTPUT}"
