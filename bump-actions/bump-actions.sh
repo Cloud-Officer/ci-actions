@@ -38,7 +38,7 @@ function esc_re()            { printf '%s' "$1" | sed 's/[.[\*^$/]/\\&/g'; }
 function version_gt()
 {
   local a="${1#v}" b="${2#v}"
-  [ "${a}" != "${b}" ] && [ "$(printf '%s\n%s\n' "${a}" "${b}" | sort -V | tail -1)" = "${a}" ]
+  [ "${a}" != "${b}" ] && [ "$(printf '%s\n%s\n' "${a}" "${b}" | sort -V | tail -1)" == "${a}" ]
 }
 
 # List candidate YAML files, skipping vendor dirs and github-build-generated
@@ -74,7 +74,7 @@ function latest_version()
 {
   local or="$1" tag
   tag="$(gh api "repos/${or}/releases/latest" --jq '.tag_name' 2>/dev/null || true)"
-  if [ -z "${tag}" ] || [ "${tag}" = "null" ]; then
+  if [ -z "${tag}" ] || [ "${tag}" == "null" ]; then
     tag="$(gh api "repos/${or}/tags?per_page=100" --jq '.[].name' 2>/dev/null \
             | grep -E '^v?[0-9]+(\.[0-9]+)*$' | sort -V | tail -1 || true)"
   fi
@@ -171,15 +171,15 @@ function main()
 
   local i
   for i in "${!bump_repo[@]}"; do
-    printf 'BUMP\t%s\t%s -> %s\n' "${bump_repo[$i]}" "${bump_old[$i]}" "${bump_new[$i]}"
+    printf 'BUMP\t%s\t%s -> %s\n' "${bump_repo[${i}]}" "${bump_old[${i}]}" "${bump_new[${i}]}"
   done
   echo "${count} bump(s) available."
 
   # Apply: rewrite each ref in every file that carries it.
-  if [ "${apply}" = true ]; then
+  if [ "${apply}" == true ]; then
     local path old pat f tmp
     for i in "${!bump_repo[@]}"; do
-      path="${bump_repo[$i]}"; old="${bump_old[$i]}"; new="${bump_new[$i]}"
+      path="${bump_repo[${i}]}"; old="${bump_old[${i}]}"; new="${bump_new[${i}]}"
       pat="$(esc_re "${path}")@$(esc_re "${old}")"
       while IFS= read -r f; do
         tmp="$(mktemp)"
@@ -204,12 +204,12 @@ function main()
       echo "| Action | From | To |"
       echo "| --- | --- | --- |"
       for i in "${!bump_repo[@]}"; do
-        printf '| %s | %s | %s |\n' "${bump_repo[$i]}" "${bump_old[$i]}" "${bump_new[$i]}"
+        printf '| %s | %s | %s |\n' "${bump_repo[${i}]}" "${bump_old[${i}]}" "${bump_new[${i}]}"
       done
       echo
       echo "### Upstream release notes"
       for i in "${!bump_repo[@]}"; do
-        path="${bump_repo[$i]}"; new="${bump_new[$i]}"
+        path="${bump_repo[${i}]}"; new="${bump_new[${i}]}"
         or="$(printf '%s' "${path}" | cut -d/ -f1-2)"
         echo
         echo "#### ${path} ${new}"
