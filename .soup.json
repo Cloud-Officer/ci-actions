@@ -170,7 +170,7 @@
   "es-object-atoms": {
     "language": "JS",
     "package": "es-object-atoms",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "license": "MIT",
     "description": "ES Object-related atoms: Object, ToObject, RequireObjectCoercible",
     "website": "https://github.com/ljharb/es-object-atoms#readme",

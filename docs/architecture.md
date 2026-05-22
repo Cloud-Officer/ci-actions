@@ -27,6 +27,13 @@
 |       aws        |     |   codedeploy     |     |      docker      |
 | (AWS commands)   |     | (AWS deployment) |     | (Docker publish) |
 +------------------+     +------------------+     +------------------+
+
+Maintenance utility (out of band, weekly cron — not part of the build pipeline):
+
++----------------------------------------------------------------+
+|                          bump-actions                          |
+| (scan YAML for external action refs, bump to latest upstream)  |
++----------------------------------------------------------------+
 ```
 
 ### Component Overview
@@ -47,6 +54,8 @@ workflows.
 4. **aws**, **codedeploy**, and **docker** handle deployment tasks
 5. **soup** validates open source licenses
 6. **slack** sends build status notifications at workflow completion
+7. **bump-actions** runs out of band on a weekly cron (not part of the build
+   pipeline) to keep external GitHub Action references up to date
 
 ## Software units
 
@@ -68,6 +77,29 @@ workflows.
 - `ssh-key`: SSH key for private repository access
 - `aws-access-key-id`, `aws-secret-access-key`, `aws-region`: AWS credentials
 - `shell-commands`: Commands to execute
+
+### bump-actions
+
+**Purpose:** Keep external GitHub Action references current by scanning
+hand-maintained YAML and bumping each `uses: org/repo@ref` to its latest
+upstream version. Powers the weekly external-actions bump cron (issue #212).
+
+**Location:** `bump-actions/bump-actions.sh`
+
+**Key Components:**
+
+- `target_files`: list candidate YAML, skipping vendor dirs and
+  github-build-generated files
+- `extract_refs`: emit unique external refs, excluding `./` local and
+  `cloud-officer/*` refs
+- `resolve_bump`: resolve the new ref for a current ref (floating major,
+  exact semver, or no-op)
+- `main`: dry-run report by default; `--apply` rewrites refs in place and
+  `--pr-body-file` writes a bump table with upstream release notes
+
+**Invocation:** Run out of band by `.github/workflows/external-actions-bump.yml`
+(weekly cron); unit-tested via `bump-actions/tests/bump-actions.bats`. Requires
+an authenticated `gh` on PATH.
 
 ### cis
 
@@ -308,6 +340,27 @@ commit messages and repository state.
 4. Construct Block Kit message with attachments
 
 **Complexity:** O(j) where j is the number of jobs
+
+### External Action Reference Bumping
+
+**Purpose:** Resolve whether an external GitHub Action reference can be bumped to
+a newer upstream version, preserving the existing pin style.
+
+**Location:** `bump-actions/bump-actions.sh` (`resolve_bump`, with the
+`is_sha`/`is_floating_major`/`is_exact_semver`/`version_gt` helpers)
+
+**Algorithm:**
+
+1. Skip 40-char SHA pins and non-version refs (e.g. `@main`)
+2. Resolve the latest upstream tag via the published release, falling back to
+   the highest semver tag
+3. Floating major (`vN` / `N`): bump only when the latest major increases,
+   keeping the floating form (e.g. `v6` -> `v7`), verifying the tag exists
+4. Exact pin (`vX.Y` / `X.Y.Z`): bump to the latest release when strictly newer
+   (`version_gt` compares with `sort -V`, ignoring a leading `v`)
+
+**Complexity:** O(r) where r is the number of distinct external references
+(one upstream lookup per reference)
 
 ## Risk controls
 

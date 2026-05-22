@@ -16,7 +16,7 @@
 | JS | dunder-proto | 1.0.1 | MIT | If available, the `Object.prototype.proto` accessor and mutator, call-bound | <https://github.com/es-shims/dunder-proto#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | es-define-property | 1.0.1 | MIT | `Object.defineProperty`, but not IE 8's broken one. | <https://github.com/ljharb/es-define-property#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | es-errors | 1.3.0 | MIT | A simple cache for a few of the JS Error constructors. | <https://github.com/ljharb/es-errors#readme> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | es-object-atoms | 1.1.1 | MIT | ES Object-related atoms: Object, ToObject, RequireObjectCoercible | <https://github.com/ljharb/es-object-atoms#readme> | 2026-05-22 | Low | Dependency | Dependency |
+| JS | es-object-atoms | 1.1.2 | MIT | ES Object-related atoms: Object, ToObject, RequireObjectCoercible | <https://github.com/ljharb/es-object-atoms#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | es-set-tostringtag | 2.1.0 | MIT | A helper to optimistically set Symbol.toStringTag, when possible. | <https://github.com/es-shims/es-set-tostringtag#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | follow-redirects | 1.16.0 | MIT | HTTP and HTTPS modules that follow redirects. | <https://github.com/follow-redirects/follow-redirects> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | form-data | 4.0.5 | MIT | A library to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications. | <https://github.com/form-data/form-data#readme> | 2026-05-22 | Low | Dependency | Dependency |
