@@ -151,6 +151,35 @@ jobs:
       with:
         linters: ''
         ssh-key: ''
+    # The 19 invocations above only prove the actions load and run the gate;
+    # they would still pass green if check_enabled.sh were flipped to
+    # continue=true (checkout + reviewdog would simply run). Assert the gate
+    # output directly so a regression in the shared QUAL-001 gate fails here.
+    - name: Assert check_enabled.sh gate output
+      shell: bash
+      run: |
+        set -euo pipefail
+        gate="linters/_lib/check_enabled.sh"
+        run_gate() { # LINTERS_VALUE LINTER_NAME -> echoes continue=...
+          local out
+          out="$(mktemp)"
+          LINTERS="$1" GITHUB_OUTPUT="${out}" bash "${gate}" "$2"
+          cat "${out}"
+        }
+        # Disabled path (the path the smoke invocations above exercise): an
+        # empty list must resolve to continue=false.
+        got="$(run_gate '' ACTIONLINT)"
+        test "${got}" = 'continue=false' \
+          || { echo "::error::empty LINTERS should disable ACTIONLINT, got '${got}'"; exit 1; }
+        # Disabled path: a non-empty list that omits the linter -> continue=false.
+        got="$(run_gate 'SHELLCHECK' ACTIONLINT)"
+        test "${got}" = 'continue=false' \
+          || { echo "::error::ACTIONLINT absent from LINTERS should disable it, got '${got}'"; exit 1; }
+        # Enabled path: a list containing the linter -> continue=true.
+        got="$(run_gate 'ACTIONLINT SHELLCHECK' ACTIONLINT)"
+        test "${got}" = 'continue=true' \
+          || { echo "::error::ACTIONLINT present in LINTERS should enable it, got '${got}'"; exit 1; }
+        echo "check_enabled.sh gate OK (disabled, absent, enabled paths verified)"
 
   variables-smoke:
     name: Variables action
