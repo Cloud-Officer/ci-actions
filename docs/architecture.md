@@ -182,6 +182,14 @@ an authenticated `gh` on PATH.
 **Pattern:** Each linter action checks if it should run based on the `LINTERS`
 input variable, which is populated by the variables action.
 
+**Shared helpers (`linters/_lib/`):**
+
+- `check_enabled.sh`: invoked by every linter action via
+  `${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh <NAME>` to gate execution on
+  whether `<NAME>` appears (as a whole word) in the `LINTERS` list
+- `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
+  fallback (used by phpcs and pmd before signature verification)
+
 ### setup
 
 **Purpose:** Unified setup action for multiple language runtimes and services.
@@ -388,6 +396,8 @@ a newer upstream version, preserving the existing pin style.
 
 - phpcs: Downloads php-cs-fixer and verifies GPG signature before execution
 - pmd: Downloads PMD release and verifies GPG signature before execution
+- Public keys are fetched via the shared `linters/_lib/recv_gpg_key.sh` helper,
+  which retries across multiple keyservers to avoid flaky imports
 
 #### Code Analysis
 
