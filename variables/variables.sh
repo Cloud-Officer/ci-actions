@@ -117,7 +117,12 @@ function main()
   if [[ "${GITHUB_REF:-}" == refs/tags/* ]]; then
     TAG="${GITHUB_REF/refs\/tags\//}"
     SOURCE_REF="${TAG}"
-    git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+    # Fetch over an authenticated HTTPS URL rather than `origin`. The checkout
+    # step runs with persist-credentials:false, which strips the deploy key's
+    # core.sshCommand while leaving origin pointed at git@github.com, so a plain
+    # `git fetch origin` here fails with "Permission denied (publickey)" on tag
+    # builds. GITHUB_TOKEN is exported by the action step for this purpose.
+    git fetch --depth=1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" +refs/tags/*:refs/tags/*
     COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}")"
   elif [ -n "${GITHUB_HEAD_REF:-}" ]; then
     SOURCE_REF="${GITHUB_HEAD_REF}"
