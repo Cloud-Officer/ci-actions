@@ -290,7 +290,7 @@
   "hasown": {
     "language": "JS",
     "package": "hasown",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "license": "MIT",
     "description": "A robust, ES3 compatible, \"has own property\" predicate.",
     "website": "https://github.com/inspect-js/hasOwn#readme",
@@ -386,7 +386,7 @@
   "undici": {
     "language": "JS",
     "package": "undici",
-    "version": "6.25.0",
+    "version": "6.26.0",
     "license": "MIT",
     "description": "An HTTP/1.1 client, written from scratch for Node.js",
     "website": "https://undici.nodejs.org",
