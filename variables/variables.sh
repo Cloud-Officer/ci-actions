@@ -123,7 +123,11 @@ function main()
   SHORT_COMMIT="$(git rev-parse --short HEAD)"
   SAFE_BRANCH="${GITHUB_REF:-/refs/heads/}"
   SAFE_BRANCH="${SAFE_BRANCH/refs\/heads\//}"
-  SAFE_BRANCH="${SAFE_BRANCH/\//_}"
+  # Global substitution (//): a branch nested two or more levels deep
+  # (e.g. feature/a/b) contains multiple slashes; replacing only the first left
+  # a literal slash in BUILD_NAME. SOURCE_REF below is sanitized again uniformly,
+  # but keep SAFE_BRANCH self-consistent for any direct use.
+  SAFE_BRANCH="${SAFE_BRANCH//\//_}"
   MODIFIED_GITHUB_RUN_NUMBER=$(( ${GITHUB_RUN_NUMBER:-0} + 15000 ))
   export MODIFIED_GITHUB_RUN_NUMBER
   # Resolve the source ref and the raw commit message; only these differ
@@ -155,6 +159,13 @@ function main()
   # Take only the first line: `git ... | head` would mask a git failure under
   # pipefail (and head closing the pipe trips pipefail too).
   COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
+
+  # Sanitize the resolved ref once, for all three paths (tag, PR head, branch):
+  # the tag and PR-head paths assign SOURCE_REF from raw refs with no cleanup, so
+  # a slash-named PR branch (feature/foo) or a slash-containing tag (releases/1.0)
+  # would otherwise leak a literal slash into BUILD_NAME/BUILD_VERSION, which are
+  # used downstream as S3 keys and zip/CodeDeploy identifiers.
+  SOURCE_REF="${SOURCE_REF//\//_}"
 
   BUILD_NAME="${SOURCE_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
   BUILD_VERSION="${SOURCE_REF}-${MODIFIED_GITHUB_RUN_NUMBER}-${TIMESTAMP}"
