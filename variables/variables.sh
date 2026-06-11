@@ -84,6 +84,26 @@ function add_linter_if_dir()
   return 0
 }
 
+# TRIVY is enabled when IaC files or package-manager manifests are present
+# anywhere within the first three directory levels of the working tree. Kept as
+# a sourceable predicate (like add_linter_if_*) so the detection can be unit
+# tested without re-implementing the find expression. Returns 0 when at least
+# one matching file exists, 1 otherwise.
+function detect_trivy()
+{
+  find . -maxdepth 3 \( \
+     -name "Dockerfile*" -o -name "*.tf" -o \
+     -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
+     -name "package.json" -o -name "package-lock.json" -o \
+     -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
+     -name "go.sum" -o -name "requirements.txt" -o \
+     -name "Pipfile.lock" -o -name "poetry.lock" -o \
+     -name "Gemfile.lock" -o -name "composer.lock" -o \
+     -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
+     -name "Cargo.lock" -o -name "Package.resolved" \
+     \) -print -quit 2>/dev/null | grep -q .
+}
+
 # Resolve build identifiers and skip/deploy flags from the environment and the
 # commit message, then export them to GITHUB_ENV / GITHUB_OUTPUT. Wrapped in a
 # function so the test suite can source this file for its helpers without
@@ -192,17 +212,7 @@ function main()
   add_linter_if_file "SHELLCHECK"    ".shellcheckrc"
   add_linter_if_file "SWIFTLINT"     ".swiftlint.yml"
   # TRIVY - enabled when IaC files or package manager files are present
-  if find . -maxdepth 3 \( \
-     -name "Dockerfile*" -o -name "*.tf" -o \
-     -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
-     -name "package.json" -o -name "package-lock.json" -o \
-     -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
-     -name "go.sum" -o -name "requirements.txt" -o \
-     -name "Pipfile.lock" -o -name "poetry.lock" -o \
-     -name "Gemfile.lock" -o -name "composer.lock" -o \
-     -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
-     -name "Cargo.lock" -o -name "Package.resolved" \
-     \) -print -quit 2>/dev/null | grep -q .; then
+  if detect_trivy; then
     LINTERS="${LINTERS} TRIVY"
   fi
   add_linter_if_file "YAMLLINT"      ".yamllint.yml"
