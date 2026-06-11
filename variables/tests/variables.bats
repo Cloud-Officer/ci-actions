@@ -386,6 +386,13 @@ teardown() {
   [[ "$LINTERS" == *"BANDIT"* ]]
 }
 
+@test "linter detection: CFNLINT detected from .cfnlintrc file" {
+  touch "${TEST_DIR}/.cfnlintrc"
+  LINTERS=""
+  add_linter_if_file "CFNLINT" "${TEST_DIR}/.cfnlintrc"
+  [[ "$LINTERS" == *"CFNLINT"* ]]
+}
+
 @test "linter detection: ESLINT detected from .eslintrc.json file" {
   touch "${TEST_DIR}/.eslintrc.json"
   LINTERS=""
@@ -496,6 +503,36 @@ teardown() {
   LINTERS=""
   add_linter_if_file "YAMLLINT" "${TEST_DIR}/.yamllint.yml"
   [[ "$LINTERS" == *"YAMLLINT"* ]]
+}
+
+# TRIVY is detected by a depth-bounded find over the working tree (not a single
+# config-file check), so these cases cd into a fixture tree and call the
+# extracted detect_trivy predicate directly.
+
+@test "linter detection: TRIVY detected when a Dockerfile is present at the root" {
+  touch "${TEST_DIR}/Dockerfile"
+  cd "${TEST_DIR}"
+  run detect_trivy
+  [ "$status" -eq 0 ]
+}
+
+@test "linter detection: TRIVY detected from a package-lock.json nested at depth 3" {
+  # Proves the find descends into subdirectories (within -maxdepth 3), not just
+  # the root: a/b/package-lock.json is three levels deep.
+  mkdir -p "${TEST_DIR}/a/b"
+  touch "${TEST_DIR}/a/b/package-lock.json"
+  cd "${TEST_DIR}"
+  run detect_trivy
+  [ "$status" -eq 0 ]
+}
+
+@test "linter detection: TRIVY not detected when no IaC or manifest files present" {
+  mkdir -p "${TEST_DIR}/src"
+  touch "${TEST_DIR}/src/main.py"
+  touch "${TEST_DIR}/README.md"
+  cd "${TEST_DIR}"
+  run detect_trivy
+  [ "$status" -eq 1 ]
 }
 
 @test "linter detection: no linters detected when no config files present" {
@@ -666,4 +703,62 @@ teardown() {
   grep -qE "BUILD_NAME=feature_tags-cleanup-.+" "${GITHUB_OUTPUT}"
   # BUILD_NAME must not contain a slash (a slash means the tag path mangled it).
   ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+}
+
+@test "tag ref drives the tag-build path: prod deploy, tag BUILD_NAME, tag-subject COMMIT_MESSAGE" {
+  # Exercise the refs/tags/* branch of main() (the production-deploy gate) end to
+  # end, the path two real bugs escaped on with green CI (#214, #224). The
+  # authenticated `git fetch` to github.com is replaced by a PATH-shimmed git so
+  # the test stays offline; the tag already exists locally, so every other git
+  # subcommand (rev-parse, tag -l) passes through to the real binary.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "Initial commit"
+    git tag -a v1.0.0 -m "Release v1.0.0 #prod-deploy"
+  )
+
+  local shim_dir="${TEST_DIR}/bin"
+  local real_git
+  real_git="$(command -v git)"
+  mkdir -p "${shim_dir}"
+  cat > "${shim_dir}/git" <<EOF
+#!/usr/bin/env bash
+# Make the authenticated tag fetch a no-op; pass everything else to real git.
+if [ "\$1" = "fetch" ]; then
+  exit 0
+fi
+exec "${real_git}" "\$@"
+EOF
+  chmod +x "${shim_dir}/git"
+
+  run bash -c "cd '${repo}' && \
+    PATH=\"${shim_dir}:\$PATH\" \
+    GITHUB_REF=refs/tags/v1.0.0 GITHUB_HEAD_REF='' \
+    GITHUB_TOKEN=dummy-token GITHUB_REPOSITORY=owner/repo \
+    GITHUB_RUN_NUMBER=100 \
+    GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+
+  [ "${status}" -eq 0 ]
+
+  # DEPLOY_ON_PROD is gated on (#prod-deploy trigger AND a non-empty TAG); only
+  # the tag path can satisfy both, so this is the real production-deploy gate.
+  grep -q "DEPLOY_ON_PROD=1" "${GITHUB_OUTPUT}"
+  # COMMIT_MESSAGE comes from the annotated tag's subject, not git log.
+  grep -q "COMMIT_MESSAGE=Release v1.0.0 #prod-deploy" "${GITHUB_OUTPUT}"
+  # BUILD_NAME is derived from the bare tag name (no refs/tags/ prefix, no slash).
+  grep -qE "BUILD_NAME=v1.0.0-.+" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  # Unrelated triggers stay off.
+  grep -q "DEPLOY_ON_BETA=0" "${GITHUB_OUTPUT}"
+
+  # Mirrored to GITHUB_ENV as well.
+  grep -q "DEPLOY_ON_PROD=1" "${GITHUB_ENV}"
 }
