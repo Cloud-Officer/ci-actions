@@ -762,3 +762,111 @@ EOF
   # Mirrored to GITHUB_ENV as well.
   grep -q "DEPLOY_ON_PROD=1" "${GITHUB_ENV}"
 }
+
+@test "branch ref with multiple slashes is fully sanitized in BUILD_NAME" {
+  # Regression (#236 / BUG-009): SAFE_BRANCH used single-occurrence ${x/\//_},
+  # so only the first slash was replaced. A branch two or more levels deep
+  # (refs/heads/feature/a/b) left a literal slash in BUILD_NAME/BUILD_VERSION,
+  # which then break the downstream zip/CodeDeploy/S3 steps.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "Deep branch build commit"
+  )
+
+  run bash -c "cd '${repo}' && \
+    GITHUB_REF=refs/heads/feature/a/b GITHUB_HEAD_REF='' \
+    GITHUB_SHA=HEAD GITHUB_RUN_NUMBER=100 \
+    GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+
+  [ "${status}" -eq 0 ]
+  # Every slash replaced: feature/a/b -> feature_a_b.
+  grep -qE "BUILD_NAME=feature_a_b-.+" "${GITHUB_OUTPUT}"
+  grep -qE "BUILD_VERSION=feature_a_b-.+" "${GITHUB_OUTPUT}"
+  # Invariant: no slash survives in either identifier.
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+}
+
+@test "PR head ref with a slash is sanitized in BUILD_NAME" {
+  # Regression (#237 / BUG-010): the PR-head path set SOURCE_REF straight from
+  # GITHUB_HEAD_REF with no slash sanitization, so a PR opened from a slash-named
+  # branch (the common convention) put a literal slash into BUILD_NAME.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "PR build commit"
+  )
+
+  run bash -c "cd '${repo}' && \
+    GITHUB_REF=refs/pull/7/merge GITHUB_HEAD_REF=feature/foo \
+    GITHUB_RUN_NUMBER=100 \
+    GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+
+  [ "${status}" -eq 0 ]
+  grep -qE "BUILD_NAME=feature_foo-.+" "${GITHUB_OUTPUT}"
+  grep -qE "BUILD_VERSION=feature_foo-.+" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+}
+
+@test "tag ref with a slash is sanitized in BUILD_NAME" {
+  # Regression (#237 / BUG-010): the tag path set SOURCE_REF from the raw tag
+  # name, so a slash-containing tag (e.g. releases/1.0) put a literal slash into
+  # BUILD_NAME. The fetch is stubbed via a PATH-shimmed git (same as the
+  # tag-build-path test); the tag exists locally so tag -l passes through.
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "Initial commit"
+    git tag -a releases/1.0 -m "Release releases/1.0"
+  )
+
+  local shim_dir="${TEST_DIR}/bin"
+  local real_git
+  real_git="$(command -v git)"
+  mkdir -p "${shim_dir}"
+  cat > "${shim_dir}/git" <<EOF
+#!/usr/bin/env bash
+if [ "\$1" = "fetch" ]; then
+  exit 0
+fi
+exec "${real_git}" "\$@"
+EOF
+  chmod +x "${shim_dir}/git"
+
+  run bash -c "cd '${repo}' && \
+    PATH=\"${shim_dir}:\$PATH\" \
+    GITHUB_REF=refs/tags/releases/1.0 GITHUB_HEAD_REF='' \
+    GITHUB_TOKEN=dummy-token GITHUB_REPOSITORY=owner/repo \
+    GITHUB_RUN_NUMBER=100 \
+    GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+
+  [ "${status}" -eq 0 ]
+  # releases/1.0 -> releases_1.0 in the build identifiers.
+  grep -qE "BUILD_NAME=releases_1.0-.+" "${GITHUB_OUTPUT}"
+  grep -qE "BUILD_VERSION=releases_1.0-.+" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+}
