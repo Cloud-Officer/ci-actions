@@ -89,19 +89,33 @@ function add_linter_if_dir()
 # a sourceable predicate (like add_linter_if_*) so the detection can be unit
 # tested without re-implementing the find expression. Returns 0 when at least
 # one matching file exists, 1 otherwise.
+#
+# The package-manager lock-file portion is single-sourced from
+# linters/_lib/lock_files.sh (QUAL-010, #238) so it can never drift from the
+# trivy action's vuln-scanner list. Dockerfile*/*.tf/.cfnlintrc/.hadolint.yaml
+# (IaC markers) and package.json (manifest without a lock file) additionally
+# enable TRIVY here and are intentionally not part of that shared list.
 function detect_trivy()
 {
-  find . -maxdepth 3 \( \
-     -name "Dockerfile*" -o -name "*.tf" -o \
-     -name ".cfnlintrc" -o -name ".hadolint.yaml" -o \
-     -name "package.json" -o -name "package-lock.json" -o \
-     -name "yarn.lock" -o -name "pnpm-lock.yaml" -o \
-     -name "go.sum" -o -name "requirements.txt" -o \
-     -name "Pipfile.lock" -o -name "poetry.lock" -o \
-     -name "Gemfile.lock" -o -name "composer.lock" -o \
-     -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" -o \
-     -name "Cargo.lock" -o -name "Package.resolved" \
-     \) -print -quit 2>/dev/null | grep -q .
+  # Resolve the shared list relative to this script so it works both when run as
+  # the action (variables.sh is on PATH, BASH_SOURCE is absolute) and when the
+  # bats suite sources this file from variables/tests/.
+  local lib_dir
+  lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../linters/_lib"
+  # shellcheck source=/dev/null
+  source "${lib_dir}/lock_files.sh"
+
+  local find_args=(
+    -name "Dockerfile*" -o -name "*.tf" -o
+    -name ".cfnlintrc" -o -name ".hadolint.yaml" -o
+    -name "package.json"
+  )
+  local lock_file
+  for lock_file in "${TRIVY_LOCK_FILES[@]}"; do
+    find_args+=( -o -name "${lock_file}" )
+  done
+
+  find . -maxdepth 3 '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
 }
 
 # Resolve build identifiers and skip/deploy flags from the environment and the

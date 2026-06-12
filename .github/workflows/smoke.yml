@@ -37,6 +37,9 @@ jobs:
     - name: Validate every action.yml
       shell: bash
       run: python3 tests/action_contracts.py
+    - name: Assert the Trivy lock-file list stays single-sourced
+      shell: bash
+      run: python3 tests/lock_file_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)

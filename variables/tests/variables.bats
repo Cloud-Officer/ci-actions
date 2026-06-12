@@ -535,6 +535,17 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
+@test "linter detection: TRIVY detected from a lock file in the shared list (Gemfile.lock)" {
+  # Locks that detect_trivy actually consumes the single-sourced
+  # linters/_lib/lock_files.sh array (QUAL-010 / #238): Gemfile.lock is only
+  # reachable via that list, not via the IaC/manifest names hardcoded in the
+  # find expression. If the source breaks, the array is empty and this fails.
+  touch "${TEST_DIR}/Gemfile.lock"
+  cd "${TEST_DIR}"
+  run detect_trivy
+  [ "$status" -eq 0 ]
+}
+
 @test "linter detection: no linters detected when no config files present" {
   LINTERS=""
   add_linter_if_dir  "ACTIONLINT"    "${TEST_DIR}/.github/workflows" || true
