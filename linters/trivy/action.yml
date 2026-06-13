@@ -45,6 +45,11 @@ runs:
       run: |
         scanners="secret"
 
+        # Single source of truth for the package-manager lock-file list, shared
+        # with variables.sh detect_trivy() (QUAL-010, #238) so the two can never
+        # drift. Populates the TRIVY_LOCK_FILES array.
+        source "${GITHUB_ACTION_PATH}/../_lib/lock_files.sh"
+
         # Enable misconfig when IaC files are detected
         if echo "${LINTERS}" | grep -qE "CFNLINT|HADOLINT" || \
            find . -maxdepth 3 -name "*.tf" -print -quit 2>/dev/null | grep -q . || \
@@ -60,11 +65,7 @@ runs:
           done < <(grep 'path = ' .gitmodules | sed 's/.*path = //')
         fi
 
-        for lock_file in package-lock.json yarn.lock pnpm-lock.yaml go.sum \
-                         requirements.txt Pipfile.lock poetry.lock \
-                         Gemfile.lock composer.lock \
-                         pom.xml build.gradle build.gradle.kts \
-                         Cargo.lock Package.resolved; do
+        for lock_file in "${TRIVY_LOCK_FILES[@]}"; do
           if find . "${submodule_paths[@]}" -name "${lock_file}" -print -quit 2>/dev/null | grep -q .; then
             scanners="${scanners},vuln"
             break
