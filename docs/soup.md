@@ -8,7 +8,7 @@
 | JS | @actions/io | 2.0.0 | MIT | Actions io lib | <https://github.com/actions/toolkit/tree/main/packages/io> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | agent-base | 6.0.2 | MIT | Turn a function into an `http.Agent` instance | <https://github.com/TooTallNate/node-agent-base#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | asynckit | 0.4.0 | MIT | Minimal async jobs utility library, with streams support | <https://github.com/alexindigo/asynckit#readme> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | axios | 1.17.0 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2026-05-22 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
+| JS | axios | 1.18.0 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2026-05-22 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
 | JS | call-bind-apply-helpers | 1.0.2 | MIT | Helper functions around Function call/apply/bind, for use in `call-bind` | <https://github.com/ljharb/call-bind-apply-helpers#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | combined-stream | 1.0.8 | MIT | A stream that emits multiple other streams one after another. | <https://github.com/felixge/node-combined-stream> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | debug | 4.4.3 | MIT | Lightweight debugging utility for Node.js and the browser | <https://github.com/debug-js/debug#readme> | 2026-05-22 | Low | Dependency | Dependency |
@@ -19,7 +19,7 @@
 | JS | es-object-atoms | 1.1.2 | MIT | ES Object-related atoms: Object, ToObject, RequireObjectCoercible | <https://github.com/ljharb/es-object-atoms#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | es-set-tostringtag | 2.1.0 | MIT | A helper to optimistically set Symbol.toStringTag, when possible. | <https://github.com/es-shims/es-set-tostringtag#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | follow-redirects | 1.16.0 | MIT | HTTP and HTTPS modules that follow redirects. | <https://github.com/follow-redirects/follow-redirects> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | form-data | 4.0.5 | MIT | A library to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications. | <https://github.com/form-data/form-data#readme> | 2026-05-22 | Low | Dependency | Dependency |
+| JS | form-data | 4.0.6 | MIT | A library to create readable "multipart/form-data" streams. Can be used to submit forms and file uploads to other web applications. | <https://github.com/form-data/form-data#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | function-bind | 1.1.2 | MIT | Implementation of Function.prototype.bind | <https://github.com/Raynos/function-bind> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | get-intrinsic | 1.3.0 | MIT | Get and robustly cache all JS language-level intrinsics at first require time | <https://github.com/ljharb/get-intrinsic#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | get-proto | 1.0.1 | MIT | Robustly get the Prototype of an object | <https://github.com/ljharb/get-proto#readme> | 2026-05-22 | Low | Dependency | Dependency |
@@ -34,4 +34,4 @@
 | JS | ms | 2.1.3 | MIT | Tiny millisecond conversion utility | <https://github.com/vercel/ms#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | proxy-from-env | 2.1.0 | MIT | Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables. | <https://github.com/Rob--W/proxy-from-env#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | tunnel | 0.0.6 | MIT | Node HTTP/HTTPS Agents for tunneling proxies | <https://github.com/koichik/node-tunnel/> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | undici | 6.26.0 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2026-05-22 | Low | Dependency | Dependency |
+| JS | undici | 6.27.0 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2026-05-22 | Low | Dependency | Dependency |
