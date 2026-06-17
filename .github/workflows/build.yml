@@ -199,9 +199,6 @@ jobs:
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
-        aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
-        aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
-        aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
         node-version: "${{env.NODE-VERSION}}"
     - name: NPM (slack)
       shell: bash
@@ -226,9 +223,6 @@ jobs:
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
-        aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
-        aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
-        aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
     - name: Bats Install (bump-actions)
       shell: bash
       run: |-

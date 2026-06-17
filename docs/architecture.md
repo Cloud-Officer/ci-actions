@@ -187,6 +187,12 @@ input variable, which is populated by the variables action.
 - `check_enabled.sh`: invoked by every linter action via
   `${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh <NAME>` to gate execution on
   whether `<NAME>` appears (as a whole word) in the `LINTERS` list
+- `lock_files.sh`: single source of truth for the package-manager lock/manifest
+  files (`TRIVY_LOCK_FILES`) that mark a project for a Trivy vulnerability scan.
+  Sourced by both `variables/variables.sh` (`detect_trivy`) and
+  `linters/trivy/action.yml` so the list never drifts;
+  `tests/lock_file_contract.py` asserts neither consumer re-introduces a
+  hardcoded copy
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
 

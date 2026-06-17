@@ -74,7 +74,7 @@
   "axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.17.0",
+    "version": "1.18.0",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
@@ -206,7 +206,7 @@
   "form-data": {
     "language": "JS",
     "package": "form-data",
-    "version": "4.0.5",
+    "version": "4.0.6",
     "license": "MIT",
     "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications.",
     "website": "https://github.com/form-data/form-data#readme",
@@ -386,7 +386,7 @@
   "undici": {
     "language": "JS",
     "package": "undici",
-    "version": "6.26.0",
+    "version": "6.27.0",
     "license": "MIT",
     "description": "An HTTP/1.1 client, written from scratch for Node.js",
     "website": "https://undici.nodejs.org",
