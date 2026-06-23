@@ -8,7 +8,7 @@
 | JS | @actions/io | 2.0.0 | MIT | Actions io lib | <https://github.com/actions/toolkit/tree/main/packages/io> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | agent-base | 6.0.2 | MIT | Turn a function into an `http.Agent` instance | <https://github.com/TooTallNate/node-agent-base#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | asynckit | 0.4.0 | MIT | Minimal async jobs utility library, with streams support | <https://github.com/alexindigo/asynckit#readme> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | axios | 1.18.0 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2026-05-22 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
+| JS | axios | 1.18.1 | MIT | Promise based HTTP client for the browser and node.js | <https://axios-http.com> | 2026-05-22 | Low | HTTP client for Slack webhook API calls | Industry standard HTTP client with active maintenance |
 | JS | call-bind-apply-helpers | 1.0.2 | MIT | Helper functions around Function call/apply/bind, for use in `call-bind` | <https://github.com/ljharb/call-bind-apply-helpers#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | combined-stream | 1.0.8 | MIT | A stream that emits multiple other streams one after another. | <https://github.com/felixge/node-combined-stream> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | debug | 4.4.3 | MIT | Lightweight debugging utility for Node.js and the browser | <https://github.com/debug-js/debug#readme> | 2026-05-22 | Low | Dependency | Dependency |
