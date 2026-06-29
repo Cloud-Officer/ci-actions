@@ -95,7 +95,7 @@ runs:
         [ -n "$dir" ] || { echo "::error::composer config cache-files-dir returned empty"; exit 1; }
         echo "dir=$dir" >> "${GITHUB_OUTPUT}"
     - name: Cache - Composer
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
