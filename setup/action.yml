@@ -587,7 +587,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@v7
       if: ${{ inputs.go-version != 'none' || steps.detect-versions.outputs.go-file }}
       with:
         go-version: ${{ inputs.go-version != 'none' && inputs.go-version || '' }}
@@ -657,7 +657,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-node-js-environment
     - name: Setup Node
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       if: ${{ inputs.node-version != 'none' || steps.detect-versions.outputs.node-file }}
       with:
         node-version: ${{ inputs.node-version != 'none' && inputs.node-version || '' }}
@@ -704,7 +704,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
       with:
         python-version: ${{ inputs.python-version != 'none' && inputs.python-version || '' }}
