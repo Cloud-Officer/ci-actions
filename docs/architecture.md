@@ -108,7 +108,11 @@ upstream version. Powers the weekly external-actions bump cron (issue #212).
 
 **Invocation:** Run out of band by `.github/workflows/external-actions-bump.yml`
 (weekly cron); unit-tested via `bump-actions/tests/bump-actions.bats`. Requires
-an authenticated `gh` on PATH.
+an authenticated `gh` on PATH and bash 4 or newer: `main` uses `mapfile`, so on
+direct execution the script re-execs under the first bash 4+ found in
+`/opt/homebrew/bin`, `/usr/local/bin` or `/usr/bin` (and fails loudly if none
+exists) rather than silently scanning an empty file list under macOS bash 3.2.
+The guard is skipped when the file is sourced, so the bats suite is unaffected.
 
 ### cis
 
