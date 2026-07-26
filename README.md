@@ -9,7 +9,11 @@
 
 ## Introduction
 
-A collection of GitHub Actions for CI/CD workflows.
+A collection of composite GitHub Actions for CI/CD workflows. Instead of re-implementing the same setup, linting, packaging
+and deployment steps in every repository, workflows reference these actions and get a consistent, maintained implementation.
+
+It is intended for teams that build and deploy multiple repositories with GitHub Actions and want a single place to keep
+their build environment setup, code quality gates and deployment steps.
 
 ### Features
 
@@ -24,15 +28,47 @@ A collection of GitHub Actions for CI/CD workflows.
 
 ## Installation
 
-Reference the actions directly in your GitHub Actions workflow files:
+### Prerequisites
+
+* A GitHub repository with GitHub Actions enabled
+* An SSH deploy key stored as a repository secret (for example `SSH_KEY`) — the `variables` action requires it, and `setup`
+  uses it to check out private dependencies
+
+There is nothing to install: the actions are referenced directly from this repository by your workflow files.
+
+### Reference an action
 
 ```yaml
 uses: Cloud-Officer/ci-actions/setup@v2
 ```
 
+The floating `v2` tag always points at the latest 2.x release. Pin to an immutable release tag (for example `2.1.4`) when you
+need reproducible builds.
+
+### Verify
+
+Add a job that runs the `variables` action and confirm it succeeds:
+
+```yaml
+jobs:
+  variables:
+    name: Prepare Variables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare variables
+        id: variables
+        uses: Cloud-Officer/ci-actions/variables@v2
+        with:
+          ssh-key: "${{secrets.SSH_KEY}}"
+```
+
+A successful run exposes outputs such as `BUILD_NAME`, `BUILD_VERSION` and `LINTERS` for the downstream jobs.
+
 See individual action documentation below for detailed inputs and examples.
 
 ## Usage
+
+### Available Actions
 
 * [aws](aws/README.md): Execute AWS CLI or shell commands
 * [codedeploy](codedeploy/README.md): AWS CodeDeploy actions (checkout, deploy, s3copy)
@@ -42,6 +78,9 @@ See individual action documentation below for detailed inputs and examples.
 * [slack](slack/README.md): Send action status to Slack
 * [soup](soup/README.md): Open source license compliance and SOUP list generation
 * [variables](variables/README.md): Prepare variables for parallel jobs
+
+The `codedeploy` and `linters` entries are groups of sub-actions (`codedeploy/checkout`, `linters/rubocop`, and so on);
+see their READMEs for the full list.
 
 ### CI Control Flags
 
@@ -75,6 +114,11 @@ to set secrets to enable runner and steps debug logs.
 You can always enable a tmate debug session to connect to a running runner instance and try things manually if debug logs are not enough. See [Debug your GitHub Actions by using tmate](https://github.com/mxschmitt/action-tmate).
 
 The documentation for all the [runner environments](https://github.com/actions/runner-images/tree/main/images).
+
+### Design Documentation
+
+* [Architecture](docs/architecture.md): action topology, software units and risk controls
+* [SOUP list](docs/soup.md): software of unknown provenance and license inventory
 
 ## Contributing
 
