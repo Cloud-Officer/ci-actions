@@ -37,7 +37,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
