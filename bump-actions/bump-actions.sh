@@ -228,5 +228,28 @@ function main()
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  # `main` uses mapfile, a bash 4 builtin. `#!/usr/bin/env bash` resolves to the
+  # first bash on PATH, which on macOS is often Apple's 3.2 (/bin precedes
+  # /opt/homebrew/bin whenever /usr/libexec/path_helper runs after the shell
+  # profile). There mapfile fails, and with no `set -e` the scan carries on with
+  # an empty file list, prints "No YAML files to scan." and exits 0 -- a silent
+  # false negative rather than a crash. Re-exec under a newer bash instead.
+  #
+  # Only on direct execution: the test suite sources this file for the helpers
+  # above and must not be exec'd out from under bats.
+  if [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
+    for candidate in /opt/homebrew/bin/bash /usr/local/bin/bash /usr/bin/bash; do
+      # shellcheck disable=SC2016
+      if [ -x "${candidate}" ] && [ "$("${candidate}" -c 'echo ${BASH_VERSINFO[0]}')" -ge 4 ]; then
+        # ${@+"${@}"} rather than "${@}": bash 3.2 treats the braced form as an
+        # unset variable under `set -u` when there are no positional parameters.
+        exec "${candidate}" "${0}" ${@+"${@}"}
+      fi
+    done
+
+    echo "::error::bump-actions.sh requires bash 4 or newer (running ${BASH_VERSION})" >&2
+    exit 1
+  fi
+
   main "$@"
 fi
