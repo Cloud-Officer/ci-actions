@@ -34,4 +34,4 @@
 | JS | ms | 2.1.3 | MIT | Tiny millisecond conversion utility | <https://github.com/vercel/ms#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | proxy-from-env | 2.1.0 | MIT | Offers getProxyForUrl to get the proxy URL for a URL, respecting the *PROXY (e.g. HTTPPROXY) and NOPROXY environment variables. | <https://github.com/Rob--W/proxy-from-env#readme> | 2026-05-22 | Low | Dependency | Dependency |
 | JS | tunnel | 0.0.6 | MIT | Node HTTP/HTTPS Agents for tunneling proxies | <https://github.com/koichik/node-tunnel/> | 2026-05-22 | Low | Dependency | Dependency |
-| JS | undici | 6.27.0 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2026-05-22 | Low | Dependency | Dependency |
+| JS | undici | 6.28.0 | MIT | An HTTP/1.1 client, written from scratch for Node.js | <https://undici.nodejs.org> | 2026-05-22 | Low | Dependency | Dependency |
