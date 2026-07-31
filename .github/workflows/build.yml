@@ -204,12 +204,10 @@ jobs:
       shell: bash
       run: cd slack && npm ci
       env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Jest (slack)
       shell: bash
       run: cd slack && npm test
-      env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
   shell_script_unit_tests:
     name: Shell Script Unit Tests
     runs-on: ubuntu-latest
@@ -232,12 +230,10 @@ jobs:
           sudo apt-get update && sudo apt-get install -y bats
         fi
       env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Bats (bump-actions)
       shell: bash
       run: cd bump-actions && bats tests/
-      env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
     - name: Bats Install (codedeploy)
       shell: bash
       run: |-
@@ -247,12 +243,10 @@ jobs:
           sudo apt-get update && sudo apt-get install -y bats
         fi
       env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Bats (codedeploy)
       shell: bash
       run: cd codedeploy && bats tests/
-      env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
     - name: Bats Install (variables)
       shell: bash
       run: |-
@@ -262,9 +256,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y bats
         fi
       env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
+        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Bats (variables)
       shell: bash
       run: cd variables && bats tests/
-      env:
-        GITHUB_TOKEN: "${{secrets.GH_PAT}}"
