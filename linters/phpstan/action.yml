@@ -110,7 +110,7 @@ runs:
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
       run: |
         composer config --global --auth github-oauth.github.com "${GITHUB_TOKEN}"
-        bash -c -- "${COMPOSER_COMMAND}"
+        bash -eo pipefail -c -- "${COMPOSER_COMMAND}"
 
     # https://phpstan.org/
     - name: Run PHPStan
@@ -119,4 +119,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHPSTAN_COMMAND: ${{ inputs.php-stan-command }}
-      run: bash -c -- "${PHPSTAN_COMMAND}"
+      run: bash -eo pipefail -c -- "${PHPSTAN_COMMAND}"
