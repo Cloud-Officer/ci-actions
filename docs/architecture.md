@@ -366,6 +366,11 @@ end-to-end in CI without secrets or side effects.
   other than the shared `check` step itself — carries
   `steps.check.outputs.continue == 'true'` in its `if:`, so nothing runs when
   the linter is disabled (self-checks its own detector against fixtures first)
+- `token_contract.py`: asserts every token-accepting toolchain setup step
+  (`actions/setup-go|java|node|python`) passes `token:` from one of the
+  action's inputs, that every `pip`/`npm`/`gem`-style install step exports
+  `GITHUB_TOKEN`, and that `linters/bandit` mirrors `linters/semgrep` step for
+  step -- the two pip-installed Python linters must not drift apart again
 
 ### .github/workflows
 
@@ -528,6 +533,8 @@ a newer upstream version, preserving the existing pin style.
   silently ceasing to be a no-op when a linter action's step gating changes
 - `tests/linter_gate_contract.py` blocks a linter step from running (and, for
   phpstan's ssh-agent, loading a deploy key) while that linter is disabled
+- `tests/token_contract.py` blocks an unauthenticated toolchain download or
+  package install from creeping back into any action
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,

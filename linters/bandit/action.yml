@@ -40,6 +40,7 @@ runs:
       uses: actions/setup-python@v7
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
+        token: ${{ inputs.github-token }}
         python-version: '3.x'
 
     # https://github.com/PyCQA/bandit
@@ -49,9 +50,13 @@ runs:
     - name: Install bandit
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: pip install bandit
 
     - name: Run bandit
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: bandit -ll --ini .bandit --silent .

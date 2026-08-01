@@ -55,6 +55,9 @@ jobs:
     - name: Assert every linter step is gated on the enabled check
       shell: bash
       run: python3 tests/linter_gate_contract.py
+    - name: Assert toolchain setup and package installs stay authenticated
+      shell: bash
+      run: python3 tests/token_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
