@@ -41,7 +41,10 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
+      # Drops submodule checkouts except the shared `scripts` submodule, whose
+      # linters/ folder the root config symlinks point at. See
+      # linters/_lib/clean_workspace.sh for the full rationale.
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/clean_workspace.sh"
 
     # https://github.com/marketplace/actions/run-yamllint-with-reviewdog
     - name: Run Yamllint with Reviewdog
