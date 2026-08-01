@@ -59,7 +59,7 @@ runs:
     # https://github.com/marketplace/actions/webfactory-ssh-agent
     - name: Setup SSH Agent
       uses: webfactory/ssh-agent@v0.10.0
-      if: ${{ inputs.ssh-key != ''}}
+      if: ${{ inputs.ssh-key != '' && steps.check.outputs.continue == 'true' }}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
 

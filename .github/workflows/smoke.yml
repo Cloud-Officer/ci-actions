@@ -52,6 +52,9 @@ jobs:
     - name: Assert the linters-smoke disabled path stays a true no-op
       shell: bash
       run: python3 tests/smoke_contract.py
+    - name: Assert every linter step is gated on the enabled check
+      shell: bash
+      run: python3 tests/linter_gate_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
