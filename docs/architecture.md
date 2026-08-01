@@ -349,6 +349,11 @@ end-to-end in CI without secrets or side effects.
 - `linters_readme_template_contract_selftest.py`: runs the contract above
   against synthetic repo fixtures, one per way the doc can go stale, so the
   guard cannot rot into a no-op that passes on everything
+- `smoke_contract.py`: asserts the `linters-smoke` disabled-path job in
+  `smoke.yml` covers every `linters/*/action.yml` and that each step of those
+  actions is genuinely inert with `linters: ''` — either gated on
+  `steps.check.outputs.continue == 'true'` or falsified by an input the job
+  pins (`ssh-key: ''`, phpstan's `apt-packages`/`php-version`)
 
 ### .github/workflows
 
@@ -506,6 +511,8 @@ a newer upstream version, preserving the existing pin style.
   contributors to copy — the failure mode behind CONS-001, where the stale
   block still advertised the un-anchored `grep` gate that `check_enabled.sh`
   replaced
+- `tests/smoke_contract.py` blocks the `linters-smoke` disabled path from
+  silently ceasing to be a no-op when a linter action's step gating changes
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,

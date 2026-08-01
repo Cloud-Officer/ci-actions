@@ -49,6 +49,9 @@ jobs:
     - name: Self-test that the README template contract still catches drift
       shell: bash
       run: python3 tests/linters_readme_template_contract_selftest.py
+    - name: Assert the linters-smoke disabled path stays a true no-op
+      shell: bash
+      run: python3 tests/smoke_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
@@ -118,9 +121,12 @@ jobs:
       with:
         linters: ''
         ssh-key: ''
-        # phpstan gates a couple of steps on these inputs independently of the
-        # linter-enabled gate; pin them to 'none' so the disabled path is a
-        # true no-op (no PHP/composer setup required).
+        # Defensive pins. Since PR #216 the two steps that read these inputs
+        # (Install APT Packages, Cache - Composer Location) ALSO require
+        # `steps.check.outputs.continue == 'true'`, so an empty `linters` list
+        # already skips them. Pinning both to 'none' keeps the disabled path a
+        # true no-op even if that continue gate were ever removed. The
+        # smoke-contract test asserts this pairing stays intact.
         apt-packages: 'none'
         php-version: 'none'
     - name: pmd
