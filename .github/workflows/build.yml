@@ -200,6 +200,8 @@ jobs:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
         node-version: "${{env.NODE-VERSION}}"
+        node-cache: "${{env.NODE-CACHE}}"
+        node-cache-dependency-path: slack/package-lock.json
     - name: NPM (slack)
       shell: bash
       run: cd slack && npm ci
