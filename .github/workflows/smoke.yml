@@ -40,6 +40,12 @@ jobs:
     - name: Assert the Trivy lock-file list stays single-sourced
       shell: bash
       run: python3 tests/lock_file_contract.py
+    - name: Assert the linters README template matches the real actions
+      shell: bash
+      run: python3 tests/linters_readme_template_contract.py
+    - name: Self-test that the README template contract still catches drift
+      shell: bash
+      run: python3 tests/linters_readme_template_contract_selftest.py
 
   linters-smoke:
     name: Linter actions (disabled path)
