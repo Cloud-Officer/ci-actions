@@ -13,6 +13,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  swiftlint-version:
+    description: 'swiftlint release tag to install, or "latest"'
+    required: false
+    default: 'latest'  # Intentionally using latest
 
 runs:
   using: "composite"
@@ -36,10 +40,35 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/github-action-for-swiftlint
-    - name: Run SwiftLint
-      uses: norio-nomura/action-swiftlint@3.2.1
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        # https://github.com/realm/SwiftLint
-        args: "lint --strict"
+        reviewdog_version: latest  # Intentionally using latest
+
+    # SwiftLint is installed straight from the upstream realm/SwiftLint release
+    # instead of via norio-nomura/action-swiftlint@3.2.1, whose last release
+    # (2020) froze the linter inside an unmaintained Swift 5 Docker image.
+    - name: Setup SwiftLint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SWIFTLINT_VERSION: ${{ inputs.swiftlint-version }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_swiftlint.sh" /opt/swiftlint
+
+    # https://github.com/realm/SwiftLint
+    - name: Run SwiftLint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
+        WORKSPACE: ${{ github.workspace }}
+      run: |
+        # --strict preserves the previous behaviour (violations are errors);
+        # the xcode reporter is what the -efm patterns parse. Paths are made
+        # workspace-relative so reviewdog can map them onto the pull request.
+        /opt/swiftlint/swiftlint lint --strict --reporter xcode \
+          | sed "s|^${WORKSPACE}/||" \
+          | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -efm="%f:%l: %t%*[^:]: %m" -name="swiftlint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

@@ -211,6 +211,12 @@ input variable, which is populated by the variables action.
   hardcoded copy
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
+- `install_swiftlint.sh`: resolves a realm/SwiftLint release (pinned via the
+  `swiftlint-version` input, `latest` by default), downloads the matching
+  `swiftlint_linux_{amd64,arm64}.zip` and installs the statically linked
+  binary, so the swiftlint action needs no Swift toolchain and no third-party
+  action. Replaced the unmaintained `norio-nomura/action-swiftlint@3.2.1`
+  (last released 2020); unit-tested by `linters/tests/install_swiftlint.bats`
 
 ### setup
 
@@ -349,8 +355,10 @@ end-to-end in CI without secrets or side effects.
   suite and the SOUP check. Edits belong in the generator, not this file
 - `smoke.yml`: hand-maintained (explicitly not generated) smoke harness that
   runs `tests/action_contracts.py`, invokes every linter action on its
-  disabled path to assert the `check_enabled.sh` gate, and runs the variables
-  action asserting its outputs are populated
+  disabled path to assert the `check_enabled.sh` gate, runs the
+  `linters/tests/` bats suite (linters/ carries no `.bats` marker, so the
+  generated build.yml does not pick it up), and runs the variables action
+  asserting its outputs are populated
 - `external-actions-bump.yml`: weekly cron driving `bump-actions.sh`
 - `auto-approve.yml`: dependency-bump auto-approval, guarded against
   self-approval

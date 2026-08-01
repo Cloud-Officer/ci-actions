@@ -184,6 +184,26 @@ jobs:
           || { echo "::error::ACTIONLINT present in LINTERS should enable it, got '${got}'"; exit 1; }
         echo "check_enabled.sh gate OK (disabled, absent, enabled paths verified)"
 
+  linters-lib-unit-tests:
+    name: Linter shared-library unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    # linters/ carries no `.bats` marker file, so github-build does not add it
+    # to the generated build.yml; this hand-maintained workflow runs the suite
+    # instead. Covers linters/_lib/install_swiftlint.sh (issue #258), which
+    # replaced the unmaintained norio-nomura/action-swiftlint Docker action.
+    - name: Install bats
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y bats
+    - name: Bats (linters)
+      shell: bash
+      run: cd linters && bats tests/
+
   variables-smoke:
     name: Variables action
     runs-on: ubuntu-latest
