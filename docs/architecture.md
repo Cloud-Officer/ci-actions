@@ -336,6 +336,11 @@ end-to-end in CI without secrets or side effects.
 - `lock_file_contract.py`: asserts `variables/variables.sh` and
   `linters/trivy/action.yml` both consume `linters/_lib/lock_files.sh` instead
   of re-introducing a hardcoded lock-file list
+- `smoke_contract.py`: asserts the `linters-smoke` disabled-path job in
+  `smoke.yml` covers every `linters/*/action.yml` and that each step of those
+  actions is genuinely inert with `linters: ''` — either gated on
+  `steps.check.outputs.continue == 'true'` or falsified by an input the job
+  pins (`ssh-key: ''`, phpstan's `apt-packages`/`php-version`)
 
 ### .github/workflows
 
@@ -486,6 +491,8 @@ a newer upstream version, preserving the existing pin style.
   consumer's pipeline
 - `tests/lock_file_contract.py` blocks the Trivy lock-file list from drifting
   between its two consumers
+- `tests/smoke_contract.py` blocks the `linters-smoke` disabled path from
+  silently ceasing to be a no-op when a linter action's step gating changes
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
