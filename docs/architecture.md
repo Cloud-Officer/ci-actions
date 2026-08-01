@@ -341,6 +341,14 @@ end-to-end in CI without secrets or side effects.
   options are not inherited by the inner interpreter, so a bare `bash -c`
   running a user-supplied multi-line command string reports only the last
   command's exit status (BUG-003)
+- `linters_readme_template_contract.py`: asserts the "Common Structure"
+  template and the `sed` bulk-update recipe in `linters/README.md` still match
+  the real linter actions — the shared `check_enabled.sh` gate and the single
+  `actions/checkout` version the 19 actions agree on. The version is read from
+  the actions, never hardcoded, so a checkout bump keeps the doc honest
+- `linters_readme_template_contract_selftest.py`: runs the contract above
+  against synthetic repo fixtures, one per way the doc can go stale, so the
+  guard cannot rot into a no-op that passes on everything
 
 ### .github/workflows
 
@@ -493,6 +501,11 @@ a newer upstream version, preserving the existing pin style.
   between its two consumers
 - `tests/fail_fast_contract.py` blocks a nested `bash -c` from silently
   swallowing the exit status of every command but the last
+- `tests/linters_readme_template_contract.py` blocks the prescriptive
+  `linters/README.md` template from drifting behind the actions it tells
+  contributors to copy — the failure mode behind CONS-001, where the stale
+  block still advertised the un-anchored `grep` gate that `check_enabled.sh`
+  replaced
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
