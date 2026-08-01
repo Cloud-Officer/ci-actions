@@ -40,6 +40,24 @@ jobs:
     - name: Assert the Trivy lock-file list stays single-sourced
       shell: bash
       run: python3 tests/lock_file_contract.py
+    - name: Assert nested 'bash -c' call sites fail fast
+      shell: bash
+      run: python3 tests/fail_fast_contract.py
+    - name: Assert the linters README template matches the real actions
+      shell: bash
+      run: python3 tests/linters_readme_template_contract.py
+    - name: Self-test that the README template contract still catches drift
+      shell: bash
+      run: python3 tests/linters_readme_template_contract_selftest.py
+    - name: Assert the linters-smoke disabled path stays a true no-op
+      shell: bash
+      run: python3 tests/smoke_contract.py
+    - name: Assert every linter step is gated on the enabled check
+      shell: bash
+      run: python3 tests/linter_gate_contract.py
+    - name: Assert toolchain setup and package installs stay authenticated
+      shell: bash
+      run: python3 tests/token_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
@@ -109,9 +127,12 @@ jobs:
       with:
         linters: ''
         ssh-key: ''
-        # phpstan gates a couple of steps on these inputs independently of the
-        # linter-enabled gate; pin them to 'none' so the disabled path is a
-        # true no-op (no PHP/composer setup required).
+        # Defensive pins. Since PR #216 the two steps that read these inputs
+        # (Install APT Packages, Cache - Composer Location) ALSO require
+        # `steps.check.outputs.continue == 'true'`, so an empty `linters` list
+        # already skips them. Pinning both to 'none' keeps the disabled path a
+        # true no-op even if that continue gate were ever removed. The
+        # smoke-contract test asserts this pairing stays intact.
         apt-packages: 'none'
         php-version: 'none'
     - name: pmd
@@ -183,6 +204,27 @@ jobs:
         test "${got}" = 'continue=true' \
           || { echo "::error::ACTIONLINT present in LINTERS should enable it, got '${got}'"; exit 1; }
         echo "check_enabled.sh gate OK (disabled, absent, enabled paths verified)"
+
+  linters-lib:
+    name: Linter shared library (bats)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    # linters/_lib holds the scripts every linter action shells out to
+    # (clean_workspace.sh, install_swiftlint.sh, ...). They are never reached by
+    # the disabled-path smoke above, so they get real unit tests here.
+    # build.yml's generated bats jobs only cover directories carrying a
+    # github-build `.bats` marker, which linters/ deliberately does not.
+    - name: Install bats
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y bats
+    - name: Bats (linters/_lib)
+      shell: bash
+      run: cd linters && bats tests/
 
   variables-smoke:
     name: Variables action

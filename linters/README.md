@@ -57,16 +57,20 @@ runs:
   using: "composite"
   steps:
     # 3. CHECK STEP (required, only change LINTER_NAME)
+    #    The gate itself lives in linters/_lib/check_enabled.sh (QUAL-001) --
+    #    do not inline it, and do not reintroduce a bare `grep` (the shared
+    #    gate uses `grep -qwF` so a linter name can only match a whole token).
     - id: check
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         LINTERS: ${{ inputs.linters }}
-      run: if echo "${LINTERS}" | grep LINTER_NAME &> /dev/null; then echo "continue=true" >> "${GITHUB_OUTPUT}"; else echo "continue=false" >> "${GITHUB_OUTPUT}"; fi
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh" LINTER_NAME
 
     # 4. CHECKOUT STEP (required, do not modify)
+    # https://github.com/marketplace/actions/checkout
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
@@ -125,8 +129,12 @@ When updating the checkout action version or common inputs, **all 19 linter acti
 
 ```bash
 # Example: Update checkout action version
-find linters -name "action.yml" -exec sed -i '' 's/actions\/checkout@v5/actions\/checkout@v6/g' {} \;
+find linters -name "action.yml" -exec sed -i '' 's/actions\/checkout@v6/actions\/checkout@v7/g' {} \;
 ```
+
+**Note:** the template above and this `sed` recipe are enforced against the real actions by
+`tests/linters_readme_template_contract.py` (run in the Smoke workflow). After a bulk update,
+refresh both here so the doc cannot drift behind the actions again.
 
 ### Common Reviewdog Settings
 
