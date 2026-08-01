@@ -202,6 +202,26 @@ jobs:
           || { echo "::error::ACTIONLINT present in LINTERS should enable it, got '${got}'"; exit 1; }
         echo "check_enabled.sh gate OK (disabled, absent, enabled paths verified)"
 
+  linters-lib:
+    name: Linter shared library (bats)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    # linters/_lib holds the scripts every linter action shells out to. They are
+    # never reached by the disabled-path smoke above, so they get real unit
+    # tests here. build.yml's generated bats jobs only cover directories carrying
+    # a github-build `.bats` marker, which linters/ deliberately does not.
+    - name: Install bats
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y bats
+    - name: Bats (linters/_lib)
+      shell: bash
+      run: cd linters && bats tests/
+
   variables-smoke:
     name: Variables action
     runs-on: ubuntu-latest

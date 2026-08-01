@@ -41,11 +41,10 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
-      run: |
-        grep path .gitmodules | grep -v scripts | awk '{ print $3 }' | xargs rm -rf || true
-        find . -type d -name vendor -exec rm -rf {} \; || true
-        find . -type d -name node_modules -exec rm -rf {} \; || true
-        find . -type d -name Libraries -exec rm -rf {} \; || true
+      # Drops submodule checkouts (except the shared `scripts` submodule, whose
+      # linters/ folder the root config symlinks point at) plus vendored trees.
+      # See linters/_lib/clean_workspace.sh for the full rationale.
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/clean_workspace.sh" vendor node_modules Libraries
 
     # https://github.com/marketplace/actions/setup-reviewdog
     - name: Setup Reviewdog

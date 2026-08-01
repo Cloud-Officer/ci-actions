@@ -209,6 +209,14 @@ input variable, which is populated by the variables action.
   `linters/trivy/action.yml` so the list never drifts;
   `tests/lock_file_contract.py` asserts neither consumer re-introduces a
   hardcoded copy
+- `clean_workspace.sh`: workspace cleanup for the two linters that lint the
+  whole checkout (markdownlint, yamllint). Deletes the submodule checkouts
+  listed in `.gitmodules` plus any extra directory names passed as arguments
+  (markdownlint passes `vendor node_modules Libraries`). The `scripts`
+  submodule is deliberately kept: github-build symlinks the root linter config
+  files to `<scripts>/linters/<config>`, so removing it would leave those
+  symlinks dangling and the linter would run unconfigured. Covered by
+  `linters/tests/clean_workspace.bats`
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
 
@@ -371,7 +379,8 @@ end-to-end in CI without secrets or side effects.
   suite and the SOUP check. Edits belong in the generator, not this file
 - `smoke.yml`: hand-maintained (explicitly not generated) smoke harness that
   runs the `tests/` contract checks, invokes every linter action on its
-  disabled path to assert the `check_enabled.sh` gate, and runs the variables
+  disabled path to assert the `check_enabled.sh` gate, runs the
+  `linters/tests/` bats suite for `linters/_lib/`, and runs the variables
   action asserting its outputs are populated
 - `external-actions-bump.yml`: weekly cron driving `bump-actions.sh`
 - `auto-approve.yml`: dependency-bump auto-approval, guarded against
