@@ -40,6 +40,9 @@ jobs:
     - name: Assert the Trivy lock-file list stays single-sourced
       shell: bash
       run: python3 tests/lock_file_contract.py
+    - name: Assert nested 'bash -c' call sites fail fast
+      shell: bash
+      run: python3 tests/fail_fast_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)

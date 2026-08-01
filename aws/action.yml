@@ -48,4 +48,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         SHELL_COMMANDS: ${{ inputs.shell-commands }}
-      run: bash -c -- "${SHELL_COMMANDS}"
+      # -eo pipefail: the composite step's own shell options do NOT propagate
+      # into this inner interpreter, so without them only the LAST command's
+      # exit status would be reported and earlier failures would be swallowed.
+      run: bash -eo pipefail -c -- "${SHELL_COMMANDS}"
