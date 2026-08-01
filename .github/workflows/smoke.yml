@@ -214,10 +214,11 @@ jobs:
       uses: actions/checkout@v7
       with:
         persist-credentials: false
-    # linters/_lib holds the scripts every linter action shells out to. They are
-    # never reached by the disabled-path smoke above, so they get real unit
-    # tests here. build.yml's generated bats jobs only cover directories carrying
-    # a github-build `.bats` marker, which linters/ deliberately does not.
+    # linters/_lib holds the scripts every linter action shells out to
+    # (clean_workspace.sh, install_swiftlint.sh, ...). They are never reached by
+    # the disabled-path smoke above, so they get real unit tests here.
+    # build.yml's generated bats jobs only cover directories carrying a
+    # github-build `.bats` marker, which linters/ deliberately does not.
     - name: Install bats
       shell: bash
       run: sudo apt-get update && sudo apt-get install -y bats

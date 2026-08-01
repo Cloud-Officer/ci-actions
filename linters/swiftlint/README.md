@@ -2,7 +2,16 @@
 
 This action runs [swiftLint](https://github.com/realm/SwiftLint).
 
-Based on [norio-nomura/action-swiftlint](https://github.com/norio-nomura/action-swiftlint).
+SwiftLint is installed straight from the upstream
+[realm/SwiftLint](https://github.com/realm/SwiftLint) release (the statically
+linked `swiftlint-static` binary from `swiftlint_linux_{amd64,arm64}.zip`, so no
+Swift toolchain is required on the runner) and its output is reported through
+[reviewdog](https://github.com/reviewdog/reviewdog) like the other linters.
+
+It previously used
+[norio-nomura/action-swiftlint](https://github.com/norio-nomura/action-swiftlint),
+whose last release (3.2.1, 2020) pinned an unmaintained Swift 5 Docker image and
+could never be advanced by the weekly external-actions bump.
 
 ## Inputs
 
@@ -18,7 +27,18 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  swiftlint-version:
+    description: 'swiftlint release tag to install, or "latest"'
+    required: false
+    default: 'latest'
 ```
+
+By default the latest upstream release is installed. Set `swiftlint-version` to
+a release tag (for example `0.65.0`) to pin a consumer repository to a specific
+SwiftLint version.
+
+`lint --strict` is used, so any violation is an error; reviewdog is run with
+`-fail-level=any`, which fails the job on any reported violation.
 
 ## Example usage
 
