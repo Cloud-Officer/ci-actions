@@ -752,7 +752,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-android-sdk-for-self-hosted-runner
     - name: Setup Android
-      uses: amyu/setup-android@v5
+      uses: amyu/setup-android@v6.0
       if: ${{ inputs.android-sdk-version != 'none'}}
       with:
         sdk-version: ${{ inputs.android-sdk-version }}
