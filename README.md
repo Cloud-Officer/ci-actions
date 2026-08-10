@@ -3,8 +3,16 @@
 ## Table of Contents
 
 * [Introduction](#introduction)
+  * [Features](#features)
 * [Installation](#installation)
+  * [Prerequisites](#prerequisites)
+  * [Reference an action](#reference-an-action)
+  * [Verify](#verify)
 * [Usage](#usage)
+  * [Available Actions](#available-actions)
+  * [CI Control Flags](#ci-control-flags)
+  * [Debugging](#debugging)
+  * [Design Documentation](#design-documentation)
 * [Contributing](#contributing)
 
 ## Introduction
