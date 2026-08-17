@@ -414,6 +414,27 @@ See [soup.md](soup.md) for the complete list of third-party dependencies. Third-
 GitHub Actions referenced by composite actions are declared in their respective
 `action.yml` files.
 
+`.soup.json` at the repository root is the source of truth; `soup.md` is generated
+from it by the `soup` action and must never be hand-edited. Versions and licenses
+are read from the lock files (`slack/package-lock.json`), so they are never
+duplicated here.
+
+Each entry carries three review fields:
+
+- **Risk Level** (per IEC 62304): Low — cannot lead to harm; Medium — reversible
+  harm; High — irreversible harm. The Slack action's runtime dependencies
+  (`@actions/core`, `axios`) are Low: they post a build notification to a webhook
+  and touch no deployment credential or artifact
+- **Requirements** — why the dependency is needed, in terms of actual usage (for
+  example "HTTP client for Slack webhook API calls"). Transitive packages pulled
+  in by a direct dependency are marked `Dependency`
+- **Verification Reasoning** — why this package over the alternatives (for
+  example "Official GitHub Actions SDK"), not a popularity argument
+
+The list is validated on four axes: accuracy (Requirements match the real call
+sites), completeness (every lock-file package is present), staleness (packages
+dropped from the lock files are removed), and Risk Level appropriateness.
+
 ## Critical algorithms
 
 ### Build Variable Computation
