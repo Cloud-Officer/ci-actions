@@ -20,7 +20,7 @@ permissions:
   pull-requests: read
 env:
   NODE-CACHE: npm
-  NODE-VERSION: 26.7.0
+  NODE-VERSION: 26.8.1
 concurrency:
   group: build-${{github.ref}}
   cancel-in-progress: true
