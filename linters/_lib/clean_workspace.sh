@@ -34,11 +34,26 @@ function remove_submodules()
   local -a paths=()
   local path
 
+  # Parse with `git config` rather than grep/awk. The old `grep path .gitmodules`
+  # was unanchored, so any line merely containing the word "path" -- a url such as
+  # https://example.com/path-in-url.git -- was treated as a submodule entry. The
+  # keyed lookup below matches only real `submodule.<name>.path` values.
   while IFS= read -r path; do
-    if [[ -n "${path}" ]]; then
-      paths+=("${path}")
-    fi
-  done < <(grep path .gitmodules | grep -v scripts | awk '{ print $3 }')
+    [[ -n "${path}" ]] || continue
+    [[ "${path}" == *scripts* ]] && continue
+
+    # Reject anything that could escape the workspace before it reaches `rm -rf`.
+    # .gitmodules is attacker-controlled content on a fork PR, and a `path = /`
+    # or `path = ../../_temp` entry would otherwise delete outside the checkout.
+    case "${path}" in
+      /* | *..*)
+        echo "::warning::skipping out-of-workspace submodule path '${path}'"
+        continue
+        ;;
+    esac
+
+    paths+=("${path}")
+  done < <(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | cut -d' ' -f2-)
 
   if [[ ${#paths[@]} -gt 0 ]]; then
     rm -rf -- "${paths[@]}"
