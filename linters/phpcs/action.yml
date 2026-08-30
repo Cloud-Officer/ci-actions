@@ -72,7 +72,13 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
       run: |
-        bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" E82B2FB314E9906E
+        # Full 40-character fingerprint, not the 64-bit long ID. Keyservers are
+        # unauthenticated and serve any uploaded key matching the requested ID, and
+        # a colliding long ID is computable -- so requesting by long ID lets an
+        # attacker's key satisfy the `gpg --verify` below. Matches the form
+        # linters/pmd/action.yml already uses.
+        # BBAB5DF0A0D6672989CF1869E82B2FB314E9906E = Dariusz Ruminski (php-cs-fixer).
+        bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" BBAB5DF0A0D6672989CF1869E82B2FB314E9906E
         if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
           curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer
           curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar.asc -o php-cs-fixer.asc

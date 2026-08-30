@@ -43,8 +43,17 @@ runs:
       with:
         reviewdog_version: latest  # Intentionally using latest
 
-    # flake8-docstrings
-    - name: Install flake8-docstrings
+    # Installs flake8 only. The step used to be named "Install flake8-docstrings"
+    # while installing plain flake8, so the name described behaviour it did not have.
+    #
+    # Note for whoever revisits this: .flake8 ignores D200/D202/D204/D205/D210/D400/
+    # D401/D403, which are flake8-docstrings (pydocstyle) codes, so the plugin was
+    # clearly intended at some point. Those ignores are inert today -- without the
+    # plugin no D code is ever emitted. Adding `flake8-docstrings` here is a
+    # deliberate, breaking decision, not a cleanup: the codes NOT in that ignore list
+    # (D100-D107 "missing docstring" in particular) would start failing every
+    # consumer repo's Python lint on the next run. Enable it on purpose or not at all.
+    - name: Install flake8
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
