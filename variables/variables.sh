@@ -7,30 +7,8 @@ function has_trigger()
   echo "${COMMIT_MESSAGE}" | grep -iF "#$1" &> /dev/null
 }
 
-# Generic function to execute command if trigger is present
-# Usage: execute_if_trigger "keyword" command args...
-function execute_if_trigger()
-{
-  local trigger="$1"
-  shift
-  if has_trigger "${trigger}"; then
-    "$@"
-  fi
-}
-
-# Generic function to execute command if trigger is NOT present
-# Usage: execute_unless_trigger "keyword" command args...
-function execute_unless_trigger()
-{
-  local trigger="$1"
-  shift
-  if ! has_trigger "${trigger}"; then
-    "$@"
-  fi
-}
-
-# Named helpers wrapping has_trigger / execute_*_trigger, kept so the script
-# and its test suite can call them by intent rather than by raw keyword.
+# Named predicates over has_trigger, so the script and its test suite read by
+# intent rather than by raw keyword. Each is covered by variables/tests/variables.bats.
 function on_beta() { has_trigger "beta-deploy"; }
 function on_rc() { has_trigger "rc-deploy"; }
 function on_prod() { has_trigger "prod-deploy"; }
@@ -42,13 +20,6 @@ function skip_licenses() { has_trigger "skip-licenses"; }
 function skip_linters() { has_trigger "skip-linters"; }
 function skip_tests() { has_trigger "skip-tests"; }
 function update_packages() { has_trigger "update-packages"; }
-function execute_if_on_beta() { execute_if_trigger "beta-deploy" "$@"; }
-function execute_if_on_rc() { execute_if_trigger "rc-deploy" "$@"; }
-function execute_if_on_prod() { execute_if_trigger "prod-deploy" "$@"; }
-function execute_if_on_macos() { execute_if_trigger "macos" "$@"; }
-function execute_if_on_tvos() { execute_if_trigger "tvos" "$@"; }
-function execute_if_skip_tests() { execute_if_trigger "skip-tests" "$@"; }
-function execute_if_tests() { execute_unless_trigger "skip-tests" "$@"; }
 
 # Helper function to set boolean flag from trigger
 # Usage: set_flag_from_trigger VAR_NAME "trigger-keyword"
