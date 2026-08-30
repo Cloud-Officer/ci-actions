@@ -372,6 +372,81 @@ describe('Slack Action', () => {
       expect(allFields).toContain(':question: unknownJob');
     });
 
+    it('should keep the failure colour when a cancelled job shares the attachment', async () => {
+      // BUG-013: colour was last-writer-wins across the two jobs grouped into one
+      // attachment, so a cancelled job following a failed one downgraded red to amber.
+      const jobs = {
+        variables: { outputs: { COMMIT_MESSAGE: 'Test' } },
+        failureJob: { result: 'failure' },
+        cancelledJob: { result: 'cancelled' }
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify(jobs);
+        return '';
+      });
+
+      await run();
+
+      const callArg = axios.post.mock.calls[0][1];
+      const pair = callArg.attachments.find(a =>
+        (a.blocks || []).some(b =>
+          (b.fields || []).some(f => f.text.includes('failureJob'))));
+
+      expect(pair.blocks[0].fields.map(f => f.text)).toEqual([
+        ':x: failureJob',
+        ':hand: cancelledJob'
+      ]);
+      expect(pair.color).toBe(COLORS.failure);
+    });
+
+    it('should keep the failure colour when the cancelled job comes first', async () => {
+      const jobs = {
+        variables: { outputs: { COMMIT_MESSAGE: 'Test' } },
+        cancelledJob: { result: 'cancelled' },
+        failureJob: { result: 'failure' }
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify(jobs);
+        return '';
+      });
+
+      await run();
+
+      const callArg = axios.post.mock.calls[0][1];
+      const pair = callArg.attachments.find(a =>
+        (a.blocks || []).some(b =>
+          (b.fields || []).some(f => f.text.includes('failureJob'))));
+
+      expect(pair.color).toBe(COLORS.failure);
+    });
+
+    it('should not upgrade a success-only attachment past success', async () => {
+      const jobs = {
+        variables: { outputs: { COMMIT_MESSAGE: 'Test' } },
+        aJob: { result: 'success' },
+        bJob: { result: 'skipped' }
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify(jobs);
+        return '';
+      });
+
+      await run();
+
+      const callArg = axios.post.mock.calls[0][1];
+      const pair = callArg.attachments.find(a =>
+        (a.blocks || []).some(b =>
+          (b.fields || []).some(f => f.text.includes('aJob'))));
+
+      expect(pair.color).toBe(COLORS.success);
+    });
+
     it('should include commit message in context', async () => {
       const jobs = {
         variables: {

@@ -86,7 +86,19 @@ function detect_trivy()
     find_args+=( -o -name "${lock_file}" )
   done
 
-  find . -maxdepth 3 '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
+  # Walk the whole tree, pruning submodules, exactly as the trivy action's own
+  # vuln-scanner detection does (linters/trivy/action.yml). A former -maxdepth 3
+  # here meant a monorepo whose only lock file sat four or more directories deep
+  # never got TRIVY into LINTERS, so the shared gate resolved to continue=false
+  # and the vulnerability scan silently never ran.
+  local submodule_paths=()
+  if [ -f .gitmodules ]; then
+    while IFS= read -r line; do
+      submodule_paths+=("-path" "./${line}" "-prune" "-o")
+    done < <(grep 'path = ' .gitmodules | sed 's/.*path = //')
+  fi
+
+  find . "${submodule_paths[@]}" '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
 }
 
 # Resolve build identifiers and skip/deploy flags from the environment and the

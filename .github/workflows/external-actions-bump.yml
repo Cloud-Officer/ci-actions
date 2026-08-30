@@ -59,6 +59,11 @@ jobs:
           "HEAD:${branch}"
 
         if gh pr view "${branch}" --json state --jq '.state' 2>/dev/null | grep -qx 'OPEN'; then
+          # Refresh the description too: the branch was just force-pushed with a newly
+          # resolved bump set, so the body opened with the first run would otherwise keep
+          # listing the wrong versions -- and it tells reviewers to read those release
+          # notes for breaking changes.
+          gh pr edit "${branch}" --body-file "${body_file}"
           echo "Existing PR for ${branch} updated in place."
         else
           gh pr create \

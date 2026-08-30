@@ -194,6 +194,7 @@ function main()
   # PR body: table of bumps + truncated upstream release notes.
   if [ -n "${pr_body_file}" ]; then
     local or notes
+    local -a note_lines
     {
       echo "## Automated external action bumps"
       echo
@@ -216,7 +217,12 @@ function main()
         echo
         notes="$(gh release view "${new}" --repo "${or}" --json body --jq '.body' 2>/dev/null || true)"
         if [ -n "${notes}" ]; then
-          printf '%s\n' "${notes}" | head -n 40
+          # Shell-native truncation rather than `| head -n 40`: head closing the pipe
+          # sends SIGPIPE to printf, the pipeline exits 141, and pipefail + errexit
+          # abort main mid-write -- after the branch was force-pushed but before
+          # `gh pr create`. Same hazard variables.sh:173 documents avoiding.
+          mapfile -t note_lines <<< "${notes}"
+          printf '%s\n' "${note_lines[@]:0:40}"
         else
           echo "_Release notes not available; see https://github.com/${or}/releases_"
         fi
