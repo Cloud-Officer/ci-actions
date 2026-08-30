@@ -102,19 +102,19 @@ EOF
 
 @test "is_sha matches only 40-char hex" {
   is_sha 0123456789abcdef0123456789abcdef01234567
-  ! is_sha v6
-  ! is_sha 0123456789abcdef0123456789abcdef0123456g
+  ! is_sha v6 || false
+  ! is_sha 0123456789abcdef0123456789abcdef0123456g || false
 }
 
 @test "is_floating_major / is_exact_semver classification" {
   is_floating_major v6
   is_floating_major 1
-  ! is_floating_major v0.9.1
-  ! is_floating_major main
+  ! is_floating_major v0.9.1 || false
+  ! is_floating_major main || false
   is_exact_semver v0.9.1
   is_exact_semver 0.35.0
-  ! is_exact_semver v6
-  ! is_exact_semver main
+  ! is_exact_semver v6 || false
+  ! is_exact_semver main || false
 }
 
 @test "major_of strips the v and takes the leading number" {
@@ -126,8 +126,8 @@ EOF
 @test "version_gt is newer-aware and v-prefix insensitive" {
   version_gt v0.10.0 v0.9.1
   version_gt v0.36.0 0.35.0
-  ! version_gt v0.35.0 0.35.0
-  ! version_gt v7.0.0 v8.0.0
+  ! version_gt v0.35.0 0.35.0 || false
+  ! version_gt v7.0.0 v8.0.0 || false
 }
 
 @test "esc_re escapes regex metacharacters" {
@@ -175,7 +175,7 @@ EOF
 @test "branch pins (e.g. @main) are skipped, not converted to a tag" {
   run "${SCRIPT}"
   # No bump line for it (a "::warning:: ... not a version tag" on stderr is expected).
-  ! grep -qE '^BUMP[[:space:]]+branchy/action' <<< "${output}"
+  ! grep -qE '^BUMP[[:space:]]+branchy/action' <<< "${output}" || false
   [[ "${output}" == *"branchy/action@main is not a version tag"* ]]
 }
 

@@ -713,7 +713,7 @@ teardown() {
   grep -q "COMMIT_MESSAGE=Branch build commit" "${GITHUB_OUTPUT}"
   grep -qE "BUILD_NAME=feature_tags-cleanup-.+" "${GITHUB_OUTPUT}"
   # BUILD_NAME must not contain a slash (a slash means the tag path mangled it).
-  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
 }
 
 @test "tag ref drives the tag-build path: prod deploy, tag BUILD_NAME, tag-subject COMMIT_MESSAGE" {
@@ -766,7 +766,7 @@ EOF
   grep -q "COMMIT_MESSAGE=Release v1.0.0 #prod-deploy" "${GITHUB_OUTPUT}"
   # BUILD_NAME is derived from the bare tag name (no refs/tags/ prefix, no slash).
   grep -qE "BUILD_NAME=v1.0.0-.+" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
   # Unrelated triggers stay off.
   grep -q "DEPLOY_ON_BETA=0" "${GITHUB_OUTPUT}"
 
@@ -802,8 +802,8 @@ EOF
   grep -qE "BUILD_NAME=feature_a_b-.+" "${GITHUB_OUTPUT}"
   grep -qE "BUILD_VERSION=feature_a_b-.+" "${GITHUB_OUTPUT}"
   # Invariant: no slash survives in either identifier.
-  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}" || false
 }
 
 @test "PR head ref with a slash is sanitized in BUILD_NAME" {
@@ -831,8 +831,8 @@ EOF
   [ "${status}" -eq 0 ]
   grep -qE "BUILD_NAME=feature_foo-.+" "${GITHUB_OUTPUT}"
   grep -qE "BUILD_VERSION=feature_foo-.+" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}" || false
 }
 
 @test "tag ref with a slash is sanitized in BUILD_NAME" {
@@ -878,6 +878,6 @@ EOF
   # releases/1.0 -> releases_1.0 in the build identifiers.
   grep -qE "BUILD_NAME=releases_1.0-.+" "${GITHUB_OUTPUT}"
   grep -qE "BUILD_VERSION=releases_1.0-.+" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}"
-  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}"
+  ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
+  ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}" || false
 }
