@@ -9,7 +9,7 @@ This action performs setup of many common tools all at once. Please see the indi
 * [setup-python](<https://github.com/marketplace/actions/setup-python>)
 * [setup-ruby](<https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby>)
 * [setup-xcode](<https://github.com/marketplace/actions/setup-xcode-version>)
-* [setup-elasticsearch](<https://github.com/marketplace/actions/run-elasticsearch-with-plugins>)
+* [setup-opensearch](<https://github.com/marketplace/actions/setup-opensearch>)
 * [setup-mongodb](<https://github.com/marketplace/actions/mongodb-in-github-actions>)
 * [setup-mysql](<https://github.com/marketplace/actions/actions-setup-mysql>)
 * [setup-rabbitmq](<https://github.com/marketplace/actions/rabbitmq-in-github-actions>)
@@ -35,7 +35,7 @@ If a version file is present, the language will be installed using the version s
 
 ## Inputs
 
-`setup` is a single composite action that orchestrates 123 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
+`setup` is a single composite action that orchestrates 124 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
 
 ### Core
 
@@ -44,6 +44,7 @@ If a version file is present, the language will be installed using the version s
 | `github-token` | no | `${{ github.token }}` | github token |
 | `fetch-depth` | no | `1` | Number of commits to fetch. 0 indicates all history for all branches and tags. |
 | `ssh-key` | no | — | ssh key |
+| `persist-credentials` | no | `'false'` | Leave the token in `.git/config` after checkout so later steps can run authenticated git commands against `origin`. Off by default so the credential is not readable by every subsequent step; private submodules resolve over the SSH agent started from `ssh-key` and do not need it. |
 
 ### Languages & toolchains
 
@@ -187,12 +188,12 @@ If a version file is present, the language will be installed using the version s
 
 ### Services
 
-#### Elasticsearch
+#### OpenSearch
 
 | Input | Required | Default | Description |
 | ----- | -------- | ------- | ----------- |
-| `elasticsearch-version` | no | `none` | The version of Elasticsearch |
-| `elasticsearch-plugins` | no | — | Elasticsearch plugin strings |
+| `opensearch-version` | no | `none` | The version of OpenSearch |
+| `opensearch-plugins` | no | — | OpenSearch plugin strings |
 
 #### MongoDB
 

@@ -7,6 +7,7 @@
 * [Installation](#installation)
   * [Prerequisites](#prerequisites)
   * [Reference an action](#reference-an-action)
+  * [Removed actions](#removed-actions)
   * [Verify](#verify)
 * [Usage](#usage)
   * [Available Actions](#available-actions)
@@ -52,6 +53,22 @@ uses: Cloud-Officer/ci-actions/setup@v2
 
 The floating `v2` tag always points at the latest 2.x release. Pin to an immutable release tag (for example `2.1.4`) when you
 need reproducible builds.
+
+### Removed actions
+
+Four action paths have been retired. None is referenced by any workflow in the organization, so no build was broken by
+their removal, but the paths 404 if an old reference resurfaces.
+
+| Action            | Last working ref | Removed    | Replacement                                                                      |
+|-------------------|------------------|------------|----------------------------------------------------------------------------------|
+| `linters/checkov` | `2.0.3`          | 2026-02-26 | [`linters/trivy`](linters/trivy/README.md) — covers the same IaC security checks |
+| `linters/codeql`  | `v1`             | 2025-12-28 | GitHub-native code scanning default setup, configured by `github-build`          |
+| `jira`            | pre-`v1`         | 2025-06-16 | None — Dependabot PRs are triaged in GitHub                                      |
+| `licenses`        | pre-`v1`         | 2024-06-20 | [`soup`](soup/README.md) — license compliance and SOUP inventory                 |
+
+`linters/checkov` is the only one removed inside the `2.x` line, so it is the only removal the floating `v2` tag carried;
+pin `2.0.3` if you still need it. `linters/codeql` was dropped at the `v1` to `v2` boundary, and `jira` and `licenses`
+predate the `v1` tag entirely.
 
 ### Verify
 
