@@ -260,7 +260,7 @@ surface, and neither may take the other's content.
 
 **Supported Services:**
 
-- Elasticsearch
+- OpenSearch
 - MongoDB
 - MySQL/MariaDB
 - RabbitMQ
@@ -560,8 +560,16 @@ a newer upstream version, preserving the existing pin style.
 
 #### Repository Checkout Hardening
 
-- `persist-credentials: false` on all checkout steps to prevent credential leakage
-  (except setup action where credentials are required for Java GPG/Maven operations)
+- `persist-credentials: false` on all checkout steps to prevent credential leakage. The
+  flag controls only whether `actions/checkout` leaves the token as an `http.extraheader`
+  in `.git/config` (and `core.sshCommand` when `ssh-key` is set); nothing in the toolchain
+  setup depends on it. Private submodules and dependencies resolve over the SSH agent the
+  `setup` action starts from `ssh-key`, and `actions/setup-java`'s `gpg-private-key` import
+  and `settings.xml` server wiring never touch git credentials
+- `setup` exposes a `persist-credentials` input (default `'false'`) for the rare consumer
+  whose later steps need an authenticated git remote. Prefer an explicit authenticated URL
+  in the step that needs it -- `variables/variables.sh` fetches tags over
+  `https://x-access-token:${GITHUB_TOKEN}@github.com/...` for exactly this reason
 
 #### GPG Signature Verification
 

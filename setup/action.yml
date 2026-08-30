@@ -15,6 +15,15 @@ inputs:
   ssh-key:
     description: 'ssh key'
     required: false
+  persist-credentials:
+    description: >-
+      Leave the token in .git/config (and core.sshCommand when ssh-key is set) after checkout, so later steps in the
+      job can run authenticated git commands against origin. Defaults to false: the credential would otherwise be
+      readable by every subsequent step, including third-party actions and dependency lifecycle scripts. Private
+      submodules and dependencies keep working without it -- they resolve over the SSH agent this action starts from
+      ssh-key. Only set it to true if a later step genuinely needs an authenticated git remote.
+    required: false
+    default: 'false'
 
   # ===== AWS (cloud credentials) =====
   aws-region:
@@ -356,13 +365,13 @@ inputs:
     required: false
     default: 'none'
 
-  # ===== Elasticsearch =====
-  elasticsearch-version:
-    description: 'The version of Elasticsearch'
+  # ===== OpenSearch =====
+  opensearch-version:
+    description: 'The version of OpenSearch'
     default: 'none'
     required: false
-  elasticsearch-plugins:
-    description: 'Elasticsearch plugin strings'
+  opensearch-plugins:
+    description: 'OpenSearch plugin strings'
     required: false
     default: ''
 
@@ -495,7 +504,7 @@ runs:
         token: ${{ inputs.github-token }}
         fetch-depth: ${{ inputs.fetch-depth }}
         ssh-key: ${{ inputs.ssh-key }}
-        persist-credentials: true
+        persist-credentials: ${{ inputs.persist-credentials }}
         lfs: true
         submodules: recursive
 
@@ -811,13 +820,17 @@ runs:
         key: ${{ runner.os }}-tuist-${{ hashFiles('Tuist/Dependencies/Lockfiles/Package.resolved') }}
         restore-keys: ${{ runner.os }}-tuist-
 
-    # https://github.com/marketplace/actions/run-elasticsearch-with-plugins
-    - name: Setup Elasticsearch
-      uses: miyataka/elasticsearch-github-actions@1
-      if: ${{ inputs.elasticsearch-version != 'none' }}
+    # https://github.com/marketplace/actions/setup-opensearch
+    # OpenSearch, not Elasticsearch: AWS forked after Elastic's 2021 licence change, so
+    # `aws opensearch list-versions` caps Elasticsearch compatibility at 7.10 forever while
+    # our domains run OpenSearch (AWS::OpenSearchService::Domain). The previous action,
+    # miyataka/elasticsearch-github-actions@1, had no release since 2020 and no licence.
+    - name: Setup OpenSearch
+      uses: ankane/setup-opensearch@v1
+      if: ${{ inputs.opensearch-version != 'none' }}
       with:
-        stack-version: ${{ inputs.elasticsearch-version }}
-        plugins: ${{ inputs.elasticsearch-plugins }}
+        opensearch-version: ${{ inputs.opensearch-version }}
+        plugins: ${{ inputs.opensearch-plugins }}
 
     # https://github.com/marketplace/actions/mongodb-in-github-actions
     - name: Setup MongoDB
