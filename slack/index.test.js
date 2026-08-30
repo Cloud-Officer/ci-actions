@@ -92,6 +92,10 @@ describe('Slack Action', () => {
     });
 
     it('should truncate long invalid JSON in error message', async () => {
+      // TEST-002: asserting a bare '...' was vacuous -- V8's own JSON.parse
+      // SyntaxError for this input already reads `Unexpected token 'x',
+      // "xxxxxxxxxx"... is not valid JSON`, so the old assertion passed whether
+      // or not index.js truncated anything. Pin the truncated payload instead.
       const longInvalidJson = 'x'.repeat(200);
 
       core.getInput.mockImplementation((name) => {
@@ -100,7 +104,21 @@ describe('Slack Action', () => {
         return '';
       });
 
-      await expect(run()).rejects.toThrow('...');
+      await expect(run()).rejects.toThrow(`Input was: ${'x'.repeat(100)}...`);
+    });
+
+    it('should not append an ellipsis to a short invalid JSON payload', async () => {
+      const shortInvalidJson = 'x'.repeat(20);
+
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return shortInvalidJson;
+        return '';
+      });
+
+      await expect(run()).rejects.toThrow(
+        new RegExp(`Input was: ${shortInvalidJson}$`)
+      );
     });
 
     it('should send message for successful jobs', async () => {
@@ -337,8 +355,18 @@ describe('Slack Action', () => {
 
       await run();
 
+      // TEST-003: `toBeGreaterThan(1)` asserted nothing about the pairing rule --
+      // it also passes for one-attachment-per-job (4) and for a single lumped
+      // attachment (2). buildJobAttachments emits one attachment per pair, so the
+      // exact shape here is header + [job1, job2] + [job3].
       const callArg = axios.post.mock.calls[0][1];
-      expect(callArg.attachments.length).toBeGreaterThan(1);
+      expect(callArg.attachments).toHaveLength(3);
+
+      const pairFields = callArg.attachments[1].blocks[0].fields.map(f => f.text);
+      const tailFields = callArg.attachments[2].blocks[0].fields.map(f => f.text);
+
+      expect(pairFields).toEqual([':white_check_mark: job1', ':white_check_mark: job2']);
+      expect(tailFields).toEqual([':white_check_mark: job3']);
     });
 
     it('should use correct emoji for each job status', async () => {
