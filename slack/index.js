@@ -8,6 +8,20 @@ const COLORS = {
     warning: '#f8c753'
 };
 
+// Severity ranking for the per-attachment colour. Jobs are grouped two per
+// attachment, so without an ordering the second job's colour simply overwrites
+// the first: a cancelled job following a failed one downgraded red to amber and
+// the on-call reader saw a warning where there was a real failure.
+const COLOR_SEVERITY = {
+    [COLORS.success]: 0,
+    [COLORS.warning]: 1,
+    [COLORS.failure]: 2
+};
+
+function worstColor(current, candidate) {
+    return COLOR_SEVERITY[candidate] > COLOR_SEVERITY[current] ? candidate : current;
+}
+
 // GitHub Actions populates GITHUB_* at runtime; when run outside Actions
 // (local debugging) they are undefined and would render "https://undefined/..."
 // in the Slack payload. Fall back to a visible placeholder instead.
@@ -128,11 +142,11 @@ function buildJobAttachments(jobs) {
           break;
         case 'failure':
           emoji = ':x:';
-          color = COLORS.failure;
+          color = worstColor(color, COLORS.failure);
           break;
         case 'cancelled':
           emoji = ':hand:'
-          color = COLORS.warning;
+          color = worstColor(color, COLORS.warning);
           break;
         case 'skipped':
           emoji = ':heavy_minus_sign:'
