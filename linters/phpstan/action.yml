@@ -102,15 +102,20 @@ runs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
+    # COMPOSER_AUTH rather than `composer config --global --auth`: composer reads it
+    # natively and takes the same authenticated github-oauth path (so the API rate
+    # limit and private-package access are unchanged), but the credential stays scoped
+    # to this step. The global form writes the token in cleartext to
+    # $COMPOSER_HOME/auth.json, where it outlives the step and is readable by every
+    # later step in the job -- third-party actions and dependency lifecycle scripts
+    # included -- since all steps run as the same runner user.
     - name: Run Composer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' }}
       env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
+        COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ inputs.github-token }}"}}'
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
-      run: |
-        composer config --global --auth github-oauth.github.com "${GITHUB_TOKEN}"
-        bash -eo pipefail -c -- "${COMPOSER_COMMAND}"
+      run: bash -eo pipefail -c -- "${COMPOSER_COMMAND}"
 
     # https://phpstan.org/
     - name: Run PHPStan
