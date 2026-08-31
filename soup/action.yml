@@ -45,7 +45,11 @@ runs:
         curl --fail -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
         unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
         rm -rf "${RUNNER_TEMP}/soup.zip"
-        echo "soup_location=${RUNNER_TEMP}/soup-${latest_tag}" >> "${GITHUB_ENV}"
+        # Publish as a step output rather than into GITHUB_ENV. The env file is
+        # job-wide, so soup_location leaked into every later step of the consumer's
+        # job; a step output is scoped to this action and makes `id: soup` -- which
+        # was previously declared but referenced nowhere -- actually load-bearing.
+        echo "soup-location=${RUNNER_TEMP}/soup-${latest_tag}" >> "${GITHUB_OUTPUT}"
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
@@ -59,7 +63,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        SOUP_LOCATION: ${{ env.soup_location }}
+        SOUP_LOCATION: ${{ steps.soup.outputs.soup-location }}
         PARAMETERS: ${{ inputs.parameters }}
       run: |
         pushd "${SOUP_LOCATION}"

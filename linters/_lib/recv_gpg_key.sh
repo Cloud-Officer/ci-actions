@@ -18,7 +18,9 @@ keyservers=(
   hkps://pgp.mit.edu
 )
 
-for attempt in 1 2 3; do
+attempts=3
+
+for attempt in $(seq 1 "${attempts}"); do
   for keyserver in "${keyservers[@]}"; do
     if gpg --keyserver "${keyserver}" --recv-keys "${key}"; then
       echo "Imported GPG key ${key} from ${keyserver} (attempt ${attempt})"
@@ -26,8 +28,12 @@ for attempt in 1 2 3; do
     fi
     echo "gpg --recv-keys ${key} from ${keyserver} failed (attempt ${attempt})" >&2
   done
-  sleep $(( attempt * 5 ))
+  # Only back off between attempts. Sleeping after the last one delayed the
+  # error by 15 seconds without ever retrying again (BUG-018).
+  if [ "${attempt}" -lt "${attempts}" ]; then
+    sleep $(( attempt * 5 ))
+  fi
 done
 
-echo "::error::Failed to import GPG key ${key} from any keyserver after 3 attempts" >&2
+echo "::error::Failed to import GPG key ${key} from any keyserver after ${attempts} attempts" >&2
 exit 1

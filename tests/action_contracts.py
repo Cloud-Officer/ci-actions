@@ -19,7 +19,11 @@ import sys
 
 import yaml
 
-VALID_USING = {"composite", "docker", "node16", "node20", "node24"}
+# node16 is omitted deliberately: GitHub removed it from hosted runners, so an
+# action declaring it no longer runs, and this check exists to catch exactly that
+# class of breakage before a consumer hits it. node20 is still supported by
+# GitHub and stays. QUAL-010.
+VALID_USING = {"composite", "docker", "node20", "node24"}
 
 
 def check_file(path: str) -> list[str]:
