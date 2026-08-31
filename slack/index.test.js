@@ -32,6 +32,8 @@ describe('Slack Action', () => {
   });
 
   describe('COLORS', () => {
+    // Literals are deliberate here: this test pins the palette itself, so
+    // asserting against COLORS would be tautological.
     it('should export correct color values', () => {
       expect(COLORS.info).toBe('#439FE0');
       expect(COLORS.success).toBe('#5cb589');
@@ -591,8 +593,8 @@ describe('Slack Action', () => {
       const callArg = axios.post.mock.calls[0][1];
       const jobAttachments = callArg.attachments.slice(1);
 
-      const hasFailureColor = jobAttachments.some(a => a.color === '#d5001a');
-      const hasSuccessColor = jobAttachments.some(a => a.color === '#5cb589');
+      const hasFailureColor = jobAttachments.some(a => a.color === COLORS.failure);
+      const hasSuccessColor = jobAttachments.some(a => a.color === COLORS.success);
 
       expect(hasFailureColor).toBe(true);
       expect(hasSuccessColor).toBe(true);
@@ -656,6 +658,9 @@ describe('built bundle (dist/index.js)', () => {
       const dist = require('./dist/index.js');
       expect(typeof dist.run).toBe('function');
       expect(typeof dist.validateJobs).toBe('function');
+      // Literals again on purpose: this checks the bundled copy independently of
+      // the source module, so a bundling bug that mangled the palette must fail
+      // here rather than comparing dist against a value it was built from.
       expect(dist.COLORS).toEqual({
         info: '#439FE0',
         success: '#5cb589',
