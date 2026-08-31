@@ -83,7 +83,26 @@ runs:
       run: |
         sudo apt-get install -y wget apt-transport-https gnupg
         wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb noble main" | sudo tee /etc/apt/sources.list.d/trivy.list
+        # Derive the codename from the runner rather than hardcoding it. It is a
+        # property of the runner image, not of this repository, and GitHub rolls
+        # ubuntu-latest forward roughly every two years -- 26.04 already exists as
+        # ubuntu-26.04. A stale codename here breaks apt-get for every consumer at
+        # once, and Trivy is the security gate they all run through.
+        #
+        # trivy-repo publishes every Ubuntu LTS codename (focal, jammy, noble,
+        # resolute), which is all ubuntu-latest ever resolves to, but its interim
+        # coverage has gaps (plucky/25.04 is absent). Verify before writing the
+        # source so a consumer pinning an unusual image degrades to a working
+        # release instead of failing on apt-get update. CFG-003.
+        . /etc/os-release
+        codename="${VERSION_CODENAME:-noble}"
+
+        if ! wget -q --spider "https://aquasecurity.github.io/trivy-repo/deb/dists/${codename}/Release"; then
+          echo "::warning::trivy-repo has no dist for '${codename}'; falling back to noble"
+          codename=noble
+        fi
+
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb ${codename} main" | sudo tee /etc/apt/sources.list.d/trivy.list
         sudo apt-get update
         sudo apt-get install -y trivy
 

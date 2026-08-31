@@ -58,6 +58,9 @@ jobs:
     - name: Assert toolchain setup and package installs stay authenticated
       shell: bash
       run: python3 tests/token_contract.py
+    - name: Assert actions with silently-empty inputs validate them
+      shell: bash
+      run: python3 tests/required_inputs_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
