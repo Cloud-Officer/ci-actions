@@ -25,6 +25,19 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    # GitHub Actions does not enforce `required: true` for composite actions, so an
+    # unset or misspelled secret reaches the steps below as an empty string. Fail
+    # loudly here instead of running nothing and reporting success (CFG-002).
+    - name: Validate Inputs
+      shell: bash
+      env:
+        SOURCE: ${{ inputs.source }}
+        TARGET: ${{ inputs.target }}
+      run: |
+        bash "${GITHUB_ACTION_PATH}/../../linters/_lib/require_inputs.sh" \
+          "source=${SOURCE}" \
+          "target=${TARGET}"
+
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v6

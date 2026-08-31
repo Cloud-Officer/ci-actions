@@ -39,6 +39,23 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    # GitHub Actions does not enforce `required: true` for composite actions, so an
+    # unset or misspelled secret reaches the steps below as an empty string. Fail
+    # loudly here instead of running nothing and reporting success (CFG-002).
+    - name: Validate Inputs
+      shell: bash
+      env:
+        APPLICATION_NAME: ${{ inputs.application-name }}
+        DEPLOYMENT_GROUP_NAME: ${{ inputs.deployment-group-name }}
+        S3_BUCKET: ${{ inputs.s3-bucket }}
+        S3_KEY: ${{ inputs.s3-key }}
+      run: |
+        bash "${GITHUB_ACTION_PATH}/../../linters/_lib/require_inputs.sh" \
+          "application-name=${APPLICATION_NAME}" \
+          "deployment-group-name=${DEPLOYMENT_GROUP_NAME}" \
+          "s3-bucket=${S3_BUCKET}" \
+          "s3-key=${S3_KEY}"
+
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v6
