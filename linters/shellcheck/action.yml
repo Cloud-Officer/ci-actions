@@ -13,6 +13,14 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  reviewdog-token:
+    description: >-
+      Token reviewdog uses to post review comments. Defaults to the job's own GITHUB_TOKEN,
+      which needs only `pull-requests: write` on this repository and expires with the job.
+      Kept separate from github-token so a long-lived org PAT -- which github-token carries
+      for private submodule checkout -- is never handed to the third-party reviewdog action.
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -44,7 +52,7 @@ runs:
         exclude: "./.git/*:./.vendor/*:./vendor/*:./node_modules/*:./Libraries/*:./Pods/*"
         fail_level: any
         filter_mode: nofilter
-        github_token: ${{ inputs.github-token }}
+        github_token: ${{ inputs.reviewdog-token }}
         level: info
         path: "."
         pattern: "*.sh"

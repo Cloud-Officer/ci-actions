@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contract: user-supplied command strings run with fail-fast semantics.
+r"""Contract: user-supplied command strings run with fail-fast semantics.
 
 BUG-003 (#257). Several actions hand a user-supplied, possibly multi-line
 command string to a nested interpreter:
@@ -10,7 +10,7 @@ command string to a nested interpreter:
 
 A composite step's own `shell: bash` options are NOT inherited by that nested
 `bash -c`, so a bare `bash -c -- "${CMDS}"` reports only the LAST command's
-exit status: `false\\ntrue` exits 0 and the CI step goes green while an
+exit status: `false\ntrue` exits 0 and the CI step goes green while an
 intermediate command failed. Every such call site must therefore carry `-e`
 and `-o pipefail` itself.
 
