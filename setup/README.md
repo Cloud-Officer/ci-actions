@@ -64,26 +64,39 @@ If a version file is present, the language will be installed using the version s
 
 | Input | Required | Default | Description |
 | ----- | -------- | ------- | ----------- |
-| `java-version` | no | `none` | The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file |
-| `java-version-file` | no | — | The path to the `.java-version` file. See examples of supported syntax in README file |
-| `java-distribution` | yes | `temurin` | Java distribution. See the list of supported distributions in README file |
-| `java-package` | no | `jdk` | The package type (jdk, jre, jdk+fx, jre+fx) |
-| `java-architecture` | no | — | The architecture of the package (defaults to the action runner's architecture) |
-| `java-jdkFile` | no | — | Path to where the compressed JDK is located |
+| `java-version` | no | `none` | The Java version to set up. Takes a whole or semver Java version, or the "latest" alias to use the newest available stable release. See examples of supported syntax in README file |
+| `java-version-file` | no | — | The path to a file containing the Java version to set up (.java-version, .tool-versions, .sdkmanrc). Used when java-version is not set. See examples of supported syntax in README file |
+| `java-distribution` | yes | `temurin` | Java distribution. See the list of supported distributions in README file. This input is required except when java-version-file points to .sdkmanrc with a recognized distribution suffix (e.g., java=21.0.5-tem). |
+| `java-package` | no | `jdk` | The package type (`jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, or `jre+ft`). Supported values vary by distribution. |
+| `java-architecture` | no | — | The architecture of the package (`x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, or `s390x`). Aliases `ia32`, `amd64`, `arm`, and `arm64` are normalized to `x86`, `x64`, `armv7`, and `aarch64`. Supported values vary by distribution and operating system. Defaults to the action runner's architecture. |
+| `java-jdk-file` | no | — | Path to where the compressed JDK is located |
 | `java-check-latest` | no | `False` | Set this option if you want the action to check for the latest available version that satisfies the version spec |
+| `java-force-download` | no | `False` | Set this option to always download Java and replace any matching version in the tool cache |
+| `java-set-default` | no | `True` | Set this option to false if you want to install a JDK but not make it the default. When false, JAVA_HOME and PATH are not updated, but JAVA_HOME_\<major\>_\<arch\> is still set. |
+| `java-verify-signature` | no | — | Verify downloaded Java package signatures when supported by the selected distribution |
+| `java-verify-signature-public-key` | no | — | ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution. |
 | `java-server-id` | no | `github` | ID of the distributionManagement repository in the pom.xml file. Default is `github` |
-| `java-server-username` | no | `GITHUB_ACTOR` | Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR |
-| `java-server-password` | no | `GITHUB_TOKEN` | Environment variable name for password or token for authentication to the Apache Maven repository. Default is $GITHUB_TOKEN |
+| `java-server-username-env-var` | no | — | Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR |
+| `java-server-password-env-var` | no | — | Environment variable name for password or token for authentication to the Apache Maven repository. Default is $GITHUB_TOKEN |
+| `java-mvn-server-credentials` | no | — | Multiline list of Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. When set, replaces the single server configured by java-server-id, java-server-username-env-var and java-server-password-env-var. |
+| `java-mvn-repositories` | no | — | Multiline list of Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. |
+| `java-mvn-repositories-include-central` | no | `True` | Include Maven Central in the generated dependency repositories profile. When false, Central is disabled unless an explicit repository with ID `central` is declared. |
+| `java-mvn-repositories-prioritize-central` | no | `True` | Place Maven Central before custom dependency repositories. Has no effect when Maven Central is excluded. |
 | `java-settings-path` | no | — | Path to where the settings.xml file will be written. Default is ~/.m2. |
 | `java-overwrite-settings` | no | `True` | Overwrite the settings.xml file if it exists. Default is "true". |
-| `java-gpg-private-key` | no | — | GPG private key to import. Default is empty string. |
-| `java-gpg-passphrase` | no | — | Environment variable name for the GPG private key passphrase. Default is $GPG_PASSPHRASE. |
+| `java-gpg-private-key` | no | — | GPG private key to import into an isolated temporary keyring. Default is empty string. |
+| `java-gpg-passphrase-env-var` | no | — | Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when java-gpg-private-key is set. |
 | `java-cache` | no | — | Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt". |
-| `java-cache-dependency-path` | no | — | The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies. |
+| `java-cache-jdk` | no | — | Cache downloaded JDK installations between jobs. Defaults to enabled when dependency caching is configured with `java-cache`; set explicitly to "true" or "false" to override. |
+| `java-cache-dependency-path` | no | — | The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `java-cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies. |
+| `java-cache-path` | no | — | The path to cache instead of the default dependency cache path for the selected package manager. This option can be used with the `java-cache` option and supports a list of paths and exclusion patterns. |
+| `java-cache-read-only` | no | `False` | Restore caches without saving cache changes in the post action. |
 | `java-job-status` | no | `${{ job.status }}` | Workaround to pass job status to post job step. This variable is not intended for manual setting |
-| `java-token` | no | `${{ github.server_url == '<https://github.com'> && github.token \|\| '' }}` | The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting. |
-| `java-mvn-toolchain-id` | no | — | Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file |
+| `java-token` | no | `${{ github.server_url == '<https://github.com>' && github.token \|\| '' }}` | The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting. |
+| `java-mvn-toolchain-id` | no | — | Name of Maven Toolchain ID if the default name of "${mvn-toolchain-vendor}_${java-version}" is not wanted. The toolchain vendor defaults to the "java-distribution" input. When supplied, the number of IDs must match the number of Java versions. See examples of supported syntax in Advanced Usage file |
 | `java-mvn-toolchain-vendor` | no | — | Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file |
+| `java-show-download-progress` | no | `False` | Whether Maven should print artifact download/transfer progress to the build log. When "false" (default) the action sets "-ntp" (--no-transfer-progress) in MAVEN_ARGS to produce cleaner logs. Set to "true" to keep the progress output. Has no effect on non-Maven builds. |
+| `java-problem-matcher` | no | `True` | Whether to register the Java problem matcher (compiler errors/warnings and uncaught exceptions). Set to "false" to disable annotations. |
 
 #### Node.js
 

@@ -120,42 +120,68 @@ inputs:
 
   # ===== Java =====
   java-version:
-    description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
+    description: 'The Java version to set up. Takes a whole or semver Java version, or the "latest" alias to use the newest available stable release. See examples of supported syntax in README file'
     required: false
     default: 'none'
   java-version-file:
-    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
+    description: 'The path to a file containing the Java version to set up (.java-version, .tool-versions, .sdkmanrc). Used when java-version is not set. See examples of supported syntax in README file'
     required: false
   java-distribution:
-    description: 'Java distribution. See the list of supported distributions in README file'
+    description: 'Java distribution. See the list of supported distributions in README file. This input is required except when java-version-file points to .sdkmanrc with a recognized distribution suffix (e.g., java=21.0.5-tem).'
     required: true
     default: 'temurin'
   java-package:
-    description: 'The package type (jdk, jre, jdk+fx, jre+fx)'
+    description: 'The package type (`jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, or `jre+ft`). Supported values vary by distribution.'
     required: false
     default: 'jdk'
   java-architecture:
-    description: "The architecture of the package (defaults to the action runner's architecture)"
+    description: "The architecture of the package (`x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, or `s390x`). Aliases `ia32`, `amd64`, `arm`, and `arm64` are normalized to `x86`, `x64`, `armv7`, and `aarch64`. Supported values vary by distribution and operating system. Defaults to the action runner's architecture."
     required: false
-  java-jdkFile:
+  java-jdk-file:
     description: 'Path to where the compressed JDK is located'
     required: false
   java-check-latest:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
     default: false
+  java-force-download:
+    description: 'Set this option to always download Java and replace any matching version in the tool cache'
+    required: false
+    default: false
+  java-set-default:
+    description: 'Set this option to false if you want to install a JDK but not make it the default. When false, JAVA_HOME and PATH are not updated, but JAVA_HOME_<major>_<arch> is still set.'
+    required: false
+    default: true
+  java-verify-signature:
+    description: 'Verify downloaded Java package signatures when supported by the selected distribution'
+    required: false
+  java-verify-signature-public-key:
+    description: 'ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.'
+    required: false
   java-server-id:
     description: 'ID of the distributionManagement repository in the pom.xml file. Default is `github`'
     required: false
     default: 'github'
-  java-server-username:
+  java-server-username-env-var:
     description: 'Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR'
     required: false
-    default: 'GITHUB_ACTOR'
-  java-server-password:
+  java-server-password-env-var:
     description: 'Environment variable name for password or token for authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
-    default: 'GITHUB_TOKEN'
+  java-mvn-server-credentials:
+    description: 'Multiline list of Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. When set, replaces the single server configured by java-server-id, java-server-username-env-var and java-server-password-env-var.'
+    required: false
+  java-mvn-repositories:
+    description: 'Multiline list of Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`.'
+    required: false
+  java-mvn-repositories-include-central:
+    description: 'Include Maven Central in the generated dependency repositories profile. When false, Central is disabled unless an explicit repository with ID `central` is declared.'
+    required: false
+    default: true
+  java-mvn-repositories-prioritize-central:
+    description: 'Place Maven Central before custom dependency repositories. Has no effect when Maven Central is excluded.'
+    required: false
+    default: true
   java-settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
@@ -164,17 +190,27 @@ inputs:
     required: false
     default: true
   java-gpg-private-key:
-    description: 'GPG private key to import. Default is empty string.'
+    description: 'GPG private key to import into an isolated temporary keyring. Default is empty string.'
     required: false
-  java-gpg-passphrase:
-    description: 'Environment variable name for the GPG private key passphrase. Default is $GPG_PASSPHRASE.'
+  java-gpg-passphrase-env-var:
+    description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when java-gpg-private-key is set.'
     required: false
   java-cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
-  java-cache-dependency-path:
-    description: 'The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.'
+  java-cache-jdk:
+    description: 'Cache downloaded JDK installations between jobs. Defaults to enabled when dependency caching is configured with `java-cache`; set explicitly to "true" or "false" to override.'
     required: false
+  java-cache-dependency-path:
+    description: 'The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `java-cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.'
+    required: false
+  java-cache-path:
+    description: 'The path to cache instead of the default dependency cache path for the selected package manager. This option can be used with the `java-cache` option and supports a list of paths and exclusion patterns.'
+    required: false
+  java-cache-read-only:
+    description: 'Restore caches without saving cache changes in the post action.'
+    required: false
+    default: false
   java-job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     required: false
@@ -184,11 +220,19 @@ inputs:
     required: false
     default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   java-mvn-toolchain-id:
-    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    description: 'Name of Maven Toolchain ID if the default name of "${mvn-toolchain-vendor}_${java-version}" is not wanted. The toolchain vendor defaults to the "java-distribution" input. When supplied, the number of IDs must match the number of Java versions. See examples of supported syntax in Advanced Usage file'
     required: false
   java-mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
+  java-show-download-progress:
+    description: 'Whether Maven should print artifact download/transfer progress to the build log. When "false" (default) the action sets "-ntp" (--no-transfer-progress) in MAVEN_ARGS to produce cleaner logs. Set to "true" to keep the progress output. Has no effect on non-Maven builds.'
+    required: false
+    default: false
+  java-problem-matcher:
+    description: 'Whether to register the Java problem matcher (compiler errors/warnings and uncaught exceptions). Set to "false" to disable annotations.'
+    required: false
+    default: true
 
   # ===== Node.js =====
   node-version:
@@ -628,21 +672,34 @@ runs:
         distribution: ${{ inputs.java-distribution }}
         java-package: ${{ inputs.java-package }}
         architecture: ${{ inputs.java-architecture }}
-        jdkFile: ${{ inputs.java-jdkFile }}
+        jdk-file: ${{ inputs.java-jdk-file }}
         check-latest: ${{ inputs.java-check-latest }}
+        force-download: ${{ inputs.java-force-download }}
+        set-default: ${{ inputs.java-set-default }}
+        verify-signature: ${{ inputs.java-verify-signature }}
+        verify-signature-public-key: ${{ inputs.java-verify-signature-public-key }}
         server-id: ${{ inputs.java-server-id }}
-        server-username: ${{ inputs.java-server-username }}
-        server-password: ${{ inputs.java-server-password }}
+        server-username-env-var: ${{ inputs.java-server-username-env-var }}
+        server-password-env-var: ${{ inputs.java-server-password-env-var }}
+        mvn-server-credentials: ${{ inputs.java-mvn-server-credentials }}
+        mvn-repositories: ${{ inputs.java-mvn-repositories }}
+        mvn-repositories-include-central: ${{ inputs.java-mvn-repositories-include-central }}
+        mvn-repositories-prioritize-central: ${{ inputs.java-mvn-repositories-prioritize-central }}
         settings-path: ${{ inputs.java-settings-path }}
         overwrite-settings: ${{ inputs.java-overwrite-settings }}
         gpg-private-key: ${{ inputs.java-gpg-private-key }}
-        gpg-passphrase: ${{ inputs.java-gpg-passphrase }}
+        gpg-passphrase-env-var: ${{ inputs.java-gpg-passphrase-env-var }}
         cache: ${{ inputs.java-cache }}
+        cache-jdk: ${{ inputs.java-cache-jdk }}
         cache-dependency-path: ${{ inputs.java-cache-dependency-path }}
+        cache-path: ${{ inputs.java-cache-path }}
+        cache-read-only: ${{ inputs.java-cache-read-only }}
         job-status: ${{ inputs.java-job-status }}
         token: ${{ inputs.java-token }}
         mvn-toolchain-id: ${{ inputs.java-mvn-toolchain-id }}
         mvn-toolchain-vendor: ${{ inputs.java-mvn-toolchain-vendor }}
+        show-download-progress: ${{ inputs.java-show-download-progress }}
+        problem-matcher: ${{ inputs.java-problem-matcher }}
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Gradle
