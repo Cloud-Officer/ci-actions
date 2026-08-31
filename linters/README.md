@@ -49,6 +49,14 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  reviewdog-token:
+    description: >-
+      Token reviewdog uses to post review comments. Defaults to the job's own GITHUB_TOKEN,
+      which needs only `pull-requests: write` on this repository and expires with the job.
+      Kept separate from github-token so a long-lived org PAT -- which github-token carries
+      for private submodule checkout -- is never handed to the third-party reviewdog action.
+    required: false
+    default: ${{ github.token }}
 
   # 2. LINTER-SPECIFIC INPUTS (optional, add as needed)
   # ...
@@ -93,7 +101,7 @@ runs:
 * [ ] Update `name` and `description`
 * [ ] Update `LINTER_NAME` in check step (must match detection in `variables/variables.sh`)
 * [ ] Add linter detection to `variables/variables.sh` if not already present
-* [ ] Keep common inputs unchanged (`linters`, `ssh-key`, `github-token`)
+* [ ] Keep common inputs unchanged (`linters`, `ssh-key`, `github-token`, `reviewdog-token`)
 * [ ] Keep checkout step unchanged
 * [ ] Add linter-specific setup steps if needed
 * [ ] Add linter execution step with `if: ${{ steps.check.outputs.continue == 'true' }}`
@@ -144,10 +152,14 @@ Most linters use reviewdog with these standard settings:
 with:
   fail_level: any
   filter_mode: nofilter
-  github_token: ${{ inputs.github-token }}
+  github_token: ${{ inputs.reviewdog-token }}
   level: info
   reporter: github-pr-review
 ```
+
+`github_token` here is `reviewdog-token`, never `github-token`: reviewdog is a
+third-party action and only needs to post PR comments, whereas `github-token`
+carries the org PAT that `actions/checkout` needs for private submodules.
 
 ### Linter Detection
 

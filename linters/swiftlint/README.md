@@ -27,6 +27,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  reviewdog-token:
+    description: 'token reviewdog uses to post review comments (needs only pull-requests: write)'
+    required: false
+    default: ${{ github.token }}
   swiftlint-version:
     description: 'swiftlint release tag to install, or "latest"'
     required: false

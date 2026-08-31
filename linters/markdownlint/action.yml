@@ -13,6 +13,14 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  reviewdog-token:
+    description: >-
+      Token reviewdog uses to post review comments. Defaults to the job's own GITHUB_TOKEN,
+      which needs only `pull-requests: write` on this repository and expires with the job.
+      Kept separate from github-token so a long-lived org PAT -- which github-token carries
+      for private submodule checkout -- is never handed to the third-party reviewdog action.
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -72,7 +80,7 @@ runs:
     - name: Run markdownlint
       shell: bash
       env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
         markdownlint-cli2 "**/*.md" 2>&1 | reviewdog -efm="%f:%l:%c %m" -efm="%f:%l %m" -name="markdownlint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

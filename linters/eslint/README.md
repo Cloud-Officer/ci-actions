@@ -20,6 +20,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  reviewdog-token:
+    description: 'token reviewdog uses to post review comments (needs only pull-requests: write)'
+    required: false
+    default: ${{ github.token }}
   eslint-version:
     description: 'ESLint version to install. Pinned to v8.x by default - v9 (flat config) is incompatible with legacy frontend JS (jQuery, etc.)'
     required: false
