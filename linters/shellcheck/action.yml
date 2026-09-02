@@ -49,9 +49,6 @@ runs:
       uses: reviewdog/action-shellcheck@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        # *.bats excluded explicitly: a bats suite is not shell (its @test syntax
-        # does not parse) and the upstream shebang scan below would otherwise pick
-        # up any suite whose interpreter line happens to mention a shell.
         exclude: "./.git/*:./.vendor/*:./vendor/*:./node_modules/*:./Libraries/*:./Pods/*:*.bats"
         fail_level: any
         filter_mode: nofilter
@@ -59,17 +56,6 @@ runs:
         level: info
         path: "."
         pattern: "*.sh"
-        # Shell tools installed onto PATH carry no extension (linters, ssm-jump,
-        # generate-codeowners), so `pattern` alone never sees them. This makes the
-        # action additionally scan files whose first line is a shell shebang, which
-        # is the same basis github-build uses to decide whether to enable ShellCheck
-        # for the repository at all (config/linters.yaml -> shellcheck.shebang_match).
-        #
-        # The two regexes are not identical: upstream matches `^#!.*sh`, which is
-        # looser than github-build's `[/ ](ba|da|k)?sh([[:space:]]|$)` and so also
-        # matches zsh and fish -- dialects ShellCheck rejects with SC1071. That only
-        # bites a repository that actually ships one, and none do today; add the
-        # offending path to `exclude` above if that changes.
         check_all_files_with_shebangs: "true"
         reporter: github-pr-review
         # https://github.com/koalaman/shellcheck

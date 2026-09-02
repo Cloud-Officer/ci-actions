@@ -26,21 +26,6 @@ inputs:
     default: ${{ github.token }}
 ```
 
-## What gets linted
-
-`*.sh` by name, plus any file whose first line is a shell shebang — shell tools installed onto
-`PATH` are named `deploy`, not `deploy.sh`, so a name pattern alone never sees them. This mirrors
-how `github-build` decides whether to enable ShellCheck for a repository at all
-(`config/linters.yaml` → `shellcheck.shebang_match`).
-
-`*.bats` suites are excluded: their `@test` syntax is not shell and does not parse. So are the
-usual vendored directories.
-
-ShellCheck supports `sh`, `bash`, `dash` and `ksh` only, and **fails** with `SC1071` on anything
-else rather than skipping it. The upstream shebang scan matches `^#!.*sh`, which is looser than
-that and would also pick up `zsh` and `fish`. No repository ships one today; if that changes, add
-the path to `exclude` in `action.yml`.
-
 ## Example usage
 
 ```yml
