@@ -49,7 +49,14 @@ runs:
       uses: reviewdog/action-shellcheck@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        exclude: "./.git/*:./.vendor/*:./vendor/*:./node_modules/*:./Libraries/*:./Pods/*:*.bats"
+        exclude: |
+          ./.git/*
+          ./.vendor/*
+          ./vendor/*
+          ./node_modules/*
+          ./Libraries/*
+          ./Pods/*
+          *.bats
         fail_level: any
         filter_mode: nofilter
         github_token: ${{ inputs.reviewdog-token }}
