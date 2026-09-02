@@ -49,13 +49,14 @@ runs:
       uses: reviewdog/action-shellcheck@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        exclude: "./.git/*:./.vendor/*:./vendor/*:./node_modules/*:./Libraries/*:./Pods/*"
+        exclude: "./.git/*:./.vendor/*:./vendor/*:./node_modules/*:./Libraries/*:./Pods/*:*.bats"
         fail_level: any
         filter_mode: nofilter
         github_token: ${{ inputs.reviewdog-token }}
         level: info
         path: "."
         pattern: "*.sh"
+        check_all_files_with_shebangs: "true"
         reporter: github-pr-review
         # https://github.com/koalaman/shellcheck
         shellcheck_flags: --external-sources
