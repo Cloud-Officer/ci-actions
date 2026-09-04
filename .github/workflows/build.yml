@@ -17,7 +17,7 @@ name: Build
     - "**"
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 env:
   NODE-CACHE: npm
   NODE-VERSION: 26.8.1
@@ -48,7 +48,7 @@ jobs:
     steps:
     - name: Prepare variables
       id: variables
-      uses: cloud-officer/ci-actions/variables@v2
+      uses: cloud-officer/ci-actions/variables@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
@@ -62,11 +62,12 @@ jobs:
     steps:
     - name: Actionlint
       id: actionlint
-      uses: cloud-officer/ci-actions/linters/actionlint@v2
+      uses: cloud-officer/ci-actions/linters/actionlint@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   bandit:
     name: Python Bandit Linter
     runs-on: ubuntu-latest
@@ -76,7 +77,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Bandit
-      uses: cloud-officer/ci-actions/linters/bandit@v2
+      uses: cloud-officer/ci-actions/linters/bandit@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -91,11 +92,12 @@ jobs:
     steps:
     - name: ESLint
       id: eslint
-      uses: cloud-officer/ci-actions/linters/eslint@v2
+      uses: cloud-officer/ci-actions/linters/eslint@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   flake8:
     name: Python Flake8 Linter
     runs-on: ubuntu-latest
@@ -105,11 +107,12 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Flake8
-      uses: cloud-officer/ci-actions/linters/flake8@v2
+      uses: cloud-officer/ci-actions/linters/flake8@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   markdownlint:
     name: Markdown Linter
     runs-on: ubuntu-latest
@@ -120,11 +123,12 @@ jobs:
     steps:
     - name: Markdownlint
       id: markdownlint
-      uses: cloud-officer/ci-actions/linters/markdownlint@v2
+      uses: cloud-officer/ci-actions/linters/markdownlint@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   semgrep:
     name: Semgrep Security Scanner
     permissions:
@@ -137,7 +141,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Semgrep
-      uses: cloud-officer/ci-actions/linters/semgrep@v2
+      uses: cloud-officer/ci-actions/linters/semgrep@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -152,11 +156,12 @@ jobs:
     steps:
     - name: ShellCheck
       id: shellcheck
-      uses: cloud-officer/ci-actions/linters/shellcheck@v2
+      uses: cloud-officer/ci-actions/linters/shellcheck@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   trivy:
     name: Container & IaC Vulnerability Scanner
     runs-on: ubuntu-latest
@@ -166,7 +171,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Trivy
-      uses: cloud-officer/ci-actions/linters/trivy@v2
+      uses: cloud-officer/ci-actions/linters/trivy@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
@@ -181,11 +186,12 @@ jobs:
     steps:
     - name: Yamllint
       id: yamllint
-      uses: cloud-officer/ci-actions/linters/yamllint@v2
+      uses: cloud-officer/ci-actions/linters/yamllint@v3
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
+        reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   js_unit_tests:
     name: JavaScript Unit Tests
     runs-on: ubuntu-latest
@@ -195,7 +201,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Setup
-      uses: cloud-officer/ci-actions/setup@v2
+      uses: cloud-officer/ci-actions/setup@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
@@ -219,14 +225,14 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Setup
-      uses: cloud-officer/ci-actions/setup@v2
+      uses: cloud-officer/ci-actions/setup@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
         github-token: "${{secrets.GH_PAT}}"
-    - name: Bats Install (bump-actions)
+    - name: Bats Install
       shell: bash
       run: |-
-        cd bump-actions && if [[ "$RUNNER_OS" == "macOS" ]]; then
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
           brew install bats-core
         else
           sudo apt-get update && sudo apt-get install -y bats
@@ -236,29 +242,9 @@ jobs:
     - name: Bats (bump-actions)
       shell: bash
       run: cd bump-actions && bats tests/
-    - name: Bats Install (codedeploy)
-      shell: bash
-      run: |-
-        cd codedeploy && if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install bats-core
-        else
-          sudo apt-get update && sudo apt-get install -y bats
-        fi
-      env:
-        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Bats (codedeploy)
       shell: bash
       run: cd codedeploy && bats tests/
-    - name: Bats Install (variables)
-      shell: bash
-      run: |-
-        cd variables && if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install bats-core
-        else
-          sudo apt-get update && sudo apt-get install -y bats
-        fi
-      env:
-        GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
     - name: Bats (variables)
       shell: bash
       run: cd variables && bats tests/

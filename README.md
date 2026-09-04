@@ -48,11 +48,16 @@ There is nothing to install: the actions are referenced directly from this repos
 ### Reference an action
 
 ```yaml
-uses: Cloud-Officer/ci-actions/setup@v2
+uses: Cloud-Officer/ci-actions/setup@v3
 ```
 
-The floating `v2` tag always points at the latest 2.x release. Pin to an immutable release tag (for example `2.1.4`) when you
-need reproducible builds.
+The floating `v3` tag always points at the latest 3.x release. Pin to an immutable release tag (for example `3.0.2`) when
+you need reproducible builds.
+
+The `v2` tag still tracks the 2.x line. Moving from `v2` to `v3` requires renaming four `setup` inputs, which follow the
+renames `actions/setup-java` made in its v6 release: `java-jdkFile` becomes `java-jdk-file`, `java-server-username`
+becomes `java-server-username-env-var`, `java-server-password` becomes `java-server-password-env-var`, and
+`java-gpg-passphrase` becomes `java-gpg-passphrase-env-var`.
 
 ### Removed actions
 
@@ -68,7 +73,8 @@ their removal, but the paths 404 if an old reference resurfaces.
 
 `linters/checkov` is the only one removed inside the `2.x` line, so it is the only removal the floating `v2` tag carried;
 pin `2.0.3` if you still need it. `linters/codeql` was dropped at the `v1` to `v2` boundary, and `jira` and `licenses`
-predate the `v1` tag entirely.
+predate the `v1` tag entirely. Nothing was removed at the `2.x` to `3.0` boundary, so `v3` exposes the same action set as
+the latest `v2` release.
 
 ### Verify
 
@@ -82,7 +88,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: Cloud-Officer/ci-actions/variables@v2
+        uses: Cloud-Officer/ci-actions/variables@v3
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
 ```
