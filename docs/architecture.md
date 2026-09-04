@@ -198,6 +198,17 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 **Pattern:** Each linter action checks if it should run based on the `LINTERS`
 input variable, which is populated by the variables action.
 
+**Split tokens:** the 13 linter actions that report through reviewdog
+(actionlint, eslint, flake8, golangci, hadolint, ktlint, markdownlint, pmd,
+protolint, rubocop, shellcheck, swiftlint, yamllint) take a `reviewdog-token`
+input separate from `github-token`, both defaulting to `${{ github.token }}`.
+`github-token` carries a long-lived org PAT for private submodule checkout;
+`reviewdog-token` is handed to the third-party reviewdog action and needs only
+`pull-requests: write` on the repository being linted, expiring with the job.
+Keeping them apart is what stops the PAT from reaching third-party code. The
+remaining six linters (bandit, cfnlint, phpcs, phpstan, semgrep, trivy) do not
+use reviewdog and take no such input.
+
 **Shared Trivy suppression policy:** two root-level files split the suppression
 surface, and neither may take the other's content.
 
@@ -234,6 +245,17 @@ surface, and neither may take the other's content.
   `linters/tests/clean_workspace.bats`
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
+- `require_inputs.sh`: shared "required inputs are actually present" gate,
+  invoked as `bash "${GITHUB_ACTION_PATH}/../linters/_lib/require_inputs.sh"
+  "name=${VALUE}" …` with the values passed through `env:`. GitHub Actions does
+  not enforce `required: true` for composite or local actions — an unset or
+  misspelled `${{ secrets.X }}` interpolates to an empty string — so an action
+  that hands that value to a nested interpreter runs nothing and still exits 0.
+  The gate treats whitespace-only as empty, names every empty input at once and
+  fails the step (CFG-002). Despite living under `linters/_lib/`, it is consumed
+  by the deployment actions: `aws` (`shell-commands`), `codedeploy/deploy`
+  (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`) and
+  `codedeploy/s3copy` (`source`, `target`)
 - `install_swiftlint.sh`: resolves a realm/SwiftLint release (pinned via the
   `swiftlint-version` input, `latest` by default), downloads the matching
   `swiftlint_linux_{amd64,arm64}.zip` and installs the statically linked
@@ -392,6 +414,13 @@ end-to-end in CI without secrets or side effects.
   action's inputs, that every `pip`/`npm`/`gem`-style install step exports
   `GITHUB_TOKEN`, and that `linters/bandit` mirrors `linters/semgrep` step for
   step -- the two pip-installed Python linters must not drift apart again
+- `required_inputs_contract.py`: asserts the actions whose empty inputs would
+  fail silently (`aws`, `codedeploy/deploy`, `codedeploy/s3copy`) each call the
+  shared `linters/_lib/require_inputs.sh` gate and name every such input.
+  Actions that already fail loudly on their own are deliberately not listed:
+  `docker` errors on an empty registry password, `setup` on an unusable
+  version, and `slack` validates `webhook-url` and the `jobs` payload in
+  `index.js`
 
 ### .github/workflows
 
@@ -543,7 +572,10 @@ a newer upstream version, preserving the existing pin style.
 
 - AWS credentials passed via action inputs, not hardcoded
 - SSH keys for private repository access
-- GitHub tokens with minimal required permissions
+- GitHub tokens with minimal required permissions. The linter actions split
+  theirs in two: `github-token` (the org PAT needed for private submodule
+  checkout) never reaches the third-party reviewdog action, which gets the
+  separate short-lived `reviewdog-token` instead
 - DockerHub credentials for registry authentication
 
 #### Input Validation
@@ -604,6 +636,9 @@ a newer upstream version, preserving the existing pin style.
   phpstan's ssh-agent, loading a deploy key) while that linter is disabled
 - `tests/token_contract.py` blocks an unauthenticated toolchain download or
   package install from creeping back into any action
+- `tests/required_inputs_contract.py` blocks a green no-op: an action whose
+  misspelled or unset secret arrives as an empty string, runs nothing and still
+  reports success
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
@@ -643,11 +678,15 @@ The build workflow grants minimal permissions at the workflow level:
 ```yaml
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 ```
 
+`pull-requests: write` is what the reviewdog-reporting linters need to post
+their review comments with the job's own `GITHUB_TOKEN`; it is the reason that
+token can stand in for the org PAT there.
+
 The `semgrep` job narrows this further with its own block — `actions: read`
-plus `contents: read`, dropping `pull-requests: read` — because the SARIF
+plus `contents: read`, dropping `pull-requests: write` — because the SARIF
 upload needs to read the workflow run. `auto-approve.yml`,
 `external-actions-bump.yml` and `smoke.yml` each grant `contents: read` only;
 the write scopes those workflows need (approving a PR, opening a bump PR) come
