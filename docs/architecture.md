@@ -41,6 +41,13 @@ Verification harness (runs against this repository's own actions):
 |                    tests + .github/workflows                   |
 | (action.yml contract checks, bats suites, smoke workflow)      |
 +----------------------------------------------------------------+
+
+Static resource (consumed by a benchmark, not by any action):
+
++----------------------------------------------------------------+
+|                              cis                               |
+| (PolicyBanner.rtf -- CIS login banner)                         |
++----------------------------------------------------------------+
 ```
 
 ### Component Overview

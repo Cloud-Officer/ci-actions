@@ -40,8 +40,9 @@ their build environment setup, code quality gates and deployment steps.
 ### Prerequisites
 
 * A GitHub repository with GitHub Actions enabled
-* An SSH deploy key stored as a repository secret (for example `SSH_KEY`) — the `variables` action requires it, and `setup`
-  uses it to check out private dependencies
+* An SSH deploy key stored as a repository secret (for example `SSH_KEY`) — most actions, including `variables` and every
+  linter, declare `ssh-key` as a required input; `setup` accepts it as an optional input and uses it to check out private
+  dependencies
 
 There is nothing to install: the actions are referenced directly from this repository by your workflow files.
 
