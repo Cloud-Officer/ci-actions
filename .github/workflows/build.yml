@@ -51,7 +51,7 @@ jobs:
       uses: cloud-officer/ci-actions/variables@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
   actionlint:
     name: Github Actions Linter
     runs-on: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   bandit:
     name: Python Bandit Linter
@@ -81,7 +81,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
   eslint:
     name: JavaScript ES Linter
     runs-on: ubuntu-latest
@@ -96,7 +96,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   flake8:
     name: Python Flake8 Linter
@@ -111,7 +111,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   markdownlint:
     name: Markdown Linter
@@ -127,7 +127,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   semgrep:
     name: Semgrep Security Scanner
@@ -145,7 +145,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
   shellcheck:
     name: Shell Scripts Linter
     runs-on: ubuntu-latest
@@ -160,7 +160,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   trivy:
     name: Container & IaC Vulnerability Scanner
@@ -175,7 +175,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
   yamllint:
     name: YAML Linter
     runs-on: ubuntu-latest
@@ -190,7 +190,7 @@ jobs:
       with:
         linters: "${{needs.variables.outputs.LINTERS}}"
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         reviewdog-token: "${{secrets.GITHUB_TOKEN}}"
   js_unit_tests:
     name: JavaScript Unit Tests
@@ -204,7 +204,7 @@ jobs:
       uses: cloud-officer/ci-actions/setup@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
         node-version: "${{env.NODE-VERSION}}"
         node-cache: "${{env.NODE-CACHE}}"
         node-cache-dependency-path: slack/package-lock.json
@@ -228,7 +228,7 @@ jobs:
       uses: cloud-officer/ci-actions/setup@v3
       with:
         ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{secrets.GH_PAT}}"
+        github-token: "${{github.token}}"
     - name: Bats Install
       shell: bash
       run: |-
