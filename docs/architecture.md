@@ -209,12 +209,19 @@ input variable, which is populated by the variables action.
 (actionlint, eslint, flake8, golangci, hadolint, ktlint, markdownlint, pmd,
 protolint, rubocop, shellcheck, swiftlint, yamllint) take a `reviewdog-token`
 input separate from `github-token`, both defaulting to `${{ github.token }}`.
-`github-token` carries a long-lived org PAT for private submodule checkout;
-`reviewdog-token` is handed to the third-party reviewdog action and needs only
-`pull-requests: write` on the repository being linted, expiring with the job.
-Keeping them apart is what stops the PAT from reaching third-party code. The
-remaining six linters (bandit, cfnlint, phpcs, phpstan, semgrep, trivy) do not
-use reviewdog and take no such input.
+`github-token` is the checkout and toolchain token: it authenticates
+`actions/checkout` (including private submodules), `actions/setup-*` downloads
+and the package installs. `reviewdog-token` is handed to the third-party
+reviewdog action and needs only `pull-requests: write` on the repository being
+linted. Keeping them apart means a consumer that has to widen `github-token` —
+a broader-scoped token for a private submodule, say — never hands that token to
+third-party code. The org-wide `GH_PAT` that used to fill that role is retired:
+github-build rewrites `${{ secrets.GH_PAT }}` to `${{ github.token }}`, so the
+generated workflows now pass the run's own ephemeral token to both inputs. The
+`reviewdog-token` input descriptions in the linter `action.yml` files still
+phrase the rationale in terms of that PAT. The remaining six linters (bandit,
+cfnlint, phpcs, phpstan, semgrep, trivy) do not use reviewdog and take no such
+input.
 
 **Shared Trivy suppression policy:** two root-level files split the suppression
 surface, and neither may take the other's content.
@@ -580,9 +587,12 @@ a newer upstream version, preserving the existing pin style.
 - AWS credentials passed via action inputs, not hardcoded
 - SSH keys for private repository access
 - GitHub tokens with minimal required permissions. The linter actions split
-  theirs in two: `github-token` (the org PAT needed for private submodule
-  checkout) never reaches the third-party reviewdog action, which gets the
-  separate short-lived `reviewdog-token` instead
+  theirs in two: `github-token` (checkout, toolchain downloads and package
+  installs — the input a consumer widens when a private submodule needs it)
+  never reaches the third-party reviewdog action, which gets the separate
+  `reviewdog-token` instead. Both default to `${{ github.token }}`, and since
+  the org-wide `GH_PAT` was retired the generated workflows pass the run's own
+  ephemeral token to both
 - DockerHub credentials for registry authentication
 
 #### Input Validation
@@ -689,8 +699,8 @@ permissions:
 ```
 
 `pull-requests: write` is what the reviewdog-reporting linters need to post
-their review comments with the job's own `GITHUB_TOKEN`; it is the reason that
-token can stand in for the org PAT there.
+their review comments with the job's own `GITHUB_TOKEN`, which is why the run
+token suffices for `reviewdog-token` and no long-lived secret is needed there.
 
 The `semgrep` job narrows this further with its own block — `actions: read`
 plus `contents: read`, dropping `pull-requests: write` — because the SARIF
