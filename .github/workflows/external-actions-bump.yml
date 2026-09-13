@@ -24,14 +24,14 @@ jobs:
       # Use our own composite checkout (not actions/checkout) so this workflow
       # carries no external action ref for the scanner to bump — avoiding a
       # self-referential loop. cloud-officer/* refs are skipped by the scanner.
-      uses: cloud-officer/ci-actions/codedeploy/checkout@v2
+      uses: cloud-officer/ci-actions/codedeploy/checkout@v3
       with:
-        github-token: ${{ secrets.GH_PAT }}
+        github-token: ${{ github.token }}
         ssh-key: ''
     - name: Resolve, apply and open PR
       shell: bash
       env:
-        GH_TOKEN: ${{ secrets.GH_PAT }}
+        GH_TOKEN: ${{ secrets.GH_BOT_PAT }}
       run: |
         set -euo pipefail
 
