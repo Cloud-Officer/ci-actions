@@ -259,3 +259,46 @@ jobs:
         test -n "${BUILD_NAME}" || { echo "::error::BUILD_NAME is empty"; exit 1; }
         test -n "${BUILD_VERSION}" || { echo "::error::BUILD_VERSION is empty"; exit 1; }
         echo "variables OK: ${BUILD_NAME}"
+
+  docker-smoke:
+    name: Docker action (build only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Build fixture image without pushing
+      uses: ./docker
+      with:
+        push: 'false'
+        platforms: linux/amd64
+        context: tests/docker
+        file: tests/docker/Dockerfile
+    - name: Reject an invalid push value
+      id: bad-push
+      continue-on-error: true
+      uses: ./docker
+      with:
+        push: 'maybe'
+        context: tests/docker
+        file: tests/docker/Dockerfile
+    - name: Reject a publish without credentials
+      id: no-credentials
+      continue-on-error: true
+      uses: ./docker
+      with:
+        push: 'true'
+        context: tests/docker
+        file: tests/docker/Dockerfile
+    - name: Assert invalid inputs failed
+      shell: bash
+      env:
+        BAD_PUSH: ${{ steps.bad-push.outcome }}
+        NO_CREDENTIALS: ${{ steps.no-credentials.outcome }}
+      run: |
+        set -euo pipefail
+        test "${BAD_PUSH}" = failure || { echo "::error::push=maybe should fail, got ${BAD_PUSH}"; exit 1; }
+        test "${NO_CREDENTIALS}" = failure || { echo "::error::push=true without credentials should fail, got ${NO_CREDENTIALS}"; exit 1; }
+        echo "docker input validation OK"
