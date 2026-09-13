@@ -75,6 +75,8 @@ function detect_trivy()
   lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../linters/_lib"
   # shellcheck source=/dev/null
   source "${lib_dir}/lock_files.sh"
+  # shellcheck source=/dev/null
+  source "${lib_dir}/submodule_paths.sh"
 
   local find_args=(
     -name "Dockerfile*" -o -name "*.tf" -o
@@ -91,14 +93,15 @@ function detect_trivy()
   # here meant a monorepo whose only lock file sat four or more directories deep
   # never got TRIVY into LINTERS, so the shared gate resolved to continue=false
   # and the vulnerability scan silently never ran.
-  local submodule_paths=()
-  if [ -f .gitmodules ]; then
-    while IFS= read -r line; do
-      submodule_paths+=("-path" "./${line}" "-prune" "-o")
-    done < <(grep 'path = ' .gitmodules | sed 's/.*path = //')
-  fi
+  local prune_args=()
+  local path
+  while IFS= read -r path; do
+    if [ -n "${path}" ]; then
+      prune_args+=("-path" "./${path}" "-prune" "-o")
+    fi
+  done < <(submodule_paths)
 
-  find . "${submodule_paths[@]}" '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
+  find . "${prune_args[@]}" '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
 }
 
 # Resolve build identifiers and skip/deploy flags from the environment and the

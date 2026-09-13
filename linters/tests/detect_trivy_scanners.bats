@@ -82,3 +82,11 @@ add_submodule() {
   add_file go.sum
   [ "$(scanners)" = "secret,misconfig,vuln" ]
 }
+
+@test "a submodule declared without spaces around '=' is still pruned" {
+  mkdir -p vendor-infra/modules
+  printf '[submodule "vendor-infra"]\n\tpath=vendor-infra\n\turl=git@github.com:example/vendor-infra.git\n' > .gitmodules
+  add_file vendor-infra/modules/main.tf
+  add_file vendor-infra/Gemfile.lock
+  [ "$(scanners)" = "secret" ]
+}
