@@ -18,6 +18,9 @@
 
 set -euo pipefail
 
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/submodule_paths.sh"
+
 # Delete every submodule checkout except the shared `scripts` submodule.
 #
 # The `scripts` exclusion is deliberate: github-build symlinks a consumer repo's
@@ -34,10 +37,6 @@ function remove_submodules()
   local -a paths=()
   local path
 
-  # Parse with `git config` rather than grep/awk. The old `grep path .gitmodules`
-  # was unanchored, so any line merely containing the word "path" -- a url such as
-  # https://example.com/path-in-url.git -- was treated as a submodule entry. The
-  # keyed lookup below matches only real `submodule.<name>.path` values.
   while IFS= read -r path; do
     [[ -n "${path}" ]] || continue
     [[ "${path}" == *scripts* ]] && continue
@@ -53,7 +52,7 @@ function remove_submodules()
     esac
 
     paths+=("${path}")
-  done < <(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | cut -d' ' -f2-)
+  done < <(submodule_paths)
 
   if [[ ${#paths[@]} -gt 0 ]]; then
     rm -rf -- "${paths[@]}"

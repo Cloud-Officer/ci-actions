@@ -64,6 +64,9 @@ jobs:
     - name: Assert every README references the current ci-actions major
       shell: bash
       run: python3 tests/readme_version_contract.py
+    - name: Assert .gitmodules is parsed only by the shared helper
+      shell: bash
+      run: python3 tests/submodule_paths_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)

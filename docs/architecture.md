@@ -257,6 +257,15 @@ surface, and neither may take the other's content.
   submodules, matching `detect_trivy` in `variables.sh`, so IaC nested deeper
   than three directories is not skipped. Unit-tested by
   `linters/tests/detect_trivy_scanners.bats`
+- `submodule_paths.sh`: the only `.gitmodules` parser. Sourced by
+  `clean_workspace.sh`, `detect_trivy_scanners.sh` and `variables/variables.sh`
+  (`detect_trivy`); its `submodule_paths` function prints each declared path
+  via `git config --file .gitmodules -z --get-regexp '^submodule\..*\.path$'`,
+  so entries match on the real key whatever their spacing, a `path =` string
+  inside a url or submodule name is never mistaken for one, and names or paths
+  containing spaces come through intact. Unit-tested by
+  `linters/tests/submodule_paths.bats`; `tests/submodule_paths_contract.py`
+  asserts no other script parses `.gitmodules` itself
 - `clean_workspace.sh`: workspace cleanup for the two linters that lint the
   whole checkout (markdownlint, yamllint). Deletes the submodule checkouts
   listed in `.gitmodules` plus any extra directory names passed as arguments
@@ -448,6 +457,11 @@ end-to-end in CI without secrets or side effects.
   asserts every other `README.md` references that same major, so a major roll
   cannot leave per-action usage examples pinned to the previous line. Upgrade
   notes that mention older majors live in `UPGRADING.md`, which it does not scan
+- `submodule_paths_contract.py`: asserts `variables/variables.sh`,
+  `linters/_lib/detect_trivy_scanners.sh` and `linters/_lib/clean_workspace.sh`
+  read submodule paths from `linters/_lib/submodule_paths.sh`, and that no other
+  shell script or `action.yml` parses `.gitmodules` with grep/sed/awk or its own
+  `git config --file .gitmodules`
 
 ### .github/workflows
 
@@ -671,6 +685,8 @@ a newer upstream version, preserving the existing pin style.
   reports success
 - `tests/readme_version_contract.py` blocks a per-action README from telling
   consumers to pin an older ci-actions major after a major roll
+- `tests/submodule_paths_contract.py` blocks a second, divergent `.gitmodules`
+  parser from being copied back into a script or action
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,

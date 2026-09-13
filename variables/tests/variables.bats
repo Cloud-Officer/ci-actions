@@ -881,3 +881,12 @@ EOF
   ! grep -E "^BUILD_NAME=.*/" "${GITHUB_OUTPUT}" || false
   ! grep -E "^BUILD_VERSION=.*/" "${GITHUB_OUTPUT}" || false
 }
+
+@test "linter detection: TRIVY not detected when the only IaC sits in a submodule declared without spaces around '='" {
+  mkdir -p "${TEST_DIR}/vendor-infra"
+  touch "${TEST_DIR}/vendor-infra/main.tf"
+  printf '[submodule "vendor-infra"]\n\tpath=vendor-infra\n\turl=git@github.com:example/vendor-infra.git\n' > "${TEST_DIR}/.gitmodules"
+  cd "${TEST_DIR}"
+  run detect_trivy
+  [ "$status" -eq 1 ]
+}
