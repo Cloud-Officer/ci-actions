@@ -634,9 +634,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         APT_PACKAGES: ${{ inputs.apt-packages }}
-      run: |
-        sudo apt-get --yes update
-        sudo apt-get --yes --no-install-recommends install ${APT_PACKAGES}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/apt_install.sh"
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
@@ -756,10 +754,7 @@ runs:
       if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: |
-        dir="$(composer config cache-files-dir)" || { echo "::error::composer is not available - cannot resolve the Composer cache directory"; exit 1; }
-        [ -n "$dir" ] || { echo "::error::composer config cache-files-dir returned empty"; exit 1; }
-        echo "dir=$dir" >> "${GITHUB_OUTPUT}"
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/composer_cache_dir.sh"
     - name: Cache - Composer
       uses: actions/cache@v6
       if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}

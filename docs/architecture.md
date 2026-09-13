@@ -293,6 +293,15 @@ surface, and neither may take the other's content.
   (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`) and
   `codedeploy/s3copy` (`source`, `target`). Unit-tested by
   `linters/tests/require_inputs.bats`
+- `apt_install.sh`: runs `apt-get update` then installs the space-separated
+  `APT_PACKAGES` list, failing before the update when the variable is unset.
+  Called by the `Install APT Packages` step of `setup` and `linters/phpstan`;
+  unit-tested by `linters/tests/apt_install.bats`
+- `composer_cache_dir.sh`: writes `dir=<composer cache-files-dir>` to
+  `GITHUB_OUTPUT` for the following `actions/cache` step, failing with an error
+  when composer is missing, fails or returns nothing. Called by the
+  `Cache - Composer Location` step of `setup` and `linters/phpstan`;
+  unit-tested by `linters/tests/composer_cache_dir.bats`
 - `install_swiftlint.sh`: resolves a realm/SwiftLint release (pinned via the
   `swiftlint-version` input, `latest` by default), downloads the matching
   `swiftlint_linux_{amd64,arm64}.zip` and installs the statically linked
@@ -477,6 +486,11 @@ end-to-end in CI without secrets or side effects.
   read submodule paths from `linters/_lib/submodule_paths.sh`, and that no other
   shell script or `action.yml` parses `.gitmodules` with grep/sed/awk or its own
   `git config --file .gitmodules`
+- `shared_snippets_contract.py`: asserts `setup/action.yml` and
+  `linters/phpstan/action.yml` call `linters/_lib/apt_install.sh` and
+  `linters/_lib/composer_cache_dir.sh`, and that no other shell script or
+  `action.yml` re-implements the `${APT_PACKAGES}` install or the
+  `composer config cache-files-dir` lookup
 
 ### .github/workflows
 
@@ -706,6 +720,8 @@ a newer upstream version, preserving the existing pin style.
   consumers to pin an older ci-actions major after a major roll
 - `tests/submodule_paths_contract.py` blocks a second, divergent `.gitmodules`
   parser from being copied back into a script or action
+- `tests/shared_snippets_contract.py` blocks the APT install and Composer
+  cache-dir steps from being copied back into `setup` or `phpstan`
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
