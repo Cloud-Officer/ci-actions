@@ -890,3 +890,107 @@ EOF
   run detect_trivy
   [ "$status" -eq 1 ]
 }
+
+# ============================================================================
+# TRIGGER_FLAGS: the single source of commit-message trigger keywords
+# ============================================================================
+
+@test "trigger_keyword returns the keyword declared for a flag" {
+  run trigger_keyword DEPLOY_ON_BETA
+  [ "$status" -eq 0 ]
+  [ "$output" = "beta-deploy" ]
+}
+
+@test "trigger_keyword fails for an undeclared flag" {
+  run trigger_keyword DEPLOY_ON_MARS
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"unknown trigger flag 'DEPLOY_ON_MARS'"* ]]
+}
+
+@test "has_trigger never matches an empty keyword" {
+  export COMMIT_MESSAGE="Fix #skip-tests"
+  run has_trigger ""
+  [ "$status" -eq 1 ]
+}
+
+run_variables_with_message() {
+  local repo="${TEST_DIR}/repo"
+  mkdir -p "${repo}"
+  (
+    cd "${repo}" || exit 1
+    git init -q
+    git config user.email test@example.com
+    git config user.name test
+    echo x > file.txt
+    git add file.txt
+    git commit -q -m "$1"
+  )
+  run bash -c "cd '${repo}' && \
+    GITHUB_REF=refs/heads/feature GITHUB_HEAD_REF=feature \
+    GITHUB_RUN_NUMBER=100 GITHUB_ENV='${GITHUB_ENV}' GITHUB_OUTPUT='${GITHUB_OUTPUT}' \
+    bash '${BATS_TEST_DIRNAME}/../variables.sh'"
+}
+
+@test "running variables.sh sets every flag whose declared keyword is in the commit message" {
+  local message="All triggers" pair var keyword
+  [ "${#TRIGGER_FLAGS[@]}" -gt 0 ]
+  for pair in "${TRIGGER_FLAGS[@]}"; do
+    var="${pair%%=*}"
+    keyword="${pair#*=}"
+    if [ "${var}" = DEPLOY_OPTIONS ]; then
+      message+=" #${keyword}=blue-green"
+    else
+      message+=" #${keyword}"
+    fi
+  done
+
+  run_variables_with_message "${message}"
+  [ "$status" -eq 0 ]
+
+  for pair in "${TRIGGER_FLAGS[@]}"; do
+    var="${pair%%=*}"
+    case "${var}" in
+      SKIP_ALL) ;;
+      DEPLOY_ON_PROD) grep -qx "DEPLOY_ON_PROD=0" "${GITHUB_OUTPUT}" ;;
+      DEPLOY_OPTIONS) grep -qx "DEPLOY_OPTIONS=blue-green" "${GITHUB_OUTPUT}" ;;
+      *) grep -qx "${var}=1" "${GITHUB_OUTPUT}" ;;
+    esac
+  done
+}
+
+@test "running variables.sh leaves every flag off when no trigger is in the commit message" {
+  local pair var
+  [ "${#TRIGGER_FLAGS[@]}" -gt 0 ]
+  run_variables_with_message "Plain commit"
+  [ "$status" -eq 0 ]
+
+  for pair in "${TRIGGER_FLAGS[@]}"; do
+    var="${pair%%=*}"
+    case "${var}" in
+      SKIP_ALL) ;;
+      DEPLOY_OPTIONS) grep -qx "DEPLOY_OPTIONS=" "${GITHUB_OUTPUT}" ;;
+      *) grep -qx "${var}=0" "${GITHUB_OUTPUT}" ;;
+    esac
+  done
+}
+
+@test "both README control flag tables list exactly the declared trigger keywords" {
+  local expected actual readme
+  expected="$(printf '%s\n' "${TRIGGER_FLAGS[@]}" | sed 's/^[^=]*=//' | sort)"
+  for readme in "${BATS_TEST_DIRNAME}/../../README.md" "${BATS_TEST_DIRNAME}/../README.md"; do
+    actual="$(grep -oE '^\| `#[a-z-]+' "${readme}" | sed 's/^| `#//' | sort -u)"
+    [ "${actual}" = "${expected}" ]
+  done
+}
+
+@test "variables README maps each trigger keyword to its output variable" {
+  local pair var keyword
+  [ "${#TRIGGER_FLAGS[@]}" -gt 0 ]
+  for pair in "${TRIGGER_FLAGS[@]}"; do
+    var="${pair%%=*}"
+    keyword="${pair#*=}"
+    if [ "${var}" != SKIP_ALL ]; then
+      grep -qE "^\| \`#${keyword}(=<value>)?\` +\| \`${var}=" "${BATS_TEST_DIRNAME}/../README.md"
+    fi
+  done
+}
