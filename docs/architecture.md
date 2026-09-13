@@ -286,7 +286,8 @@ surface, and neither may take the other's content.
   fails the step (CFG-002). Despite living under `linters/_lib/`, it is consumed
   by the deployment actions: `aws` (`shell-commands`), `codedeploy/deploy`
   (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`) and
-  `codedeploy/s3copy` (`source`, `target`)
+  `codedeploy/s3copy` (`source`, `target`). Unit-tested by
+  `linters/tests/require_inputs.bats`
 - `install_swiftlint.sh`: resolves a realm/SwiftLint release (pinned via the
   `swiftlint-version` input, `latest` by default), downloads the matching
   `swiftlint_linux_{amd64,arm64}.zip` and installs the statically linked
