@@ -55,10 +55,10 @@ uses: Cloud-Officer/ci-actions/setup@v3
 The floating `v3` tag always points at the latest 3.x release. Pin to an immutable release tag (for example `3.0.2`) when
 you need reproducible builds.
 
-The `v2` tag still tracks the 2.x line. Moving from `v2` to `v3` requires renaming four `setup` inputs, which follow the
-renames `actions/setup-java` made in its v6 release: `java-jdkFile` becomes `java-jdk-file`, `java-server-username`
-becomes `java-server-username-env-var`, `java-server-password` becomes `java-server-password-env-var`, and
-`java-gpg-passphrase` becomes `java-gpg-passphrase-env-var`.
+The `v2` tag still tracks the 2.x line. Moving from `v2` to `v3` involves breaking changes: renamed and replaced `setup`
+inputs, git credentials no longer persisted by `setup`, and a new `reviewdog-token` input on the reviewdog linters. See
+the upgrade guide in [CHANGELOG.md](CHANGELOG.md#upgrading-from-2x) before switching, and the rest of that file for what
+changed in each release.
 
 ### Removed actions
 

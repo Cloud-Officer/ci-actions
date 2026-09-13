@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@v2
+        uses: cloud-officer/ci-actions/variables@v3
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   shellcheck:
@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: ShellCheck
         id: shellcheck
-        uses: cloud-officer/ci-actions/linters/shellcheck@v2
+        uses: cloud-officer/ci-actions/linters/shellcheck@v3
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

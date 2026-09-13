@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@v2
+        uses: cloud-officer/ci-actions/variables@v3
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   code_deploy:
@@ -73,7 +73,7 @@ jobs:
     if: "${{always() && (needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1') && needs.php_unit_tests.result != 'failure' && needs.python_unit_tests.result != 'failure'}}"
     steps:
       - name: Checkout
-        uses: cloud-officer/ci-actions/codedeploy/checkout@v2
+        uses: cloud-officer/ci-actions/codedeploy/checkout@v3
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
@@ -82,7 +82,7 @@ jobs:
         if: "${{needs.variables.outputs.UPDATE_PACKAGES == '1'}}"
         run: touch update-packages
       - name: Setup
-        uses: cloud-officer/ci-actions/setup@v2
+        uses: cloud-officer/ci-actions/setup@v3
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           php-version: "${{env.PHP-VERSION}}"
@@ -112,7 +112,7 @@ jobs:
           mkdir deployment
           mv "${{needs.variables.outputs.BUILD_NAME}}.zip" "deployment/${{needs.variables.outputs.BUILD_NAME}}.zip"
       - name: S3Copy
-        uses: cloud-officer/ci-actions/codedeploy/s3copy@v2
+        uses: cloud-officer/ci-actions/codedeploy/s3copy@v3
         if: "${{needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
@@ -129,7 +129,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_BETA == '1'}}"
     steps:
       - name: Beta Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v3
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
@@ -147,7 +147,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_RC == '1'}}"
     steps:
       - name: Rc Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v3
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"
@@ -165,7 +165,7 @@ jobs:
     if: "${{always() && needs.code_deploy.result == 'success' && needs.variables.outputs.DEPLOY_ON_PROD == '1'}}"
     steps:
       - name: Prod Deploy
-        uses: cloud-officer/ci-actions/codedeploy/deploy@v2
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v3
         with:
           aws-access-key-id: "${{secrets.AWS_ACCESS_KEY_ID}}"
           aws-secret-access-key: "${{secrets.AWS_SECRET_ACCESS_KEY}}"

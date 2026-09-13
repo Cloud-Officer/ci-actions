@@ -61,6 +61,9 @@ jobs:
     - name: Assert actions with silently-empty inputs validate them
       shell: bash
       run: python3 tests/required_inputs_contract.py
+    - name: Assert every README references the current ci-actions major
+      shell: bash
+      run: python3 tests/readme_version_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
