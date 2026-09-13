@@ -5,7 +5,7 @@ QUAL-010 (#238). The package-manager lock-file list used to be duplicated as
 domain knowledge in two files that had to be kept in sync by hand:
 
   - variables/variables.sh  detect_trivy()  -> enables the TRIVY linter
-  - linters/trivy/action.yml                -> adds Trivy's `vuln` scanner
+  - linters/_lib/detect_trivy_scanners.sh    -> adds Trivy's `vuln` scanner
 
 They are now single-sourced from linters/_lib/lock_files.sh. This test enforces
 that single-sourcing so the duplication can never silently come back:
@@ -32,7 +32,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SHARED_LIST = os.path.join("linters", "_lib", "lock_files.sh")
 CONSUMERS = (
     os.path.join("variables", "variables.sh"),
-    os.path.join("linters", "trivy", "action.yml"),
+    os.path.join("linters", "_lib", "detect_trivy_scanners.sh"),
 )
 
 

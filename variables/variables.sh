@@ -87,7 +87,7 @@ function detect_trivy()
   done
 
   # Walk the whole tree, pruning submodules, exactly as the trivy action's own
-  # vuln-scanner detection does (linters/trivy/action.yml). A former -maxdepth 3
+  # vuln-scanner detection does (linters/_lib/detect_trivy_scanners.sh). A former -maxdepth 3
   # here meant a monorepo whose only lock file sat four or more directories deep
   # never got TRIVY into LINTERS, so the shared gate resolved to continue=false
   # and the vulnerability scan silently never ran.
