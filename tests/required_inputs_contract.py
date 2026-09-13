@@ -13,9 +13,9 @@ This pins the guard for the actions where that silence is the failure mode:
 each must call the shared linters/_lib/require_inputs.sh gate and name every
 input whose emptiness would produce a green no-op.
 
-Actions that fail loudly on their own are deliberately not listed. `docker`
-errors on an empty registry password, `setup` errors on an unusable version,
-and `slack` validates `webhook-url` and the `jobs` payload in index.js.
+Actions that fail loudly on their own are deliberately not listed. `setup`
+errors on an unusable version, and `slack` validates `webhook-url` and the
+`jobs` payload in index.js.
 
 Usage: python3 tests/required_inputs_contract.py
 Exits non-zero and prints every violation found.
@@ -41,6 +41,7 @@ GUARDED = {
         "s3-key",
     },
     os.path.join("codedeploy", "s3copy", "action.yml"): {"source", "target"},
+    os.path.join("docker", "action.yml"): {"password", "platforms", "username"},
 }
 
 

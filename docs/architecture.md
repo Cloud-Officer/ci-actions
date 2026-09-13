@@ -156,21 +156,26 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 
 ### docker
 
-**Purpose:** Build and publish Docker images to DockerHub.
+**Purpose:** Build Docker images and optionally publish them to DockerHub.
 
 **Location:** `docker/action.yml`
 
 **Key Components:**
 
-- Multi-platform builds (linux/amd64, linux/arm64)
-- Docker Buildx setup with BuildKit
-- Metadata extraction for tags and labels
-- Build provenance attestation
+- Input validation: `push` must be `true` or `false`, `platforms` must be non-empty, and `username`/`password` must be non-empty when `push` is `true`
+- Multi-platform builds (linux/amd64, linux/arm64 by default)
+- Docker Buildx setup with BuildKit and a GitHub Actions cache scoped per `platforms` value
+- Registry login, metadata extraction for tags and labels, and build provenance attestation, only when `push` is `true`
 
 **Inputs:**
 
-- `username`, `password`: DockerHub credentials
+- `username`, `password`: DockerHub credentials, required when `push` is `true`
+- `push`: `true` (default) publishes the image, `false` only builds it
+- `platforms`: target platforms (default `linux/amd64,linux/arm64`)
+- `context`, `file`: build context (default `.`) and Dockerfile path (default `./Dockerfile`)
 - `github-token`: GitHub token
+
+**Tests:** the `docker-smoke` job in `.github/workflows/smoke.yml` builds `tests/docker/Dockerfile` with `push: 'false'` and asserts that an invalid `push` value and a publish without credentials both fail.
 
 ### linters
 
