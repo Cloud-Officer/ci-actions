@@ -661,6 +661,43 @@ a newer upstream version, preserving the existing pin style.
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
   `bump-actions.sh`) that cannot be exercised through a normal build
 
+#### Accepted Risks
+
+These are deliberate trade-offs, not open defects. Do not raise them in reviews
+unless the premise stated for each one changes.
+
+- **Unpinned tool and package versions.** Linters, toolchains and first-party
+  tooling install their latest release at run time: `npm install eslint`,
+  `pip install semgrep`/`bandit`/`flake8`, `ruby-version: ruby`,
+  `node-version: latest`, and the newest `Cloud-Officer/soup` tag. Every
+  consumer repository stays on current rules and fixes without a version-bump
+  PR in each of them. External actions are pinned to a major tag (`@v7`) and
+  bumped weekly by `external-actions-bump.yml`; commit-SHA pinning is not used.
+  The accepted cost is that runs are not reproducible and a bad upstream
+  release reaches consumers until it is fixed upstream. Where a consumer has to
+  hold a version back, a `*-version` input (`eslint-version`,
+  `swiftlint-version`, `php-cs-fixer-version`) covers it. Closed as won't-fix:
+  #300.
+- **`GITHUB_TOKEN` in package-install steps.** Install and toolchain-download
+  steps (composer through `COMPOSER_AUTH`, npm, pip, `actions/setup-*`) receive
+  `github-token` so they are not throttled by GitHub's anonymous API rate
+  limits; composer fails outright without it. `tests/token_contract.py`
+  requires the token on those steps on purpose. Third-party install scripts can
+  therefore read it. That is accepted because the token is the run's own
+  `github.token`: it is valid for one repository, expires when the job ends,
+  and can do only what the workflow's `permissions:` block grants
+  (`contents: read` and `pull-requests: write` in generated workflows). No
+  long-lived secret reaches these steps since `GH_PAT` was retired. Revisit if
+  a consumer passes a long-lived PAT as `github-token`, or runs a workflow with
+  no `permissions:` block (the organisation default is write). Closed as
+  won't-fix: #299.
+- **Unquoted multi-argument inputs.** `parameters` (`soup`) and `apt-packages`
+  (`setup`, `linters/phpstan`) are expanded unquoted on purpose so one input can
+  carry several arguments (`--abc xyz -def`); quoting would pass them as a
+  single argument. Their values are written by the workflow author, who already
+  controls every `run:` step of that workflow, so the expansion is not a trust
+  boundary. Closed as won't-fix: #300, #316.
+
 ### Error Handling
 
 | Component | Error Handling |
