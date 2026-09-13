@@ -191,8 +191,8 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 | hadolint | Dockerfile | `.hadolint.yaml` |
 | ktlint | Kotlin | `.editorconfig` |
 | markdownlint | Markdown | `.markdownlint-cli2.yaml` or `.markdownlint.yml` |
-| phpcs | PHP coding standards | `.php-cs-fixer.dist.php` |
-| phpstan | PHP static analysis | `phpstan.neon` |
+| phpcs | PHP coding standards | `.php-cs-fixer.php` or `.php-cs-fixer.dist.php` |
+| phpstan | PHP static analysis | `phpstan.neon`, `phpstan.neon.dist` or `phpstan.dist.neon` |
 | pmd | Java/multi-language | `.pmd.xml` |
 | protolint | Protocol Buffers | `.protolint.yaml` |
 | rubocop | Ruby | `.rubocop.yml` |
