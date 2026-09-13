@@ -439,7 +439,7 @@ end-to-end in CI without secrets or side effects.
   `Cloud-Officer/ci-actions/<path>@vN` reference in the root `README.md` and
   asserts every other `README.md` references that same major, so a major roll
   cannot leave per-action usage examples pinned to the previous line. Upgrade
-  notes that mention older majors live in `CHANGELOG.md`, which it does not scan
+  notes that mention older majors live in `UPGRADING.md`, which it does not scan
 
 ### .github/workflows
 

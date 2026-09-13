@@ -57,8 +57,7 @@ you need reproducible builds.
 
 The `v2` tag still tracks the 2.x line. Moving from `v2` to `v3` involves breaking changes: renamed and replaced `setup`
 inputs, git credentials no longer persisted by `setup`, and a new `reviewdog-token` input on the reviewdog linters. See
-the upgrade guide in [CHANGELOG.md](CHANGELOG.md#upgrading-from-2x) before switching, and the rest of that file for what
-changed in each release.
+the [v2 to v3 upgrade guide](UPGRADING.md#v2-to-v3) before switching.
 
 ### Removed actions
 

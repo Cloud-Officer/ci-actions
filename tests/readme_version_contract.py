@@ -6,7 +6,7 @@ The root README.md is the source of truth for the current major: the highest
 the repository must reference that same major in its `uses:` examples, so a
 major roll cannot leave per-action pages telling consumers to pin the previous
 line. Upgrade notes that legitimately mention older majors live in
-CHANGELOG.md, which this contract does not scan.
+UPGRADING.md, which this contract does not scan.
 
 Usage: python3 tests/readme_version_contract.py
 Exits non-zero and prints every violation found.
