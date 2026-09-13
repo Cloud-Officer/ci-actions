@@ -22,7 +22,16 @@ inputs:
     description: 'token reviewdog uses to post review comments (needs only pull-requests: write)'
     required: false
     default: ${{ github.token }}
+  protolint-version:
+    description: 'protolint release to install (e.g. 0.57.0), or latest'
+    required: false
+    default: 'latest'
 ```
+
+protolint is downloaded from the upstream
+[yoheimuta/protolint](https://github.com/yoheimuta/protolint/releases) release
+and verified against that release's `checksums.txt` before it runs. Any
+finding fails the job.
 
 ## Example usage
 

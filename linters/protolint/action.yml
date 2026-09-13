@@ -21,6 +21,10 @@ inputs:
       for private submodule checkout -- is never handed to the third-party reviewdog action.
     required: false
     default: ${{ github.token }}
+  protolint-version:
+    description: 'protolint release to install (e.g. 0.57.0), or latest'
+    required: false
+    default: 'latest'
 
 runs:
   using: "composite"
@@ -44,15 +48,27 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-protolint-with-reviewdog
-    - name: Run Protolint with Reviewdog
-      uses: yoheimuta/action-protolint@v1
+    # https://github.com/marketplace/actions/setup-reviewdog
+    - name: Setup Reviewdog
+      uses: reviewdog/action-setup@v1
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        # https://github.com/yoheimuta/protolint
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        protolint_flags: "."
-        reporter: github-pr-review
+        reviewdog_version: latest  # Intentionally using latest
+
+    - name: Setup Protolint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PROTOLINT_VERSION: ${{ inputs.protolint-version }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_protolint.sh" /opt/protolint
+
+    # https://github.com/yoheimuta/protolint
+    - name: Run Protolint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        /opt/protolint/protolint lint . 2>&1 \
+          | reviewdog -efm="[%f:%l:%c] %m" -name="protolint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

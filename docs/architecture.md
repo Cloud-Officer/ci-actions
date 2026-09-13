@@ -293,6 +293,15 @@ surface, and neither may take the other's content.
   binary, so the swiftlint action needs no Swift toolchain and no third-party
   action. Replaced the unmaintained `norio-nomura/action-swiftlint@3.2.1`
   (last released 2020); unit-tested by `linters/tests/install_swiftlint.bats`
+- `install_protolint.sh`: resolves a yoheimuta/protolint release (pinned via
+  the `protolint-version` input, `latest` by default), downloads
+  `protolint_<version>_linux_{amd64,arm64}.tar.gz` and the release
+  `checksums.txt`, refuses the archive unless its SHA-256 matches, and installs
+  the `protolint` binary to `/opt/protolint`. The protolint action pipes its
+  output into reviewdog with `-fail-level=any`, like the other reviewdog
+  linters. Replaced the unmaintained `yoheimuta/action-protolint@v1` Docker
+  action, which pinned protolint 0.46.3 and never failed the job on findings;
+  unit-tested by `linters/tests/install_protolint.bats`
 
 ### setup
 
