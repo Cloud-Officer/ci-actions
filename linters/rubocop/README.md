@@ -65,7 +65,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@v2
+        uses: cloud-officer/ci-actions/variables@v3
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   rubocop:
@@ -77,7 +77,7 @@ jobs:
     steps:
       - name: Rubocop
         id: rubocop
-        uses: cloud-officer/ci-actions/linters/rubocop@v2
+        uses: cloud-officer/ci-actions/linters/rubocop@v3
         with:
           linters: "${{needs.variables.outputs.LINTERS}}"
           ssh-key: "${{secrets.SSH_KEY}}"

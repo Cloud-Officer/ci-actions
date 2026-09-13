@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Prepare variables
         id: variables
-        uses: cloud-officer/ci-actions/variables@v2
+        uses: cloud-officer/ci-actions/variables@v3
         with:
           ssh-key: "${{secrets.SSH_KEY}}"
   aws:
@@ -73,7 +73,7 @@ jobs:
     if: "(needs.variables.outputs.DEPLOY_ON_BETA == '1' || needs.variables.outputs.DEPLOY_ON_RC == '1' || needs.variables.outputs.DEPLOY_ON_PROD == '1')"
     steps:
       - name: AWS Commands
-        uses: cloud-officer/ci-actions/aws@v2
+        uses: cloud-officer/ci-actions/aws@v3
         env:
           ECR_REPOSITORY: test
         with:

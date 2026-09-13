@@ -296,7 +296,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup
-        uses: cloud-officer/ci-actions/setup@v2
+        uses: cloud-officer/ci-actions/setup@v3
         with:
           php-version: "${{env.PHP-VERSION}}"
           php-extensions: "${{env.PHP-EXTENSIONS}}"

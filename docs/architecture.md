@@ -435,6 +435,11 @@ end-to-end in CI without secrets or side effects.
   `docker` errors on an empty registry password, `setup` on an unusable
   version, and `slack` validates `webhook-url` and the `jobs` payload in
   `index.js`
+- `readme_version_contract.py`: derives the current major from the highest
+  `Cloud-Officer/ci-actions/<path>@vN` reference in the root `README.md` and
+  asserts every other `README.md` references that same major, so a major roll
+  cannot leave per-action usage examples pinned to the previous line. Upgrade
+  notes that mention older majors live in `UPGRADING.md`, which it does not scan
 
 ### .github/workflows
 
@@ -656,6 +661,8 @@ a newer upstream version, preserving the existing pin style.
 - `tests/required_inputs_contract.py` blocks a green no-op: an action whose
   misspelled or unset secret arrives as an empty string, runs nothing and still
   reports success
+- `tests/readme_version_contract.py` blocks a per-action README from telling
+  consumers to pin an older ci-actions major after a major roll
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
   the published bundle always matches the reviewed source
 - Bats suites cover the shell entry points (`variables.sh`, `deploy.sh`,
