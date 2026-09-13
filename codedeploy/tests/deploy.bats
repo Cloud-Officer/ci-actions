@@ -165,3 +165,72 @@ EOF
   [ "$status" -eq 1 ]
   [[ "$output" == *"did not reach a terminal state"* ]]
 }
+
+# ============================================================================
+# Input validation: monitor-timeout-minutes and POLL_INTERVAL
+# ============================================================================
+
+make_logging_aws() {
+  local bin="${BATS_TEST_TMPDIR}/logbin"
+  mkdir -p "${bin}"
+  cat > "${bin}/aws" <<LOG
+#!/usr/bin/env bash
+echo "\$*" >> "${BATS_TEST_TMPDIR}/aws.log"
+if [ "\$2" = "create-deployment" ]; then echo "d-NEW"; else echo "Succeeded"; fi
+LOG
+  printf '#!/usr/bin/env bash\nexit 0\n' > "${bin}/sleep"
+  chmod +x "${bin}/aws" "${bin}/sleep"
+  echo "${bin}"
+}
+
+@test "require_positive_integer accepts positive integers" {
+  run require_positive_integer monitor-timeout-minutes 1
+  [ "$status" -eq 0 ]
+  run require_positive_integer monitor-timeout-minutes 30
+  [ "$status" -eq 0 ]
+}
+
+@test "require_positive_integer rejects empty, zero, negative, decimal, padded and non-numeric values" {
+  local value
+  for value in '' 0 -5 1.5 ' 30' 030 abc; do
+    run require_positive_integer monitor-timeout-minutes "${value}"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"::error::monitor-timeout-minutes must be a positive integer, got '${value}'"* ]]
+  done
+}
+
+@test "main fails before creating a deployment when monitor-timeout-minutes is empty" {
+  local bin
+  bin=$(make_logging_aws)
+  run env PATH="${bin}:${PATH}" MONITOR_TIMEOUT_MINUTES='' bash "${BATS_TEST_DIRNAME}/../deploy/deploy.sh"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"::error::monitor-timeout-minutes must be a positive integer, got ''"* ]]
+  [ ! -e "${BATS_TEST_TMPDIR}/aws.log" ]
+}
+
+@test "main fails before creating a deployment when monitor-timeout-minutes is not a number" {
+  local bin
+  bin=$(make_logging_aws)
+  run env PATH="${bin}:${PATH}" MONITOR_TIMEOUT_MINUTES='thirty' bash "${BATS_TEST_DIRNAME}/../deploy/deploy.sh"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"must be a positive integer, got 'thirty'"* ]]
+  [ ! -e "${BATS_TEST_TMPDIR}/aws.log" ]
+}
+
+@test "main fails before creating a deployment when POLL_INTERVAL is zero" {
+  local bin
+  bin=$(make_logging_aws)
+  run env PATH="${bin}:${PATH}" POLL_INTERVAL=0 bash "${BATS_TEST_DIRNAME}/../deploy/deploy.sh"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"::error::POLL_INTERVAL must be a positive integer, got '0'"* ]]
+  [ ! -e "${BATS_TEST_TMPDIR}/aws.log" ]
+}
+
+@test "main polls for the whole window when the interval does not divide it evenly" {
+  local bin
+  bin=$(make_fake_bin "d-SLOW" "InProgress")
+  run env PATH="${bin}:${PATH}" MONITOR_TIMEOUT_MINUTES=1 POLL_INTERVAL=7 \
+    bash "${BATS_TEST_DIRNAME}/../deploy/deploy.sh"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Deployment status=InProgress... (9/9)"* ]]
+}

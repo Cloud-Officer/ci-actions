@@ -567,14 +567,18 @@ commit messages and repository state.
 
 **Algorithm:**
 
-1. Create deployment via AWS CLI (`create_deployment`)
-2. Poll deployment status every `POLL_INTERVAL` seconds (default 5),
+1. Validate that `monitor-timeout-minutes` and `POLL_INTERVAL` are positive
+   integers (`require_positive_integer`), failing before any deployment is
+   created when either is empty, zero, negative, zero-padded or non-numeric
+2. Create deployment via AWS CLI (`create_deployment`)
+3. Poll deployment status every `POLL_INTERVAL` seconds (default 5),
    tolerating transient `get-deployment` API errors
-3. Exit on terminal states: Succeeded (0), Failed/Stopped (1). `Ready` and
+4. Exit on terminal states: Succeeded (0), Failed/Stopped (1). `Ready` and
    other non-terminal states keep polling, since blue/green still has
    BlockTraffic/AllowTraffic/TerminateBlueInstances phases that can fail
-4. Timeout after `monitor-timeout-minutes * 60 / POLL_INTERVAL` iterations
-   (default 30 minutes), returning a failure rather than a false-green build
+5. Timeout after `ceil(monitor-timeout-minutes * 60 / POLL_INTERVAL)`
+   iterations (default 30 minutes), so the full window is always polled, and
+   return a failure rather than a false-green build
 
 **Complexity:** O(1) bounded by the computed iteration limit
 
