@@ -165,24 +165,24 @@ carries the org PAT that `actions/checkout` needs for private submodules.
 
 Linters are auto-detected in `variables/variables.sh` based on config file presence:
 
-| Linter       | Detection File                   |
-|--------------|----------------------------------|
-| ACTIONLINT   | `.github/workflows/`             |
-| BANDIT       | `.bandit`                        |
-| CFNLINT      | `.cfnlintrc`                     |
-| ESLINT       | `.eslintrc.json`                 |
-| FLAKE8       | `.flake8`                        |
-| GOLANGCI     | `.golangci.yml`                  |
-| HADOLINT     | `.hadolint.yaml`                 |
-| KTLINT       | `.editorconfig` (Kotlin)         |
-| MARKDOWNLINT | `.markdownlint-cli2.yaml`        |
-| PHPCS        | `.php-cs-fixer.dist.php`         |
-| PHPSTAN      | `phpstan.neon`                   |
-| PMD          | `.pmd.xml`                       |
-| PROTOLINT    | `.protolint.yaml`                |
-| RUBOCOP      | `.rubocop.yml`                   |
-| SEMGREP      | `.semgrepignore`                 |
-| SHELLCHECK   | `.shellcheckrc`                  |
-| SWIFTLINT    | `.swiftlint.yml`                 |
-| TRIVY        | IaC or package manager files     |
-| YAMLLINT     | `.yamllint.yml`                  |
+| Linter       | Detection File                                             |
+|--------------|------------------------------------------------------------|
+| ACTIONLINT   | `.github/workflows/`                                       |
+| BANDIT       | `.bandit`                                                  |
+| CFNLINT      | `.cfnlintrc`                                               |
+| ESLINT       | `.eslintrc.json`                                           |
+| FLAKE8       | `.flake8`                                                  |
+| GOLANGCI     | `.golangci.yml`                                            |
+| HADOLINT     | `.hadolint.yaml`                                           |
+| KTLINT       | `.editorconfig` (Kotlin)                                   |
+| MARKDOWNLINT | `.markdownlint-cli2.yaml` or `.markdownlint.yml`           |
+| PHPCS        | `.php-cs-fixer.php` or `.php-cs-fixer.dist.php`            |
+| PHPSTAN      | `phpstan.neon`, `phpstan.neon.dist` or `phpstan.dist.neon` |
+| PMD          | `.pmd.xml`                                                 |
+| PROTOLINT    | `.protolint.yaml`                                          |
+| RUBOCOP      | `.rubocop.yml`                                             |
+| SEMGREP      | `.semgrepignore`                                           |
+| SHELLCHECK   | `.shellcheckrc`                                            |
+| SWIFTLINT    | `.swiftlint.yml`                                           |
+| TRIVY        | IaC or package manager files                               |
+| YAMLLINT     | `.yamllint.yml`                                            |
