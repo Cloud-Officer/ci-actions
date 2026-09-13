@@ -10,6 +10,15 @@
 # the loop fast; defaults to the original hard-coded interval.
 POLL_INTERVAL="${POLL_INTERVAL:-5}"
 
+# Usage: require_positive_integer <name> <value>
+function require_positive_integer()
+{
+  if [[ ! "$2" =~ ^[1-9][0-9]*$ ]]; then
+    echo "::error::$1 must be a positive integer, got '$2'"
+    return 1
+  fi
+}
+
 # Create the CodeDeploy deployment and echo its id. Kept as a function so the
 # test suite can stub `aws` and assert the create arguments.
 function create_deployment()
@@ -80,10 +89,13 @@ function main()
 
   local deployment max_iterations exit_code
 
+  require_positive_integer monitor-timeout-minutes "${MONITOR_TIMEOUT_MINUTES:-}"
+  require_positive_integer POLL_INTERVAL "${POLL_INTERVAL}"
+
   deployment=$(create_deployment)
   echo "Deployment ID=${deployment}"
 
-  max_iterations=$(( MONITOR_TIMEOUT_MINUTES * 60 / POLL_INTERVAL ))
+  max_iterations=$(( (MONITOR_TIMEOUT_MINUTES * 60 + POLL_INTERVAL - 1) / POLL_INTERVAL ))
 
   # Map terminal/timeout to a non-zero step exit; both 1 and 2 are failures.
   exit_code=0
