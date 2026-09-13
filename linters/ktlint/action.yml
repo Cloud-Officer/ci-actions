@@ -42,6 +42,7 @@ runs:
         ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: false
         lfs: true
+        # Deliberately not recursive: gRPC code generated into submodule SDKs does not pass ktlint.
         submodules: false
 
     # https://github.com/marketplace/actions/run-ktlint-with-reviewdog
