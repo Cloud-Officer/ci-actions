@@ -26,7 +26,7 @@ jobs:
       # self-referential loop. cloud-officer/* refs are skipped by the scanner.
       uses: cloud-officer/ci-actions/codedeploy/checkout@v3
       with:
-        github-token: ${{ secrets.GH_BOT_PAT }}
+        github-token: ${{ github.token }}
         ssh-key: ''
     - name: Resolve, apply and open PR
       shell: bash
