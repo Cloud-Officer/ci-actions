@@ -6,8 +6,8 @@
 # Sourced by both consumers so the list lives in exactly one place:
 #   - variables/variables.sh  detect_trivy()  -> enables the TRIVY linter
 #       source ".../variables/../linters/_lib/lock_files.sh"
-#   - linters/trivy/action.yml                -> adds the `vuln` scanner
-#       source "${GITHUB_ACTION_PATH}/../_lib/lock_files.sh"
+#   - linters/_lib/detect_trivy_scanners.sh    -> adds the `vuln` scanner
+#       source "$(dirname "${BASH_SOURCE[0]}")/lock_files.sh"
 #
 # Adding or removing an ecosystem here updates both consumers at once; without
 # single-sourcing, a list that drifts silently produces a Trivy job that runs

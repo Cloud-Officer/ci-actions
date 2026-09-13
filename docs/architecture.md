@@ -246,9 +246,17 @@ surface, and neither may take the other's content.
 - `lock_files.sh`: single source of truth for the package-manager lock/manifest
   files (`TRIVY_LOCK_FILES`) that mark a project for a Trivy vulnerability scan.
   Sourced by both `variables/variables.sh` (`detect_trivy`) and
-  `linters/trivy/action.yml` so the list never drifts;
+  `detect_trivy_scanners.sh` so the list never drifts;
   `tests/lock_file_contract.py` asserts neither consumer re-introduces a
   hardcoded copy
+- `detect_trivy_scanners.sh`: invoked by `linters/trivy/action.yml` to pick
+  Trivy's scanners and write `scanners=<list>` to `GITHUB_OUTPUT`. `secret` is
+  always on; `misconfig` is added when `LINTERS` holds `CFNLINT` or `HADOLINT`
+  or a `*.tf`/`Dockerfile*` exists anywhere in the tree, and `vuln` when a
+  `TRIVY_LOCK_FILES` entry does. Both walks cover the whole tree and prune
+  submodules, matching `detect_trivy` in `variables.sh`, so IaC nested deeper
+  than three directories is not skipped. Unit-tested by
+  `linters/tests/detect_trivy_scanners.bats`
 - `clean_workspace.sh`: workspace cleanup for the two linters that lint the
   whole checkout (markdownlint, yamllint). Deletes the submodule checkouts
   listed in `.gitmodules` plus any extra directory names passed as arguments
@@ -399,7 +407,7 @@ end-to-end in CI without secrets or side effects.
   required top-level keys, input mappings with descriptions, a valid
   `runs.using`, and a `shell:` on every `run:` step
 - `lock_file_contract.py`: asserts `variables/variables.sh` and
-  `linters/trivy/action.yml` both consume `linters/_lib/lock_files.sh` instead
+  `linters/_lib/detect_trivy_scanners.sh` both consume `linters/_lib/lock_files.sh` instead
   of re-introducing a hardcoded lock-file list
 - `fail_fast_contract.py`: asserts every nested `bash … -c` call site in an
   `action.yml` carries `-e` and `-o pipefail`. A composite step's own shell
