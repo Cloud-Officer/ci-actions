@@ -4,22 +4,50 @@
 # Usage: has_trigger "keyword"
 function has_trigger()
 {
+  [ -n "$1" ] || return 1
   echo "${COMMIT_MESSAGE}" | grep -iF "#$1" &> /dev/null
 }
 
-# Named predicates over has_trigger, so the script and its test suite read by
-# intent rather than by raw keyword. Each is covered by variables/tests/variables.bats.
-function on_beta() { has_trigger "beta-deploy"; }
-function on_rc() { has_trigger "rc-deploy"; }
-function on_prod() { has_trigger "prod-deploy"; }
-function on_macos() { has_trigger "macos"; }
-function on_tvos() { has_trigger "tvos"; }
-function deploy_options() { has_trigger "deploy-options"; }
-function skip_all() { has_trigger "skip-all"; }
-function skip_licenses() { has_trigger "skip-licenses"; }
-function skip_linters() { has_trigger "skip-linters"; }
-function skip_tests() { has_trigger "skip-tests"; }
-function update_packages() { has_trigger "update-packages"; }
+# The only place trigger keywords are spelled: OUTPUT_VARIABLE=keyword.
+TRIGGER_FLAGS=(
+  "DEPLOY_ON_BETA=beta-deploy"
+  "DEPLOY_ON_RC=rc-deploy"
+  "DEPLOY_ON_PROD=prod-deploy"
+  "DEPLOY_MACOS=macos"
+  "DEPLOY_TVOS=tvos"
+  "DEPLOY_OPTIONS=deploy-options"
+  "SKIP_ALL=skip-all"
+  "SKIP_LICENSES=skip-licenses"
+  "SKIP_LINTERS=skip-linters"
+  "SKIP_TESTS=skip-tests"
+  "UPDATE_PACKAGES=update-packages"
+)
+
+# Usage: trigger_keyword VAR_NAME
+function trigger_keyword()
+{
+  local pair
+  for pair in "${TRIGGER_FLAGS[@]}"; do
+    if [ "${pair%%=*}" = "$1" ]; then
+      printf '%s\n' "${pair#*=}"
+      return 0
+    fi
+  done
+  echo "::error::unknown trigger flag '$1'" >&2
+  return 1
+}
+
+function on_beta() { has_trigger "$(trigger_keyword DEPLOY_ON_BETA)"; }
+function on_rc() { has_trigger "$(trigger_keyword DEPLOY_ON_RC)"; }
+function on_prod() { has_trigger "$(trigger_keyword DEPLOY_ON_PROD)"; }
+function on_macos() { has_trigger "$(trigger_keyword DEPLOY_MACOS)"; }
+function on_tvos() { has_trigger "$(trigger_keyword DEPLOY_TVOS)"; }
+function deploy_options() { has_trigger "$(trigger_keyword DEPLOY_OPTIONS)"; }
+function skip_all() { has_trigger "$(trigger_keyword SKIP_ALL)"; }
+function skip_licenses() { has_trigger "$(trigger_keyword SKIP_LICENSES)"; }
+function skip_linters() { has_trigger "$(trigger_keyword SKIP_LINTERS)"; }
+function skip_tests() { has_trigger "$(trigger_keyword SKIP_TESTS)"; }
+function update_packages() { has_trigger "$(trigger_keyword UPDATE_PACKAGES)"; }
 
 # Helper function to set boolean flag from trigger
 # Usage: set_flag_from_trigger VAR_NAME "trigger-keyword"
@@ -172,14 +200,11 @@ function main()
   export BUILD_NAME BUILD_VERSION COMMIT_MESSAGE
 
   # Set deployment and skip flags from commit message triggers
-  set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
-  set_flag_from_trigger DEPLOY_ON_RC "rc-deploy"
-  set_flag_from_trigger DEPLOY_MACOS "macos"
-  set_flag_from_trigger DEPLOY_TVOS "tvos"
-  set_flag_from_trigger SKIP_LICENSES "skip-licenses"
-  set_flag_from_trigger SKIP_LINTERS "skip-linters"
-  set_flag_from_trigger SKIP_TESTS "skip-tests"
-  set_flag_from_trigger UPDATE_PACKAGES "update-packages"
+  local flag keyword
+  for flag in DEPLOY_ON_BETA DEPLOY_ON_RC DEPLOY_MACOS DEPLOY_TVOS SKIP_LICENSES SKIP_LINTERS SKIP_TESTS UPDATE_PACKAGES; do
+    keyword="$(trigger_keyword "${flag}")"
+    set_flag_from_trigger "${flag}" "${keyword}"
+  done
 
   # DEPLOY_ON_PROD requires both trigger and tag
   DEPLOY_ON_PROD=0
@@ -191,7 +216,8 @@ function main()
   # DEPLOY_OPTIONS extracts value from trigger
   DEPLOY_OPTIONS=""
   if deploy_options; then
-    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
+    keyword="$(trigger_keyword DEPLOY_OPTIONS)"
+    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n "s/.*#${keyword}=\([^ ]*\).*/\1/p")"
   fi
   export DEPLOY_OPTIONS
 

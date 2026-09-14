@@ -422,6 +422,13 @@ surface, and neither may take the other's content.
 - `#update-packages`: Update packages
 - `#deploy-options=<value>`: Custom deployment options
 
+The keywords are spelled once, in the `TRIGGER_FLAGS` array (`OUTPUT_VARIABLE=keyword`) at the top of
+`variables.sh`. The named predicates (`on_beta`, `skip_tests`, ...), the flag loop in `main` and the
+`#deploy-options=` value parser all look keywords up with `trigger_keyword`, which fails for an undeclared
+flag, and `has_trigger` never matches an empty keyword. `variables.bats` runs the real script with every
+declared keyword in the commit message and asserts each output flag, and checks that the control-flag tables
+in `README.md` and `variables/README.md` list exactly the declared keywords.
+
 **Tests:** `variables/tests/variables.bats` sources `variables.sh` (guarded by
 the `BASH_SOURCE`/`$0` check so `main` does not run) and covers the tag, PR-head
 and branch paths plus the `detect_trivy`/`add_linter_if_*` predicates.
@@ -573,7 +580,7 @@ commit messages and repository state.
    `{ref}-{short_commit}-{timestamp}-{modified_run_number}` and `BUILD_VERSION`
    with format: `{ref}-{modified_run_number}-{timestamp}`
 3. Extract commit message (tag annotation or git log)
-4. Parse commit message for trigger keywords (`#beta-deploy`, `#skip-linters`, etc.)
+4. Parse commit message for the trigger keywords declared in `TRIGGER_FLAGS` (`#beta-deploy`, `#skip-linters`, etc.)
 5. Detect enabled linters by checking for configuration files in the repository
 
 **Complexity:** O(n) where n is the number of linter detection rules
