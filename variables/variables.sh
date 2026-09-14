@@ -28,7 +28,7 @@ function trigger_keyword()
 {
   local pair
   for pair in "${TRIGGER_FLAGS[@]}"; do
-    if [ "${pair%%=*}" = "$1" ]; then
+    if [[ "${pair%%=*}" == "${1}" ]]; then
       printf '%s\n' "${pair#*=}"
       return 0
     fi
