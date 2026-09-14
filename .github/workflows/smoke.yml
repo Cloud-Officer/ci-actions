@@ -73,6 +73,9 @@ jobs:
     - name: Assert the APT install and Composer cache-dir steps stay single-sourced
       shell: bash
       run: python3 tests/shared_snippets_contract.py
+    - name: Assert the AWS actions accept GitHub OIDC credentials
+      shell: bash
+      run: python3 tests/aws_credentials_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)

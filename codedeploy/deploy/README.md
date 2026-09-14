@@ -11,14 +11,29 @@ inputs:
     required: false
     default: ${{ github.token }}
   aws-access-key-id:
-    description: 'aws access key id'
-    required: true
+    description: 'aws access key id; leave empty when aws-role-to-assume is set'
+    required: false
   aws-secret-access-key:
-    description: 'aws secret access key'
-    required: true
+    description: 'aws secret access key; leave empty when aws-role-to-assume is set'
+    required: false
   aws-region:
     description: 'aws region'
     required: true
+  aws-role-to-assume:
+    description: 'ARN of the IAM role to assume with GitHub OIDC instead of access keys; the job needs permissions: id-token: write'
+    required: false
+  aws-audience:
+    description: 'audience of the GitHub OIDC token'
+    required: false
+    default: 'sts.amazonaws.com'
+  aws-role-session-name:
+    description: 'session name recorded in CloudTrail for the assumed role'
+    required: false
+    default: 'GitHubActions'
+  aws-role-duration-seconds:
+    description: 'lifetime of the assumed role credentials, in seconds'
+    required: false
+    default: '3600'
   application-name:
     description: 'aws deploy application name'
     required: true
@@ -44,6 +59,35 @@ inputs:
 The step polls until CodeDeploy reaches a terminal state. `Succeeded` exits 0;
 `Failed`/`Stopped` and a monitoring timeout exit non-zero so downstream jobs and
 notifications see the failure.
+
+## Authentication
+
+Supply one of:
+
+- **GitHub OIDC (recommended):** set `aws-role-to-assume` to an IAM role whose trust policy allows this repository,
+  and grant the job `id-token: write`. No AWS secret is stored in GitHub, and the credentials expire after
+  `aws-role-duration-seconds`.
+- **Access keys:** set `aws-access-key-id` and `aws-secret-access-key`.
+
+The action fails before creating a deployment when neither a role nor a complete key pair is supplied.
+
+```yml
+  beta_deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Beta Deploy
+        uses: cloud-officer/ci-actions/codedeploy/deploy@v3
+        with:
+          aws-role-to-assume: "arn:aws:iam::123456789012:role/github-deploy"
+          aws-region: "${{secrets.AWS_DEFAULT_REGION}}"
+          application-name: api
+          deployment-group-name: beta
+          s3-bucket: my-builds
+          s3-key: "${{needs.variables.outputs.BUILD_NAME}}.zip"
+```
 
 ## Example usage
 

@@ -91,7 +91,10 @@ workflows.
 
 - `github-token`: GitHub token for checkout
 - `ssh-key`: SSH key for private repository access
-- `aws-access-key-id`, `aws-secret-access-key`, `aws-region`: AWS credentials
+- `aws-region`: AWS region
+- `aws-role-to-assume` (GitHub OIDC, with `aws-audience`, `aws-role-session-name`, `aws-role-duration-seconds`), or
+  `aws-access-key-id` and `aws-secret-access-key`: AWS credentials; the first step fails unless one of the two is
+  supplied
 - `shell-commands`: Commands to execute
 
 ### bump-actions
@@ -146,7 +149,8 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 
 **Key Components:**
 
-- AWS credential configuration
+- AWS credential configuration, from an IAM role assumed through GitHub OIDC (`aws-role-to-assume`) or from an
+  access key pair
 - S3 sync operations
 - Deployment creation with status polling (5-second intervals; monitoring
   window configurable via the `monitor-timeout-minutes` input, default 30)
@@ -281,6 +285,10 @@ surface, and neither may take the other's content.
   `linters/tests/clean_workspace.bats`
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
+- `require_aws_credentials.sh`: fails the first step of `aws`, `codedeploy/deploy` and `codedeploy/s3copy` unless
+  `ROLE_TO_ASSUME` (GitHub OIDC) or both `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY` are non-blank, and whenever only one
+  half of the key pair is set, so a missing credential surfaces before any AWS call. Unit-tested by
+  `linters/tests/require_aws_credentials.bats`
 - `require_inputs.sh`: shared "required inputs are actually present" gate,
   invoked as `bash "${GITHUB_ACTION_PATH}/../linters/_lib/require_inputs.sh"
   "name=${VALUE}" …` with the values passed through `env:`. GitHub Actions does
@@ -348,7 +356,8 @@ surface, and neither may take the other's content.
 - Automatic language version detection from version files
 - Caching for Go, Gradle, Maven, Node.js, Composer, PIP, Bundler, Carthage,
   CocoaPods, SPM, Tuist, Android
-- AWS credential configuration
+- AWS credential configuration, from an IAM role assumed through GitHub OIDC (`aws-role-to-assume`) or from an
+  access key pair
 - SSH agent setup
 - APT package installation
 
@@ -499,6 +508,10 @@ end-to-end in CI without secrets or side effects.
   read submodule paths from `linters/_lib/submodule_paths.sh`, and that no other
   shell script or `action.yml` parses `.gitmodules` with grep/sed/awk or its own
   `git config --file .gitmodules`
+- `aws_credentials_contract.py`: asserts `aws`, `codedeploy/deploy` and `codedeploy/s3copy` declare the GitHub OIDC
+  inputs, no longer require the access key pair, run `require_aws_credentials.sh` in their first step with the role
+  and keys bound from inputs, and pass role, keys and OIDC options to `configure-aws-credentials`; and that `setup`
+  configures AWS credentials when only `aws-role-to-assume` is set
 - `shared_snippets_contract.py`: asserts `setup/action.yml` and
   `linters/phpstan/action.yml` call `linters/_lib/apt_install.sh` and
   `linters/_lib/composer_cache_dir.sh`, and that no other shell script or
@@ -733,6 +746,7 @@ a newer upstream version, preserving the existing pin style.
   consumers to pin an older ci-actions major after a major roll
 - `tests/submodule_paths_contract.py` blocks a second, divergent `.gitmodules`
   parser from being copied back into a script or action
+- `tests/aws_credentials_contract.py` blocks the AWS actions from losing their GitHub OIDC login path
 - `tests/shared_snippets_contract.py` blocks the APT install and Composer
   cache-dir steps from being copied back into `setup` or `phpstan`
 - The Slack `pretest` script rebuilds `dist/index.js` and fails on any diff, so
