@@ -603,7 +603,7 @@ runs:
     # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v6
-      if: ${{ inputs.aws-access-key-id != '' }}
+      if: ${{ inputs.aws-access-key-id != '' || inputs.aws-role-to-assume != '' }}
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: ${{ inputs.aws-role-to-assume }}

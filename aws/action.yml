@@ -11,14 +11,29 @@ inputs:
     description: 'ssh key'
     required: true
   aws-access-key-id:
-    description: 'aws access key id'
-    required: true
+    description: 'aws access key id; leave empty when aws-role-to-assume is set'
+    required: false
   aws-secret-access-key:
-    description: 'aws secret access key'
-    required: true
+    description: 'aws secret access key; leave empty when aws-role-to-assume is set'
+    required: false
   aws-region:
     description: 'aws region'
     required: true
+  aws-role-to-assume:
+    description: 'ARN of the IAM role to assume with GitHub OIDC instead of access keys; the job needs permissions: id-token: write'
+    required: false
+  aws-audience:
+    description: 'audience of the GitHub OIDC token'
+    required: false
+    default: 'sts.amazonaws.com'
+  aws-role-session-name:
+    description: 'session name recorded in CloudTrail for the assumed role'
+    required: false
+    default: 'GitHubActions'
+  aws-role-duration-seconds:
+    description: 'lifetime of the assumed role credentials, in seconds'
+    required: false
+    default: '3600'
   shell-commands:
     description: 'shell commands'
     required: true
@@ -32,9 +47,15 @@ runs:
       shell: bash
       env:
         SHELL_COMMANDS: ${{ inputs.shell-commands }}
+        REGION: ${{ inputs.aws-region }}
+        ROLE_TO_ASSUME: ${{ inputs.aws-role-to-assume }}
+        ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
       run: |
         bash "${GITHUB_ACTION_PATH}/../linters/_lib/require_inputs.sh" \
-          "shell-commands=${SHELL_COMMANDS}"
+          "shell-commands=${SHELL_COMMANDS}" \
+          "aws-region=${REGION}"
+        bash "${GITHUB_ACTION_PATH}/../linters/_lib/require_aws_credentials.sh"
 
     # https://github.com/marketplace/actions/checkout
     - name: Checkout
@@ -50,9 +71,13 @@ runs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v6
       with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.aws-role-to-assume }}
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-        aws-region: ${{ inputs.aws-region }}
+        audience: ${{ inputs.aws-audience }}
+        role-session-name: ${{ inputs.aws-role-session-name }}
+        role-duration-seconds: ${{ inputs.aws-role-duration-seconds }}
 
     - name: Run Shell Commands
       shell: bash
