@@ -24,14 +24,14 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
 import os
 import re
 import sys
 
 import yaml
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, action_paths, fail, read, report
+
 README = os.path.join("linters", "README.md")
 SHARED_GATE = "_lib/check_enabled.sh"
 # The pre-QUAL-001 inline gate: `if echo "${LINTERS}" | grep NAME ...`.
@@ -71,15 +71,13 @@ def template_block(readme: str) -> str | None:
     return match.group(1) if match else None
 
 
-def check_actions(action_paths: list[str], repo_root: str) -> tuple[set[str], list[str]]:
+def check_actions(action_paths_: list[str], repo_root: str) -> tuple[set[str], list[str]]:
     """Validate the real linter actions; return their checkout versions + errors."""
     errors: list[str] = []
     versions: set[str] = set()
 
-    for path in action_paths:
-        rel = os.path.relpath(path, repo_root)
-        with open(path, encoding="utf-8") as handle:
-            text = handle.read()
+    for rel in action_paths_:
+        text = read(rel, repo_root)
         versions.update(CHECKOUT.findall(text))
         gate = check_step_run(text)
         if gate is None:
@@ -140,44 +138,35 @@ def check_readme(readme: str, current: str) -> list[str]:
 
 
 def main(repo_root: str = REPO_ROOT) -> int:
-    action_paths = sorted(glob.glob(os.path.join(repo_root, "linters", "*", "action.yml")))
-    if not action_paths:
-        print("no linter action.yml files found", file=sys.stderr)
-        return 1
+    linter_actions = action_paths(os.path.join("linters", "*", "action.yml"), repo_root)
+    if not linter_actions:
+        return fail("no linter action.yml files found")
 
     # 1. The actions are the source of truth -- they must be self-consistent.
-    versions, errors = check_actions(action_paths, repo_root)
+    versions, errors = check_actions(linter_actions, repo_root)
 
     if len(versions) != 1:
         errors.append(
             f"linters/*/action.yml: expected one actions/checkout version, "
             f"found {sorted(versions) or ['none']}"
         )
-        for line in errors:
-            print(line, file=sys.stderr)
-        return 1
+        return report(errors)
 
     current = versions.pop()
 
     # 2 + 3. The documented template and sed recipe must match the actions.
-    readme_path = os.path.join(repo_root, README)
     try:
-        with open(readme_path, encoding="utf-8") as handle:
-            readme = handle.read()
+        readme = read(README, repo_root)
     except OSError as exc:
-        print(f"{README}: cannot read ({exc})", file=sys.stderr)
-        return 1
+        return fail(f"{README}: cannot read ({exc})")
 
     errors.extend(check_readme(readme, current))
 
-    for line in errors:
-        print(line, file=sys.stderr)
-
-    print(
-        f"Checked {README} against {len(action_paths)} linter action(s) "
-        f"(actions/checkout@{current}), {len(errors)} violation(s)."
+    return report(
+        errors,
+        f"Checked {README} against {len(linter_actions)} linter action(s) "
+        f"(actions/checkout@{current}), {len(errors)} violation(s).",
     )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

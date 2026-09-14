@@ -28,7 +28,8 @@ import os
 import subprocess
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, fail, read, report
+
 SHARED_LIST = os.path.join("linters", "_lib", "lock_files.sh")
 CONSUMERS = (
     os.path.join("variables", "variables.sh"),
@@ -53,23 +54,19 @@ def load_lock_files() -> list[str]:
 def main() -> int:
     errors: list[str] = []
 
-    shared_path = os.path.join(REPO_ROOT, SHARED_LIST)
-    if not os.path.isfile(shared_path):
-        print(f"{SHARED_LIST}: missing shared lock-file list", file=sys.stderr)
-        return 1
+    if not os.path.isfile(os.path.join(REPO_ROOT, SHARED_LIST)):
+        return fail(f"{SHARED_LIST}: missing shared lock-file list")
 
     try:
         lock_files = load_lock_files()
     except RuntimeError as exc:
-        print(f"{SHARED_LIST}: {exc}", file=sys.stderr)
-        return 1
+        return fail(f"{SHARED_LIST}: {exc}")
 
     if not lock_files:
         errors.append(f"{SHARED_LIST}: TRIVY_LOCK_FILES is empty")
 
     for rel in CONSUMERS:
-        with open(os.path.join(REPO_ROOT, rel), encoding="utf-8") as handle:
-            text = handle.read()
+        text = read(rel)
 
         if "lock_files.sh" not in text:
             errors.append(f"{rel}: does not source linters/_lib/lock_files.sh")
@@ -85,14 +82,11 @@ def main() -> int:
                     f"it must come from the shared TRIVY_LOCK_FILES array"
                 )
 
-    for line in errors:
-        print(line, file=sys.stderr)
-
-    print(
+    return report(
+        errors,
         f"Checked {len(CONSUMERS)} consumer(s) against {len(lock_files)} "
-        f"single-sourced lock files, {len(errors)} violation(s)."
+        f"single-sourced lock files, {len(errors)} violation(s).",
     )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

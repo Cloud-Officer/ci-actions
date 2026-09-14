@@ -22,6 +22,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import linters_readme_template_contract as contract  # noqa: E402
+from _contract_lib import report  # noqa: E402
 
 SHARED_GATE_RUN = 'bash "${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh" ACTIONLINT'
 LEGACY_GATE_RUN = (
@@ -259,11 +260,7 @@ def main() -> int:
         elif want_text not in output:
             failures.append(f"{name}: expected {want_text!r} in output, got:\n{output}")
 
-    for line in failures:
-        print(line, file=sys.stderr)
-
-    print(f"Ran {len(CASES)} contract self-test case(s), {len(failures)} failure(s).")
-    return 1 if failures else 0
+    return report(failures, f"Ran {len(CASES)} contract self-test case(s), {len(failures)} failure(s).")
 
 
 if __name__ == "__main__":

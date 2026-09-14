@@ -435,6 +435,12 @@ end-to-end in CI without secrets or side effects.
 
 **Key Components:**
 
+- `_contract_lib.py`: the shared harness every contract script imports —
+  `REPO_ROOT`, `read`, `load_yaml`, `action_paths` (sorted `action.yml` paths
+  outside `node_modules`), `walk_files` (skipping `.git` and `node_modules`),
+  `composite_steps`, and `fail`/`report`, which print violations to stderr and
+  the summary to stdout and return the exit code. Each script keeps only its
+  domain assertions; `contract_lib_selftest.py` unit-tests the harness itself
 - `action_contracts.py`: parses every `action.yml` in the repository (28 as of
   writing) and asserts each is a well-formed composite/JS/Docker action —
   required top-level keys, input mappings with descriptions, a valid

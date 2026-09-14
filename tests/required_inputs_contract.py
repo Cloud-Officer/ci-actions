@@ -26,9 +26,8 @@ from __future__ import annotations
 import os
 import sys
 
-import yaml
+from _contract_lib import REPO_ROOT, fail, load_yaml, report
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GATE = os.path.join("linters", "_lib", "require_inputs.sh")
 
 # action.yml -> the inputs whose emptiness is silent, so must be gated
@@ -58,17 +57,14 @@ def main() -> int:
     errors: list[str] = []
 
     if not os.path.isfile(os.path.join(REPO_ROOT, GATE)):
-        print(f"{GATE}: missing shared input gate", file=sys.stderr)
-        return 1
+        return fail(f"{GATE}: missing shared input gate")
 
     for rel, expected in sorted(GUARDED.items()):
-        path = os.path.join(REPO_ROOT, rel)
-
-        if not os.path.isfile(path):
+        if not os.path.isfile(os.path.join(REPO_ROOT, rel)):
             errors.append(f"{rel}: missing")
             continue
 
-        action = yaml.safe_load(open(path, encoding="utf-8"))
+        action = load_yaml(rel)
         step = validate_step(action)
 
         if step is None:
@@ -96,12 +92,7 @@ def main() -> int:
             if "${{ inputs." not in value:
                 errors.append(f"{rel}: env {key} is not bound to an action input")
 
-    for error in errors:
-        print(error, file=sys.stderr)
-
-    print(f"Checked {len(GUARDED)} action(s) against {GATE}, {len(errors)} violation(s).")
-
-    return 1 if errors else 0
+    return report(errors, f"Checked {len(GUARDED)} action(s) against {GATE}, {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":

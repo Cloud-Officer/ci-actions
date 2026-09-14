@@ -26,14 +26,14 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
 import os
 import sys
 import tempfile
 
 import yaml
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, action_paths, fail, load_yaml, report
+
 LINTERS_GLOB = os.path.join("linters", "*", "action.yml")
 CHECK_STEP_ID = "check"
 GATE = "steps.check.outputs.continue == 'true'"
@@ -47,8 +47,7 @@ def check_file(path: str, root: str = REPO_ROOT) -> list[str]:
         errors.append(f"{path}: {msg}")
 
     try:
-        with open(os.path.join(root, path), encoding="utf-8") as handle:
-            data = yaml.safe_load(handle)
+        data = load_yaml(path, root)
     except yaml.YAMLError as exc:
         return [f"{path}: invalid YAML: {exc}"]
 
@@ -151,25 +150,18 @@ def self_check() -> list[str]:
 def main() -> int:
     all_errors = self_check()
 
-    paths = sorted(
-        os.path.relpath(p, REPO_ROOT)
-        for p in glob.glob(os.path.join(REPO_ROOT, LINTERS_GLOB))
-    )
+    paths = action_paths(LINTERS_GLOB)
     if not paths:
-        print("no linter action.yml files found", file=sys.stderr)
-        return 1
+        return fail("no linter action.yml files found")
 
     for path in paths:
         all_errors.extend(check_file(path))
 
-    for line in all_errors:
-        print(line, file=sys.stderr)
-
-    print(
+    return report(
+        all_errors,
         f"Checked {len(paths)} linter action.yml files and "
-        f"{len(FIXTURES)} self-check fixtures, {len(all_errors)} violation(s)."
+        f"{len(FIXTURES)} self-check fixtures, {len(all_errors)} violation(s).",
     )
-    return 1 if all_errors else 0
 
 
 if __name__ == "__main__":

@@ -19,39 +19,22 @@ import os
 import re
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, fail, is_script_or_action, read, report, walk_files
+
 HELPER = os.path.join("linters", "_lib", "submodule_paths.sh")
 CONSUMERS = (
     os.path.join("variables", "variables.sh"),
     os.path.join("linters", "_lib", "detect_trivy_scanners.sh"),
     os.path.join("linters", "_lib", "clean_workspace.sh"),
 )
-SKIP_DIRS = {".git", "node_modules"}
 PARSE = re.compile(r"(\b(grep|sed|awk)\b[^\n]*\.gitmodules|--file[ =]\.gitmodules)")
-
-
-def scanned_files() -> list[str]:
-    """Return every shell script and action.yml relative to the repo root."""
-    found = []
-    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
-        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS)
-        for name in filenames:
-            if name.endswith(".sh") or name == "action.yml":
-                found.append(os.path.relpath(os.path.join(dirpath, name), REPO_ROOT))
-    return sorted(found)
-
-
-def read(rel: str) -> str:
-    with open(os.path.join(REPO_ROOT, rel), encoding="utf-8") as handle:
-        return handle.read()
 
 
 def main() -> int:
     errors: list[str] = []
 
     if not os.path.isfile(os.path.join(REPO_ROOT, HELPER)):
-        print(f"{HELPER}: missing shared .gitmodules parser", file=sys.stderr)
-        return 1
+        return fail(f"{HELPER}: missing shared .gitmodules parser")
 
     for rel in CONSUMERS:
         text = read(rel)
@@ -60,7 +43,7 @@ def main() -> int:
         if "< <(submodule_paths)" not in text:
             errors.append(f"{rel}: does not read paths from submodule_paths")
 
-    files = scanned_files()
+    files = walk_files(is_script_or_action)
     for rel in files:
         if rel == HELPER:
             continue
@@ -68,11 +51,7 @@ def main() -> int:
             if PARSE.search(line):
                 errors.append(f"{rel}:{number}: parses .gitmodules directly -- use submodule_paths from {HELPER}")
 
-    for message in errors:
-        print(message, file=sys.stderr)
-
-    print(f"Checked {len(files)} file(s) and {len(CONSUMERS)} consumer(s), {len(errors)} violation(s).")
-    return 1 if errors else 0
+    return report(errors, f"Checked {len(files)} file(s) and {len(CONSUMERS)} consumer(s), {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":
