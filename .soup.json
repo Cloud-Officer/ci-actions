@@ -1,5 +1,5 @@
 {
-  "@actions/core": {
+  "JS:@actions/core": {
     "language": "JS",
     "package": "@actions/core",
     "version": "2.0.3",
@@ -11,7 +11,7 @@
     "requirements": "GitHub Actions toolkit for reading inputs and setting outputs",
     "verification_reasoning": "Official GitHub Actions SDK"
   },
-  "@actions/exec": {
+  "JS:@actions/exec": {
     "language": "JS",
     "package": "@actions/exec",
     "version": "2.0.0",
@@ -23,7 +23,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "@actions/http-client": {
+  "JS:@actions/http-client": {
     "language": "JS",
     "package": "@actions/http-client",
     "version": "3.0.2",
@@ -35,7 +35,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "@actions/io": {
+  "JS:@actions/io": {
     "language": "JS",
     "package": "@actions/io",
     "version": "2.0.0",
@@ -47,7 +47,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "agent-base": {
+  "JS:agent-base": {
     "language": "JS",
     "package": "agent-base",
     "version": "6.0.2",
@@ -59,7 +59,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "asynckit": {
+  "JS:asynckit": {
     "language": "JS",
     "package": "asynckit",
     "version": "0.4.0",
@@ -71,7 +71,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "axios": {
+  "JS:axios": {
     "language": "JS",
     "package": "axios",
     "version": "1.20.0",
@@ -83,7 +83,7 @@
     "requirements": "HTTP client for Slack webhook API calls",
     "verification_reasoning": "Industry standard HTTP client with active maintenance"
   },
-  "call-bind-apply-helpers": {
+  "JS:call-bind-apply-helpers": {
     "language": "JS",
     "package": "call-bind-apply-helpers",
     "version": "1.0.2",
@@ -95,7 +95,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "combined-stream": {
+  "JS:combined-stream": {
     "language": "JS",
     "package": "combined-stream",
     "version": "1.0.8",
@@ -107,7 +107,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "debug": {
+  "JS:debug": {
     "language": "JS",
     "package": "debug",
     "version": "4.4.3",
@@ -119,7 +119,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "delayed-stream": {
+  "JS:delayed-stream": {
     "language": "JS",
     "package": "delayed-stream",
     "version": "1.0.0",
@@ -131,7 +131,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "dunder-proto": {
+  "JS:dunder-proto": {
     "language": "JS",
     "package": "dunder-proto",
     "version": "1.0.1",
@@ -143,7 +143,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "es-define-property": {
+  "JS:es-define-property": {
     "language": "JS",
     "package": "es-define-property",
     "version": "1.0.1",
@@ -155,7 +155,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "es-errors": {
+  "JS:es-errors": {
     "language": "JS",
     "package": "es-errors",
     "version": "1.3.0",
@@ -167,7 +167,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "es-object-atoms": {
+  "JS:es-object-atoms": {
     "language": "JS",
     "package": "es-object-atoms",
     "version": "1.1.2",
@@ -179,7 +179,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "es-set-tostringtag": {
+  "JS:es-set-tostringtag": {
     "language": "JS",
     "package": "es-set-tostringtag",
     "version": "2.1.0",
@@ -191,7 +191,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "follow-redirects": {
+  "JS:follow-redirects": {
     "language": "JS",
     "package": "follow-redirects",
     "version": "1.16.0",
@@ -203,7 +203,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "form-data": {
+  "JS:form-data": {
     "language": "JS",
     "package": "form-data",
     "version": "4.0.6",
@@ -215,7 +215,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "function-bind": {
+  "JS:function-bind": {
     "language": "JS",
     "package": "function-bind",
     "version": "1.1.2",
@@ -227,7 +227,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "get-intrinsic": {
+  "JS:get-intrinsic": {
     "language": "JS",
     "package": "get-intrinsic",
     "version": "1.3.0",
@@ -239,7 +239,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "get-proto": {
+  "JS:get-proto": {
     "language": "JS",
     "package": "get-proto",
     "version": "1.0.1",
@@ -251,7 +251,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "gopd": {
+  "JS:gopd": {
     "language": "JS",
     "package": "gopd",
     "version": "1.2.0",
@@ -263,7 +263,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "has-symbols": {
+  "JS:has-symbols": {
     "language": "JS",
     "package": "has-symbols",
     "version": "1.1.0",
@@ -275,7 +275,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "has-tostringtag": {
+  "JS:has-tostringtag": {
     "language": "JS",
     "package": "has-tostringtag",
     "version": "1.0.2",
@@ -287,7 +287,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "hasown": {
+  "JS:hasown": {
     "language": "JS",
     "package": "hasown",
     "version": "2.0.4",
@@ -299,7 +299,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "https-proxy-agent": {
+  "JS:https-proxy-agent": {
     "language": "JS",
     "package": "https-proxy-agent",
     "version": "5.0.1",
@@ -311,7 +311,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "math-intrinsics": {
+  "JS:math-intrinsics": {
     "language": "JS",
     "package": "math-intrinsics",
     "version": "1.1.0",
@@ -323,7 +323,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "mime-db": {
+  "JS:mime-db": {
     "language": "JS",
     "package": "mime-db",
     "version": "1.52.0",
@@ -335,7 +335,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "mime-types": {
+  "JS:mime-types": {
     "language": "JS",
     "package": "mime-types",
     "version": "2.1.35",
@@ -347,7 +347,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "ms": {
+  "JS:ms": {
     "language": "JS",
     "package": "ms",
     "version": "2.1.3",
@@ -359,7 +359,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "proxy-from-env": {
+  "JS:proxy-from-env": {
     "language": "JS",
     "package": "proxy-from-env",
     "version": "2.1.0",
@@ -371,7 +371,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "tunnel": {
+  "JS:tunnel": {
     "language": "JS",
     "package": "tunnel",
     "version": "0.0.6",
@@ -383,7 +383,7 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
-  "undici": {
+  "JS:undici": {
     "language": "JS",
     "package": "undici",
     "version": "6.28.1",

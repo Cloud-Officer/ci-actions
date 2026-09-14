@@ -1,6 +1,6 @@
 FROM alpine:3.22
 
-USER nobody
+USER 65534:65534
 
 HEALTHCHECK NONE
 
