@@ -18,7 +18,8 @@ import os
 import re
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, is_script_or_action, read, report, walk_files
+
 CONSUMERS = (
     os.path.join("setup", "action.yml"),
     os.path.join("linters", "phpstan", "action.yml"),
@@ -27,28 +28,11 @@ HELPERS = {
     os.path.join("linters", "_lib", "apt_install.sh"): re.compile(r"apt-get\b[^\n]*\binstall\b[^\n]*\$\{?APT_PACKAGES"),
     os.path.join("linters", "_lib", "composer_cache_dir.sh"): re.compile(r"composer\s+config\s+cache-files-dir"),
 }
-SKIP_DIRS = {".git", "node_modules"}
-
-
-def scanned_files() -> list[str]:
-    """Return every shell script and action.yml relative to the repo root."""
-    found = []
-    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
-        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS)
-        for name in filenames:
-            if name.endswith(".sh") or name == "action.yml":
-                found.append(os.path.relpath(os.path.join(dirpath, name), REPO_ROOT))
-    return sorted(found)
-
-
-def read(rel: str) -> str:
-    with open(os.path.join(REPO_ROOT, rel), encoding="utf-8") as handle:
-        return handle.read()
 
 
 def main() -> int:
     errors: list[str] = []
-    files = scanned_files()
+    files = walk_files(is_script_or_action)
 
     for helper, pattern in HELPERS.items():
         if not os.path.isfile(os.path.join(REPO_ROOT, helper)):
@@ -66,11 +50,7 @@ def main() -> int:
                 if pattern.search(line):
                     errors.append(f"{rel}:{number}: re-implements {helper} -- call the helper instead")
 
-    for message in errors:
-        print(message, file=sys.stderr)
-
-    print(f"Checked {len(files)} file(s) against {len(HELPERS)} shared helper(s), {len(errors)} violation(s).")
-    return 1 if errors else 0
+    return report(errors, f"Checked {len(files)} file(s) against {len(HELPERS)} shared helper(s), {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":

@@ -14,13 +14,12 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import os
 import re
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import fail, read, report, walk_files
+
 ROOT_README = "README.md"
-SKIP_DIRS = {".git", "node_modules"}
 REF = re.compile(r"cloud-officer/ci-actions/[A-Za-z0-9_./-]+@v(\d+)\b", re.IGNORECASE)
 
 
@@ -32,28 +31,10 @@ def majors(text: str) -> list[tuple[int, int]]:
     ]
 
 
-def readmes() -> list[str]:
-    """Return every README.md path relative to the repo root, root README excluded."""
-    found = []
-    for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
-        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS)
-        if "README.md" in filenames:
-            rel = os.path.relpath(os.path.join(dirpath, "README.md"), REPO_ROOT)
-            if rel != ROOT_README:
-                found.append(rel)
-    return sorted(found)
-
-
-def read(rel: str) -> str:
-    with open(os.path.join(REPO_ROOT, rel), encoding="utf-8") as handle:
-        return handle.read()
-
-
 def main() -> int:
     root_refs = majors(read(ROOT_README))
     if not root_refs:
-        print(f"{ROOT_README}: no Cloud-Officer/ci-actions/<path>@vN reference to derive the current major from", file=sys.stderr)
-        return 1
+        return fail(f"{ROOT_README}: no Cloud-Officer/ci-actions/<path>@vN reference to derive the current major from")
     current = max(major for _, major in root_refs)
 
     errors: list[str] = []
@@ -61,17 +42,13 @@ def main() -> int:
         if major != current:
             errors.append(f"{ROOT_README}:{line}: references @v{major}, expected @v{current}")
 
-    paths = readmes()
+    paths = [rel for rel in walk_files(lambda name: name == "README.md") if rel != ROOT_README]
     for rel in paths:
         for line, major in majors(read(rel)):
             if major != current:
                 errors.append(f"{rel}:{line}: references @v{major}, expected @v{current}")
 
-    for message in errors:
-        print(message, file=sys.stderr)
-
-    print(f"Checked {len(paths) + 1} README(s) against current major v{current}, {len(errors)} violation(s).")
-    return 1 if errors else 0
+    return report(errors, f"Checked {len(paths) + 1} README(s) against current major v{current}, {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":

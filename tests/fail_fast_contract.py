@@ -28,13 +28,11 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
-import os
 import re
 import subprocess
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from _contract_lib import REPO_ROOT, action_paths, fail, read, report
 
 # A `bash <opts> -c` invocation on a single line. The options are captured
 # non-greedily so `opts` is everything between `bash` and the first ` -c`.
@@ -137,25 +135,19 @@ def check_detector() -> list[str]:
 
 
 def main() -> int:
-    paths = sorted(
-        path for path in glob.glob("**/action.yml", recursive=True)
-        if "node_modules/" not in path
-    )
+    paths = action_paths()
     if not paths:
-        print("no action.yml files found", file=sys.stderr)
-        return 1
+        return fail("no action.yml files found")
 
     errors = check_detector() + check_behaviour()
     for path in paths:
-        with open(path, encoding="utf-8") as handle:
-            errors.extend(scan_text(path, handle.read()))
+        errors.extend(scan_text(path, read(path)))
 
-    for line in errors:
-        print(line, file=sys.stderr)
-
-    print(f"Checked {len(paths)} action.yml files for fail-fast "
-          f"'bash -c' call sites, {len(errors)} violation(s).")
-    return 1 if errors else 0
+    return report(
+        errors,
+        f"Checked {len(paths)} action.yml files for fail-fast "
+        f"'bash -c' call sites, {len(errors)} violation(s).",
+    )
 
 
 if __name__ == "__main__":

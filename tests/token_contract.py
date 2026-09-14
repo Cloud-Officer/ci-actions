@@ -27,12 +27,13 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
 import os
 import re
 import sys
 
 import yaml
+
+from _contract_lib import REPO_ROOT, action_paths, composite_steps, fail, load_yaml, report
 
 # Setup actions that accept a `token` input. ruby/setup-ruby and
 # shivammathur/setup-php are deliberately absent: they have no such input.
@@ -54,19 +55,6 @@ MIRROR_PAIR = (
     os.path.join("linters", "bandit", "action.yml"),
     os.path.join("linters", "semgrep", "action.yml"),
 )
-
-
-def composite_steps(data: object) -> list[dict]:
-    """Return the composite steps of a parsed action, or an empty list."""
-    if not isinstance(data, dict):
-        return []
-    runs = data.get("runs")
-    if not isinstance(runs, dict) or runs.get("using") != "composite":
-        return []
-    steps = runs.get("steps")
-    if not isinstance(steps, list):
-        return []
-    return [step for step in steps if isinstance(step, dict)]
 
 
 def step_label(step: dict, index: int) -> str:
@@ -149,26 +137,18 @@ def check_mirror(actions: dict[str, object]) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    root = argv[1] if len(argv) > 1 else os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))
-    )
+    root = argv[1] if len(argv) > 1 else REPO_ROOT
 
-    paths = sorted(
-        p for p in glob.glob(os.path.join(root, "**", "action.yml"), recursive=True)
-        if "node_modules/" not in p
-    )
+    paths = action_paths(root=root)
     if not paths:
-        print(f"no action.yml files found under {root}", file=sys.stderr)
-        return 1
+        return fail(f"no action.yml files found under {root}")
 
     actions: dict[str, object] = {}
     errors: list[str] = []
 
-    for path in paths:
-        rel = os.path.relpath(path, root)
+    for rel in paths:
         try:
-            with open(path, encoding="utf-8") as handle:
-                data = yaml.safe_load(handle)
+            data = load_yaml(rel, root)
         except yaml.YAMLError as exc:
             errors.append(f"{rel}: invalid YAML: {exc}")
             continue
@@ -177,11 +157,7 @@ def main(argv: list[str]) -> int:
 
     errors.extend(check_mirror(actions))
 
-    for line in errors:
-        print(line, file=sys.stderr)
-
-    print(f"Checked {len(paths)} action.yml files, {len(errors)} violation(s).")
-    return 1 if errors else 0
+    return report(errors, f"Checked {len(paths)} action.yml files, {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":

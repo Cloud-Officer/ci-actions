@@ -14,10 +14,11 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
 import sys
 
 import yaml
+
+from _contract_lib import action_paths, fail, load_yaml, report
 
 # node16 is omitted deliberately: GitHub removed it from hosted runners, so an
 # action declaring it no longer runs, and this check exists to catch exactly that
@@ -33,8 +34,7 @@ def check_file(path: str) -> list[str]:
         errors.append(f"{path}: {msg}")
 
     try:
-        with open(path, encoding="utf-8") as handle:
-            data = yaml.safe_load(handle)
+        data = load_yaml(path)
     except yaml.YAMLError as exc:
         return [f"{path}: invalid YAML: {exc}"]
 
@@ -84,23 +84,15 @@ def check_file(path: str) -> list[str]:
 
 
 def main() -> int:
-    paths = sorted(
-        p for p in glob.glob("**/action.yml", recursive=True)
-        if "node_modules/" not in p
-    )
+    paths = action_paths()
     if not paths:
-        print("no action.yml files found", file=sys.stderr)
-        return 1
+        return fail("no action.yml files found")
 
     all_errors: list[str] = []
     for path in paths:
         all_errors.extend(check_file(path))
 
-    for line in all_errors:
-        print(line, file=sys.stderr)
-
-    print(f"Checked {len(paths)} action.yml files, {len(all_errors)} violation(s).")
-    return 1 if all_errors else 0
+    return report(all_errors, f"Checked {len(paths)} action.yml files, {len(all_errors)} violation(s).")
 
 
 if __name__ == "__main__":

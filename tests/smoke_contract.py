@@ -24,14 +24,12 @@ Exits non-zero and prints every violation found.
 
 from __future__ import annotations
 
-import glob
 import os
 import re
 import sys
 
-import yaml
+from _contract_lib import REPO_ROOT, action_paths, fail, load_yaml, report
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKFLOW = ".github/workflows/smoke.yml"
 JOB = "linters-smoke"
 CONTINUE_GATE = "steps.check.outputs.continue == 'true'"
@@ -94,11 +92,6 @@ def step_is_inert(step: dict, pinned: dict[str, str]) -> tuple[bool, str]:
     )
 
 
-def load_yaml(rel: str):
-    with open(os.path.join(REPO_ROOT, rel), encoding="utf-8") as handle:
-        return yaml.safe_load(handle)
-
-
 def collect_invocations(job: dict) -> dict[str, dict[str, str]]:
     """Map `linters/<name>` -> the inputs the smoke job pins for it."""
     invocations: dict[str, dict[str, str]] = {}
@@ -118,15 +111,11 @@ def main() -> int:
     workflow = load_yaml(WORKFLOW)
     job = workflow.get("jobs", {}).get(JOB)
     if not isinstance(job, dict):
-        print(f"{WORKFLOW}: missing job '{JOB}'", file=sys.stderr)
-        return 1
+        return fail(f"{WORKFLOW}: missing job '{JOB}'")
 
     invocations = collect_invocations(job)
 
-    available = sorted(
-        os.path.dirname(p)
-        for p in glob.glob("linters/*/action.yml", root_dir=REPO_ROOT)
-    )
+    available = sorted(os.path.dirname(p) for p in action_paths(os.path.join("linters", "*", "action.yml")))
     for path in available:
         if path not in invocations:
             errors.append(
@@ -164,14 +153,11 @@ def main() -> int:
                 name = step.get("name", f"step[{index}]")
                 errors.append(f"{action_rel}: step '{name}' {reason}")
 
-    for line in errors:
-        print(line, file=sys.stderr)
-
-    print(
+    return report(
+        errors,
         f"Checked {len(invocations)} linter invocation(s) in {WORKFLOW} job "
-        f"'{JOB}', {len(errors)} violation(s)."
+        f"'{JOB}', {len(errors)} violation(s).",
     )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":
