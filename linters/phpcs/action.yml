@@ -56,6 +56,13 @@ runs:
         lfs: true
         submodules: recursive
 
+    # https://github.com/marketplace/actions/webfactory-ssh-agent
+    - name: Setup SSH Agent
+      uses: webfactory/ssh-agent@v0.10.0
+      if: ${{ inputs.ssh-key != '' && steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      with:
+        ssh-private-key: ${{ inputs.ssh-key }}
+
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -90,11 +97,27 @@ runs:
         rm -f php-cs-fixer.asc
         chmod a+x php-cs-fixer
 
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - Composer Location
+      id: composer-cache
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/composer_cache_dir.sh"
+    - name: Cache - Composer
+      uses: actions/cache@v6
+      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
     - name: Run Composer
       shell: bash
       if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none'}}
       env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
+        COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ inputs.github-token }}"}}'
         COMPOSER_COMMAND: ${{ inputs.composer-command }}
       run: bash -eo pipefail -c -- "${COMPOSER_COMMAND}"
 
@@ -105,4 +128,8 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_COMMAND: ${{ inputs.php-cs-fixer-command }}
-      run: bash -eo pipefail -c -- "${PHP_CS_FIXER_COMMAND}"
+      run: |
+        if [ ! -e ./php-cs-fixer ] && [ -x ./vendor/bin/php-cs-fixer ]; then
+          ln -s ./vendor/bin/php-cs-fixer ./php-cs-fixer
+        fi
+        bash -eo pipefail -c -- "${PHP_CS_FIXER_COMMAND}"

@@ -90,3 +90,17 @@ jobs:
           ssh-key: "${{secrets.SSH_KEY}}"
           github-token: "${{secrets.GITHUB_TOKEN}}"
 ```
+
+## Using the project's php-cs-fixer
+
+When the configuration depends on project code (for example custom fixers), set `composer-command` to install dependencies instead of downloading the phar. Private dependencies are fetched through `ssh-key` and `github-token`, and `vendor/bin/php-cs-fixer` is used when `./php-cs-fixer` is absent.
+
+```yml
+      - name: PHPCS
+        uses: cloud-officer/ci-actions/linters/phpcs@v3
+        with:
+          linters: "${{needs.variables.outputs.LINTERS}}"
+          ssh-key: "${{secrets.SSH_KEY}}"
+          github-token: "${{secrets.GITHUB_TOKEN}}"
+          composer-command: 'composer install'
+```
