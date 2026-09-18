@@ -22,9 +22,9 @@ inputs:
     required: false
     default: ''
   composer-command:
-    description: 'composer command'
+    description: 'composer command; auto runs composer install when composer.lock requires php-cs-fixer, none always uses the phar'
     required: false
-    default: 'none'
+    default: 'auto'
   php-cs-fixer-version:
     description: 'php-cs-fixer version'
     required: false
@@ -56,10 +56,18 @@ runs:
         lfs: true
         submodules: recursive
 
+    - name: Detect php-cs-fixer source
+      id: source
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        COMPOSER_COMMAND: ${{ inputs.composer-command }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/detect_php_cs_fixer_source.sh"
+
     # https://github.com/marketplace/actions/webfactory-ssh-agent
     - name: Setup SSH Agent
       uses: webfactory/ssh-agent@v0.10.0
-      if: ${{ inputs.ssh-key != '' && steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      if: ${{ inputs.ssh-key != '' && steps.check.outputs.continue == 'true' && steps.source.outputs.use-composer == 'true' }}
       with:
         ssh-private-key: ${{ inputs.ssh-key }}
 
@@ -74,7 +82,7 @@ runs:
 
     - name: Setup php-cs-fixer
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command == 'none'}}
+      if: ${{ steps.check.outputs.continue == 'true' && steps.source.outputs.use-composer == 'false' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PHP_CS_FIXER_VERSION: ${{ inputs.php-cs-fixer-version }}
@@ -103,11 +111,11 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      if: ${{ steps.check.outputs.continue == 'true' && steps.source.outputs.use-composer == 'true' }}
       run: bash "${GITHUB_ACTION_PATH}/../_lib/composer_cache_dir.sh"
     - name: Cache - Composer
       uses: actions/cache@v6
-      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none' }}
+      if: ${{ steps.check.outputs.continue == 'true' && steps.source.outputs.use-composer == 'true' }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -115,10 +123,10 @@ runs:
 
     - name: Run Composer
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && inputs.composer-command != 'none'}}
+      if: ${{ steps.check.outputs.continue == 'true' && steps.source.outputs.use-composer == 'true' }}
       env:
         COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ inputs.github-token }}"}}'
-        COMPOSER_COMMAND: ${{ inputs.composer-command }}
+        COMPOSER_COMMAND: ${{ inputs.composer-command == 'auto' && 'composer install' || inputs.composer-command }}
       run: bash -eo pipefail -c -- "${COMPOSER_COMMAND}"
 
     # https://cs.symfony.com/doc/usage.html

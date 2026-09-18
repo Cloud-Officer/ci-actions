@@ -25,9 +25,9 @@ inputs:
     required: false
     default: ''
   composer-command:
-    description: 'composer command'
+    description: 'composer command; auto runs composer install when composer.lock requires php-cs-fixer, none always uses the phar'
     required: false
-    default: 'none'
+    default: 'auto'
   php-cs-fixer-version:
     description: 'php-cs-fixer version'
     required: false
@@ -93,14 +93,6 @@ jobs:
 
 ## Using the project's php-cs-fixer
 
-When the configuration depends on project code (for example custom fixers), set `composer-command` to install dependencies instead of downloading the phar. Private dependencies are fetched through `ssh-key` and `github-token`, and `vendor/bin/php-cs-fixer` is used when `./php-cs-fixer` is absent.
+By default (`composer-command: auto`), when `composer.lock` requires `friendsofphp/php-cs-fixer` or `php-cs-fixer/shim`, the action runs `composer install` and lints with `vendor/bin/php-cs-fixer`, so the version locked by the project is used and custom fixers from project code load. Private dependencies are fetched through `ssh-key` and `github-token`. Otherwise it downloads the signed phar selected by `php-cs-fixer-version`.
 
-```yml
-      - name: PHPCS
-        uses: cloud-officer/ci-actions/linters/phpcs@v3
-        with:
-          linters: "${{needs.variables.outputs.LINTERS}}"
-          ssh-key: "${{secrets.SSH_KEY}}"
-          github-token: "${{secrets.GITHUB_TOKEN}}"
-          composer-command: 'composer install'
-```
+Set `composer-command` to a custom command to change how dependencies are installed, or to `none` to always use the phar.
