@@ -44,38 +44,35 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-golangci-lint-with-reviewdog
-    - name: Golangci-lint
-      id: golangci-lint
-      uses: reviewdog/action-golangci-lint@v2
-      continue-on-error: true
+    # https://github.com/marketplace/actions/setup-go-environment
+    - name: Setup Go
+      uses: actions/setup-go@v7
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        # https://github.com/golangci/golangci-lint
-        golangci_lint_flags: ""
-        level: info
-        reporter: github-pr-review
-        tool_name: golangci
-        workdir: "."
+        token: ${{ inputs.github-token }}
+        go-version: stable  # Intentionally using latest
+        check-latest: true
 
-    - name: Wait before retrying Golangci-lint
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.golangci-lint.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Golangci-lint (retry)
-      uses: reviewdog/action-golangci-lint@v2
-      if: ${{ steps.check.outputs.continue == 'true' && steps.golangci-lint.outcome == 'failure' }}
-      with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        # https://github.com/golangci/golangci-lint
-        golangci_lint_flags: ""
-        level: info
-        reporter: github-pr-review
-        tool_name: golangci
-        workdir: "."
+    - name: Setup golangci-lint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" golangci-lint "${RUNNER_TEMP}/golangci-lint"
+
+    # https://github.com/golangci/golangci-lint
+    - name: Run golangci-lint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        golangci-lint run --output.text.path stdout \
+          | reviewdog -f=golangci-lint -name="golangci" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

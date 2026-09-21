@@ -5,7 +5,7 @@
 # Usage (from a composite action step):
 #   run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" TOOL DEST
 #
-# TOOL is one of reviewdog, hadolint, actionlint or shellcheck. DEST is added to GITHUB_PATH when set.
+# TOOL is one of reviewdog, hadolint, actionlint, shellcheck, golangci-lint or ktlint. DEST is added to GITHUB_PATH when set.
 
 RELEASE_API_URL="${RELEASE_API_URL:-https://api.github.com/repos}"
 RELEASE_DOWNLOAD_URL="${RELEASE_DOWNLOAD_URL:-https://github.com}"
@@ -19,8 +19,10 @@ function tool_repo()
     hadolint)   printf 'hadolint/hadolint\n' ;;
     actionlint) printf 'rhysd/actionlint\n' ;;
     shellcheck) printf 'koalaman/shellcheck\n' ;;
+    golangci-lint) printf 'golangci/golangci-lint\n' ;;
+    ktlint)     printf 'pinterest/ktlint\n' ;;
     *)
-      echo "::error::unsupported tool '${1:-}' - expected reviewdog, hadolint, actionlint or shellcheck" >&2
+      echo "::error::unsupported tool '${1:-}' - expected reviewdog, hadolint, actionlint, shellcheck, golangci-lint or ktlint" >&2
       return 1
       ;;
   esac
@@ -45,6 +47,8 @@ function tool_asset()
     hadolint)   printf 'hadolint-linux-%s\n' "${unamearch/aarch64/arm64}" ;;
     actionlint) printf 'actionlint_%s_linux_%s.tar.gz\n' "${version}" "${goarch}" ;;
     shellcheck) printf 'shellcheck-v%s.linux.%s.tar.gz\n' "${version}" "${unamearch}" ;;
+    golangci-lint) printf 'golangci-lint-%s-linux-%s.tar.gz\n' "${version}" "${goarch}" ;;
+    ktlint)     printf 'ktlint\n' ;;
     *) tool_repo "${tool}" >/dev/null ;;
   esac
 }
@@ -56,7 +60,8 @@ function tool_checksums()
     reviewdog)  printf 'checksums.txt\n' ;;
     hadolint)   printf 'checksums.sha256\n' ;;
     actionlint) printf 'actionlint_%s_checksums.txt\n' "${2:-}" ;;
-    shellcheck) printf '\n' ;;
+    golangci-lint) printf 'golangci-lint-%s-checksums.txt\n' "${2:-}" ;;
+    shellcheck | ktlint) printf '\n' ;;
     *) tool_repo "${1:-}" >/dev/null ;;
   esac
 }
@@ -85,10 +90,13 @@ function tool_resolve_version()
   printf '%s\n' "${version#v}"
 }
 
-# tool_download_url TOOL VERSION FILE -> the release download URL (every supported upstream tags with a `v`).
+# tool_download_url TOOL VERSION FILE -> the release download URL (ktlint is the only upstream tagging without a `v`).
 function tool_download_url()
 {
-  printf '%s/%s/releases/download/v%s/%s\n' "${RELEASE_DOWNLOAD_URL}" "$(tool_repo "${1}")" "${2}" "${3}"
+  local tag="v${2}"
+
+  [ "${1}" = "ktlint" ] && tag="${2}"
+  printf '%s/%s/releases/download/%s/%s\n' "${RELEASE_DOWNLOAD_URL}" "$(tool_repo "${1}")" "${tag}" "${3}"
 }
 
 # tool_verify FILE ASSET CHECKSUMS -> succeeds only when FILE matches the SHA-256 listed for ASSET.

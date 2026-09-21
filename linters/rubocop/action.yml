@@ -55,40 +55,26 @@ runs:
       with:
         ruby-version: ${{ inputs.ruby-version }}
 
-    # https://github.com/marketplace/actions/run-rubocop-with-reviewdog
-    - name: Run Rubocop with Reviewdog
-      id: run-rubocop-with-reviewdog
-      uses: reviewdog/action-rubocop@v2
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        reporter: github-pr-review
-        rubocop_extensions: "rubocop-capybara rubocop-graphql rubocop-i18n rubocop-minitest rubocop-performance rubocop-rails rubocop-rake rubocop-rspec rubocop-rspec_rails rubocop-thread_safety"
-        # https://rubocop.org/
-        rubocop_flags: " --except Layout/LineLength,Metrics/BlockLength"
-        tool_name: rubocop
-        workdir: "."
-
-    - name: Wait before retrying Run Rubocop with Reviewdog
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-rubocop-with-reviewdog.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Run Rubocop with Reviewdog (retry)
-      uses: reviewdog/action-rubocop@v2
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-rubocop-with-reviewdog.outcome == 'failure' }}
-      with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        reporter: github-pr-review
-        rubocop_extensions: "rubocop-capybara rubocop-graphql rubocop-i18n rubocop-minitest rubocop-performance rubocop-rails rubocop-rake rubocop-rspec rubocop-rspec_rails rubocop-thread_safety"
-        # https://rubocop.org/
-        rubocop_flags: " --except Layout/LineLength,Metrics/BlockLength"
-        tool_name: rubocop
-        workdir: "."
+    - name: Install RuboCop
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/retry.sh" gem install --no-document rubocop rubocop-capybara rubocop-graphql rubocop-i18n rubocop-minitest rubocop-performance rubocop-rails rubocop-rake rubocop-rspec rubocop-rspec_rails rubocop-thread_safety
+
+    # https://rubocop.org/
+    - name: Run Rubocop with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        rubocop --format emacs --except Layout/LineLength,Metrics/BlockLength \
+          | reviewdog -efm="%f:%l:%c: %m" -name="rubocop" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

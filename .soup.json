@@ -503,18 +503,6 @@
     "requirements": "Generates signed build provenance attestations for the images pushed by the docker action",
     "verification_reasoning": "Official GitHub action for artifact attestations"
   },
-  "GHA:scottbrenner/cfn-lint-action": {
-    "language": "GHA",
-    "package": "scottbrenner/cfn-lint-action",
-    "version": "v2",
-    "license": "MIT",
-    "description": "GitHub Action for interacting with CloudFormation Linter",
-    "website": "https://github.com/ScottBrenner/cfn-lint-action",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs cfn-lint for the cfn-lint linter",
-    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
-  },
   "GHA:actions/setup-node": {
     "language": "GHA",
     "package": "actions/setup-node",
@@ -527,41 +515,17 @@
     "requirements": "Installs Node.js for the setup action and the markdownlint and ESLint linters",
     "verification_reasoning": "Official GitHub toolchain action"
   },
-  "GHA:reviewdog/action-eslint": {
+  "GHA:actions/setup-go": {
     "language": "GHA",
-    "package": "reviewdog/action-eslint",
-    "version": "v1",
+    "package": "actions/setup-go",
+    "version": "v7",
     "license": "MIT",
-    "description": "Run eslint with reviewdog",
-    "website": "https://github.com/reviewdog/action-eslint",
+    "description": "Set up your GitHub Actions workflow with a specific version of Go",
+    "website": "https://github.com/actions/setup-go",
     "last_verified_at": "2026-09-14",
     "risk_level": "Low",
-    "requirements": "Runs ESLint with reviewdog for the ESLint linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
-  "GHA:reviewdog/action-golangci-lint": {
-    "language": "GHA",
-    "package": "reviewdog/action-golangci-lint",
-    "version": "v2",
-    "license": "MIT",
-    "description": "Run golangci-lint with reviewdog",
-    "website": "https://github.com/reviewdog/action-golangci-lint",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs golangci-lint with reviewdog for the golangci linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
-  "GHA:scacap/action-ktlint": {
-    "language": "GHA",
-    "package": "scacap/action-ktlint",
-    "version": "v1",
-    "license": "Apache-2.0",
-    "description": "Run Ktlint with reviewdog",
-    "website": "https://github.com/ScaCap/action-ktlint",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs ktlint with reviewdog for the ktlint linter",
-    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
+    "requirements": "Installs Go for the setup action",
+    "verification_reasoning": "Official GitHub toolchain action"
   },
   "GHA:webfactory/ssh-agent": {
     "language": "GHA",
@@ -599,54 +563,6 @@
     "requirements": "Caches dependency directories for the setup action and the PHPStan linter",
     "verification_reasoning": "Official GitHub caching action"
   },
-  "GHA:ruby/setup-ruby": {
-    "language": "GHA",
-    "package": "ruby/setup-ruby",
-    "version": "v1",
-    "license": "MIT",
-    "description": "An action to download a prebuilt Ruby and add it to the PATH in 5 seconds",
-    "website": "https://github.com/ruby/setup-ruby",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs Ruby for the setup action, the RuboCop linter and the soup action",
-    "verification_reasoning": "Official action from the Ruby organization"
-  },
-  "GHA:reviewdog/action-rubocop": {
-    "language": "GHA",
-    "package": "reviewdog/action-rubocop",
-    "version": "v2",
-    "license": "MIT",
-    "description": "Run rubocop with reviewdog 🐶",
-    "website": "https://github.com/reviewdog/action-rubocop",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs RuboCop with reviewdog for the RuboCop linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
-  "GHA:aquasecurity/trivy-action": {
-    "language": "GHA",
-    "package": "aquasecurity/trivy-action",
-    "version": "v0.36.0",
-    "license": "Apache-2.0",
-    "description": "Runs Trivy as GitHub action to scan your Docker container image for vulnerabilities",
-    "website": "https://github.com/aquasecurity/trivy-action",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs the Trivy scanner for the Trivy linter",
-    "verification_reasoning": "Official action from Aqua Security, the Trivy maintainer"
-  },
-  "GHA:actions/setup-go": {
-    "language": "GHA",
-    "package": "actions/setup-go",
-    "version": "v7",
-    "license": "MIT",
-    "description": "Set up your GitHub Actions workflow with a specific version of Go",
-    "website": "https://github.com/actions/setup-go",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs Go for the setup action",
-    "verification_reasoning": "Official GitHub toolchain action"
-  },
   "GHA:actions/setup-java": {
     "language": "GHA",
     "package": "actions/setup-java",
@@ -658,6 +574,18 @@
     "risk_level": "Low",
     "requirements": "Installs Java for the setup action and the PMD linter",
     "verification_reasoning": "Official GitHub toolchain action"
+  },
+  "GHA:ruby/setup-ruby": {
+    "language": "GHA",
+    "package": "ruby/setup-ruby",
+    "version": "v1",
+    "license": "MIT",
+    "description": "An action to download a prebuilt Ruby and add it to the PATH in 5 seconds",
+    "website": "https://github.com/ruby/setup-ruby",
+    "last_verified_at": "2026-09-14",
+    "risk_level": "Low",
+    "requirements": "Installs Ruby for the setup action, the RuboCop linter and the soup action",
+    "verification_reasoning": "Official action from the Ruby organization"
   },
   "GHA:amyu/setup-android": {
     "language": "GHA",

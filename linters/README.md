@@ -146,29 +146,21 @@ refresh both here so the doc cannot drift behind the actions again.
 
 ### Common Reviewdog Settings
 
-Most linters use reviewdog with these standard settings:
+Linters install the reviewdog binary with
+`bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"`
+and pipe their output into it with these standard flags:
 
-```yaml
-with:
-  fail_level: any
-  filter_mode: nofilter
-  github_token: ${{ inputs.reviewdog-token }}
-  level: info
-  reporter: github-pr-review
+```bash
+reviewdog -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"
 ```
 
-`github_token` here is `reviewdog-token`, never `github-token`: reviewdog is a
-third-party action and only needs to post PR comments, whereas `github-token`
-carries the org PAT that `actions/checkout` needs for private submodules.
+The step sets `REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}`, never `github-token`:
+reviewdog only needs to post PR comments, whereas `github-token` carries the token
+`actions/checkout` needs for private submodules.
 
-Linters that pipe into the reviewdog binary instead install it with
-`bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"`
-and pass the same settings as flags (`-reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"`),
-with `REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}` in the step `env`.
-
-The third-party actions that still download tools internally (eslint, golangci, ktlint, rubocop,
-cfn-lint, trivy) run with `continue-on-error: true`, then a gated `sleep 30`, then one retry
-gated on `steps.<id>.outcome == 'failure'`.
+Every linter installs its own tools this way rather than through a third-party wrapper action, so
+each download retries. Commands with no retry of their own (such as `gem install`) run through
+`bash "${GITHUB_ACTION_PATH}/../_lib/retry.sh" <command>`.
 
 ### Linter Detection
 

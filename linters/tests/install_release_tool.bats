@@ -82,6 +82,10 @@ EOF
   [ "$output" = 'rhysd/actionlint' ]
   run tool_repo shellcheck
   [ "$output" = 'koalaman/shellcheck' ]
+  run tool_repo golangci-lint
+  [ "$output" = 'golangci/golangci-lint' ]
+  run tool_repo ktlint
+  [ "$output" = 'pinterest/ktlint' ]
 }
 
 @test "tool_repo rejects an unsupported tool" {
@@ -99,6 +103,10 @@ EOF
   [ "$output" = 'actionlint_1.7.12_linux_amd64.tar.gz' ]
   run tool_asset shellcheck 0.11.0 x86_64
   [ "$output" = 'shellcheck-v0.11.0.linux.x86_64.tar.gz' ]
+  run tool_asset golangci-lint 2.13.2 x86_64
+  [ "$output" = 'golangci-lint-2.13.2-linux-amd64.tar.gz' ]
+  run tool_asset ktlint 1.8.0 x86_64
+  [ "$output" = 'ktlint' ]
 }
 
 @test "tool_asset names the upstream arm64 asset of every tool" {
@@ -110,6 +118,10 @@ EOF
   [ "$output" = 'actionlint_1.7.12_linux_arm64.tar.gz' ]
   run tool_asset shellcheck 0.11.0 arm64
   [ "$output" = 'shellcheck-v0.11.0.linux.aarch64.tar.gz' ]
+  run tool_asset golangci-lint 2.13.2 aarch64
+  [ "$output" = 'golangci-lint-2.13.2-linux-arm64.tar.gz' ]
+  run tool_asset ktlint 1.8.0 arm64
+  [ "$output" = 'ktlint' ]
 }
 
 @test "tool_asset fails on an unsupported architecture or tool" {
@@ -120,14 +132,19 @@ EOF
   [ "$status" -eq 1 ]
 }
 
-@test "tool_checksums names each tool's checksums file and none for shellcheck" {
+@test "tool_checksums names each tool's checksums file and none for shellcheck or ktlint" {
   run tool_checksums reviewdog 0.21.2
   [ "$output" = 'checksums.txt' ]
   run tool_checksums hadolint 2.15.1
   [ "$output" = 'checksums.sha256' ]
   run tool_checksums actionlint 1.7.12
   [ "$output" = 'actionlint_1.7.12_checksums.txt' ]
+  run tool_checksums golangci-lint 2.13.2
+  [ "$output" = 'golangci-lint-2.13.2-checksums.txt' ]
   run tool_checksums shellcheck 0.11.0
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+  run tool_checksums ktlint 1.8.0
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
@@ -162,6 +179,11 @@ EOF
 @test "tool_download_url adds the v prefix upstream tags carry" {
   run tool_download_url actionlint 1.7.12 actionlint_1.7.12_checksums.txt
   [ "$output" = 'https://example.invalid/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt' ]
+}
+
+@test "tool_download_url uses ktlint's bare version tag" {
+  run tool_download_url ktlint 1.8.0 ktlint
+  [ "$output" = 'https://example.invalid/pinterest/ktlint/releases/download/1.8.0/ktlint' ]
 }
 
 @test "tool_verify accepts both plain and starred checksum entries" {

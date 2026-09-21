@@ -45,36 +45,26 @@ runs:
         # Deliberately not recursive: gRPC code generated into submodule SDKs does not pass ktlint.
         submodules: false
 
-    # https://github.com/marketplace/actions/run-ktlint-with-reviewdog
-    - name: Run KTLint with Reviewdog
-      id: run-ktlint-with-reviewdog
-      uses: ScaCap/action-ktlint@v1
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        github_token: ${{ inputs.reviewdog-token }}
-        fail_level: any
-        filter_mode: nofilter
-        level: info
-        reporter: github-pr-review
-        relative: true
-        android: false
-        ktlint_version: latest  # Intentionally using latest
-
-    - name: Wait before retrying Run KTLint with Reviewdog
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-ktlint-with-reviewdog.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Run KTLint with Reviewdog (retry)
-      uses: ScaCap/action-ktlint@v1
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-ktlint-with-reviewdog.outcome == 'failure' }}
-      with:
-        github_token: ${{ inputs.reviewdog-token }}
-        fail_level: any
-        filter_mode: nofilter
-        level: info
-        reporter: github-pr-review
-        relative: true
-        android: false
-        ktlint_version: latest  # Intentionally using latest
+    - name: Setup KTLint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" ktlint "${RUNNER_TEMP}/ktlint"
+
+    # https://github.com/pinterest/ktlint
+    - name: Run KTLint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        { ktlint --reporter=checkstyle --relative || true; } \
+          | reviewdog -f=checkstyle -name="ktlint" -reporter="github-pr-review" -filter-mode="nofilter" -level="info"

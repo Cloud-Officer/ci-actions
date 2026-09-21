@@ -75,32 +75,26 @@ runs:
         sudo apt-get -o Acquire::Retries=5 update
         sudo apt-get -o Acquire::Retries=5 install -y trivy
 
-    # https://github.com/marketplace/actions/aqua-security-trivy
-    - name: Run Trivy
-      id: run-trivy
-      uses: aquasecurity/trivy-action@v0.36.0
-      continue-on-error: true
+    - name: Get current date
+      id: date
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      run: echo "date=$(date +'%Y-%m-%d')" >> "${GITHUB_OUTPUT}"
+
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - Trivy DB
+      uses: actions/cache@v6
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        scanners: ${{ steps.scanners.outputs.scanners }}
-        format: 'table'
-        exit-code: '1'
-        skip-setup-trivy: true
+        path: ${{ github.workspace }}/.cache/trivy
+        key: cache-trivy-${{ steps.date.outputs.date }}
+        restore-keys: cache-trivy-
 
-    - name: Wait before retrying Run Trivy
+    # https://github.com/aquasecurity/trivy
+    - name: Run Trivy
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-trivy.outcome == 'failure' }}
-      run: sleep 30
-
-    - name: Run Trivy (retry)
-      uses: aquasecurity/trivy-action@v0.36.0
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-trivy.outcome == 'failure' }}
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        scanners: ${{ steps.scanners.outputs.scanners }}
-        format: 'table'
-        exit-code: '1'
-        skip-setup-trivy: true
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        SCANNERS: ${{ steps.scanners.outputs.scanners }}
+        TRIVY_CACHE_DIR: ${{ github.workspace }}/.cache/trivy
+      run: trivy fs --scanners "${SCANNERS}" --format table --exit-code 1 .
