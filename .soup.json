@@ -599,18 +599,6 @@
     "requirements": "Runs ktlint with reviewdog for the ktlint linter",
     "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
   },
-  "GHA:shivammathur/setup-php": {
-    "language": "GHA",
-    "package": "shivammathur/setup-php",
-    "version": "v2",
-    "license": "MIT",
-    "description": "GitHub action to set up PHP with extensions, php.ini configuration, coverage drivers, and various tools.",
-    "website": "https://github.com/shivammathur/setup-php",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs PHP and extensions for the setup action and the PHPStan and PHP_CodeSniffer linters",
-    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
-  },
   "GHA:webfactory/ssh-agent": {
     "language": "GHA",
     "package": "webfactory/ssh-agent",
@@ -621,6 +609,18 @@
     "last_verified_at": "2026-09-14",
     "risk_level": "Medium",
     "requirements": "Loads the SSH key into ssh-agent in the setup action and the PHPStan linter",
+    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
+  },
+  "GHA:shivammathur/setup-php": {
+    "language": "GHA",
+    "package": "shivammathur/setup-php",
+    "version": "v2",
+    "license": "MIT",
+    "description": "GitHub action to set up PHP with extensions, php.ini configuration, coverage drivers, and various tools.",
+    "website": "https://github.com/shivammathur/setup-php",
+    "last_verified_at": "2026-09-14",
+    "risk_level": "Low",
+    "requirements": "Installs PHP and extensions for the setup action and the PHPStan and PHP_CodeSniffer linters",
     "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
   },
   "GHA:actions/cache": {
