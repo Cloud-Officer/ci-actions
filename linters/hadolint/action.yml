@@ -44,34 +44,31 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-hadolint-with-reviewdog
-    - name: Hadolint
-      id: hadolint
-      uses: reviewdog/action-hadolint@v1
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        # https://github.com/hadolint/hadolint
-        level: info
-        reporter: github-pr-review
-        tool_name: hadolint
-
-    - name: Wait before retrying Hadolint
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.hadolint.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Hadolint (retry)
-      uses: reviewdog/action-hadolint@v1
-      if: ${{ steps.check.outputs.continue == 'true' && steps.hadolint.outcome == 'failure' }}
-      with:
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        # https://github.com/hadolint/hadolint
-        level: info
-        reporter: github-pr-review
-        tool_name: hadolint
+    - name: Setup Hadolint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" hadolint "${RUNNER_TEMP}/hadolint"
+
+    # https://github.com/hadolint/hadolint
+    - name: Run Hadolint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        mapfile -d '' dockerfiles < <(git ls-files -z -- '*Dockerfile*')
+        if [ "${#dockerfiles[@]}" -eq 0 ]; then
+          echo "No Dockerfiles found to check."
+          exit 0
+        fi
+        hadolint --format checkstyle "${dockerfiles[@]}" \
+          | reviewdog -f=checkstyle -name="hadolint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

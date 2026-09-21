@@ -161,6 +161,15 @@ with:
 third-party action and only needs to post PR comments, whereas `github-token`
 carries the org PAT that `actions/checkout` needs for private submodules.
 
+Linters that pipe into the reviewdog binary instead install it with
+`bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"`
+and pass the same settings as flags (`-reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"`),
+with `REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}` in the step `env`.
+
+The third-party actions that still download tools internally (eslint, golangci, ktlint, rubocop,
+cfn-lint, trivy) run with `continue-on-error: true`, then a gated `sleep 30`, then one retry
+gated on `steps.<id>.outcome == 'failure'`.
+
 ### Linter Detection
 
 Linters are auto-detected in `variables/variables.sh` based on config file presence:

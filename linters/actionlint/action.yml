@@ -43,34 +43,40 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/actionlint-with-reviewdog
-    - name: Actionlint
-      id: actionlint
-      uses: reviewdog/action-actionlint@v1
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        # https://github.com/rhysd/actionlint
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        reporter: github-pr-review
-        tool_name: actionlint
-
-    - name: Wait before retrying Actionlint
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.actionlint.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Actionlint (retry)
-      uses: reviewdog/action-actionlint@v1
-      if: ${{ steps.check.outputs.continue == 'true' && steps.actionlint.outcome == 'failure' }}
-      with:
-        # https://github.com/rhysd/actionlint
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        reporter: github-pr-review
-        tool_name: actionlint
+    - name: Setup Actionlint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" actionlint "${RUNNER_TEMP}/actionlint"
+
+    - name: Setup ShellCheck
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" shellcheck "${RUNNER_TEMP}/shellcheck"
+
+    - name: Setup Pyflakes
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: pipx install pyflakes
+
+    # https://github.com/rhysd/actionlint
+    - name: Run Actionlint with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: |
+        actionlint -oneline \
+          | reviewdog -efm="%f:%l:%c: %m" -name="actionlint" -reporter="github-pr-review" -filter-mode="nofilter" -fail-level="any" -level="info"

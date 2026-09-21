@@ -48,25 +48,12 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/setup-reviewdog
     - name: Setup Reviewdog
-      id: setup-reviewdog
-      uses: reviewdog/action-setup@v1
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        reviewdog_version: latest  # Intentionally using latest
-
-    - name: Wait before retrying Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-reviewdog.outcome == 'failure' }}
-      run: sleep 30
-
-    - name: Setup Reviewdog (retry)
-      uses: reviewdog/action-setup@v1
-      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-reviewdog.outcome == 'failure' }}
-      with:
-        reviewdog_version: latest  # Intentionally using latest
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
     # SwiftLint is installed straight from the upstream realm/SwiftLint release
     # instead of via norio-nomura/action-swiftlint@3.2.1, whose last release

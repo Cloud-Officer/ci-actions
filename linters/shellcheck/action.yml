@@ -44,56 +44,24 @@ runs:
         lfs: true
         submodules: recursive
 
-    # https://github.com/marketplace/actions/run-shellcheck-with-reviewdog
-    - name: Run Shellcheck with Reviewdog
-      id: run-shellcheck-with-reviewdog
-      uses: reviewdog/action-shellcheck@v1
-      continue-on-error: true
-      if: ${{ steps.check.outputs.continue == 'true' }}
-      with:
-        exclude: |
-          ./.git/*
-          ./.vendor/*
-          ./vendor/*
-          ./node_modules/*
-          ./Libraries/*
-          ./Pods/*
-          *.bats
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        path: "."
-        pattern: "*.sh"
-        check_all_files_with_shebangs: "true"
-        reporter: github-pr-review
-        # https://github.com/koalaman/shellcheck
-        shellcheck_flags: --external-sources
-
-    - name: Wait before retrying Run Shellcheck with Reviewdog
+    - name: Setup Reviewdog
       shell: bash
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-shellcheck-with-reviewdog.outcome == 'failure' }}
-      run: sleep 30
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" reviewdog "${RUNNER_TEMP}/reviewdog"
 
-    - name: Run Shellcheck with Reviewdog (retry)
-      uses: reviewdog/action-shellcheck@v1
-      if: ${{ steps.check.outputs.continue == 'true' && steps.run-shellcheck-with-reviewdog.outcome == 'failure' }}
-      with:
-        exclude: |
-          ./.git/*
-          ./.vendor/*
-          ./vendor/*
-          ./node_modules/*
-          ./Libraries/*
-          ./Pods/*
-          *.bats
-        fail_level: any
-        filter_mode: nofilter
-        github_token: ${{ inputs.reviewdog-token }}
-        level: info
-        path: "."
-        pattern: "*.sh"
-        check_all_files_with_shebangs: "true"
-        reporter: github-pr-review
-        # https://github.com/koalaman/shellcheck
-        shellcheck_flags: --external-sources
+    - name: Setup ShellCheck
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/install_release_tool.sh" shellcheck "${RUNNER_TEMP}/shellcheck"
+
+    # https://github.com/koalaman/shellcheck
+    - name: Run ShellCheck with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.reviewdog-token }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/run_shellcheck.sh"

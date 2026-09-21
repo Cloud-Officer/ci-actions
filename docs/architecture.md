@@ -220,8 +220,9 @@ protolint, rubocop, shellcheck, swiftlint, yamllint) take a `reviewdog-token`
 input separate from `github-token`, both defaulting to `${{ github.token }}`.
 `github-token` is the checkout and toolchain token: it authenticates
 `actions/checkout` (including private submodules), `actions/setup-*` downloads
-and the package installs. `reviewdog-token` is handed to the third-party
-reviewdog action and needs only `pull-requests: write` on the repository being
+and the package installs. `reviewdog-token` is handed to reviewdog
+(the binary or, for eslint, golangci, ktlint and rubocop, the third-party
+reviewdog action) and needs only `pull-requests: write` on the repository being
 linted. Keeping them apart means a consumer that has to widen `github-token` —
 a broader-scoped token for a private submodule, say — never hands that token to
 third-party code. The org-wide `GH_PAT` that used to fill that role is retired:
@@ -325,6 +326,19 @@ surface, and neither may take the other's content.
   linters. Replaced the unmaintained `yoheimuta/action-protolint@v1` Docker
   action, which pinned protolint 0.46.3 and never failed the job on findings;
   unit-tested by `linters/tests/install_protolint.bats`
+- `install_release_tool.sh`: installs the latest upstream release of
+  reviewdog, hadolint, actionlint or shellcheck into a directory it appends to
+  `GITHUB_PATH`. Downloads use `curl --retry 5 --retry-all-errors`, so a
+  transient GitHub release 5xx no longer fails the job, and the asset is refused
+  unless its SHA-256 matches the release checksums file (shellcheck publishes
+  none). Replaced `reviewdog/action-setup`, `reviewdog/action-shellcheck`,
+  `reviewdog/action-hadolint`, `reviewdog/action-actionlint` and
+  `reviewdog/action-yamllint`, whose internal downloads could not be retried;
+  unit-tested by `linters/tests/install_release_tool.bats`
+- `run_shellcheck.sh`: finds every `*.sh` file plus any other file with a shell
+  shebang (skipping `.git`, vendored trees and `*.bats`), runs shellcheck over
+  them and reports the findings and suggested fixes through reviewdog. Called
+  by `linters/shellcheck`; unit-tested by `linters/tests/run_shellcheck.bats`
 
 ### setup
 

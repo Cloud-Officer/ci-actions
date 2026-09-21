@@ -503,18 +503,6 @@
     "requirements": "Generates signed build provenance attestations for the images pushed by the docker action",
     "verification_reasoning": "Official GitHub action for artifact attestations"
   },
-  "GHA:reviewdog/action-actionlint": {
-    "language": "GHA",
-    "package": "reviewdog/action-actionlint",
-    "version": "v1",
-    "license": "MIT",
-    "description": "run actionlint with reviewdog",
-    "website": "https://github.com/reviewdog/action-actionlint",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs actionlint with reviewdog for the actionlint linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
   "GHA:scottbrenner/cfn-lint-action": {
     "language": "GHA",
     "package": "scottbrenner/cfn-lint-action",
@@ -551,18 +539,6 @@
     "requirements": "Runs ESLint with reviewdog for the ESLint linter",
     "verification_reasoning": "Official reviewdog integration"
   },
-  "GHA:reviewdog/action-setup": {
-    "language": "GHA",
-    "package": "reviewdog/action-setup",
-    "version": "v1",
-    "license": "MIT",
-    "description": ":dog: Setup reviewdog action",
-    "website": "https://github.com/reviewdog/action-setup",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs reviewdog for the flake8, markdownlint, PMD, SwiftLint and protolint linters",
-    "verification_reasoning": "Official reviewdog installer"
-  },
   "GHA:reviewdog/action-golangci-lint": {
     "language": "GHA",
     "package": "reviewdog/action-golangci-lint",
@@ -573,18 +549,6 @@
     "last_verified_at": "2026-09-14",
     "risk_level": "Low",
     "requirements": "Runs golangci-lint with reviewdog for the golangci linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
-  "GHA:reviewdog/action-hadolint": {
-    "language": "GHA",
-    "package": "reviewdog/action-hadolint",
-    "version": "v1",
-    "license": "MIT",
-    "description": "Run hadolint with reviewdog 🐶",
-    "website": "https://github.com/reviewdog/action-hadolint",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs hadolint with reviewdog for the hadolint linter",
     "verification_reasoning": "Official reviewdog integration"
   },
   "GHA:scacap/action-ktlint": {
@@ -635,18 +599,6 @@
     "requirements": "Caches dependency directories for the setup action and the PHPStan linter",
     "verification_reasoning": "Official GitHub caching action"
   },
-  "GHA:actions/setup-java": {
-    "language": "GHA",
-    "package": "actions/setup-java",
-    "version": "v6",
-    "license": "MIT",
-    "description": "Set up your GitHub Actions workflow with a specific version of Java",
-    "website": "https://github.com/actions/setup-java",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs Java for the setup action and the PMD linter",
-    "verification_reasoning": "Official GitHub toolchain action"
-  },
   "GHA:ruby/setup-ruby": {
     "language": "GHA",
     "package": "ruby/setup-ruby",
@@ -671,18 +623,6 @@
     "requirements": "Runs RuboCop with reviewdog for the RuboCop linter",
     "verification_reasoning": "Official reviewdog integration"
   },
-  "GHA:reviewdog/action-shellcheck": {
-    "language": "GHA",
-    "package": "reviewdog/action-shellcheck",
-    "version": "v1",
-    "license": "MIT",
-    "description": "Run shellcheck with reviewdog",
-    "website": "https://github.com/reviewdog/action-shellcheck",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs ShellCheck with reviewdog for the ShellCheck linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
   "GHA:aquasecurity/trivy-action": {
     "language": "GHA",
     "package": "aquasecurity/trivy-action",
@@ -695,18 +635,6 @@
     "requirements": "Runs the Trivy scanner for the Trivy linter",
     "verification_reasoning": "Official action from Aqua Security, the Trivy maintainer"
   },
-  "GHA:reviewdog/action-yamllint": {
-    "language": "GHA",
-    "package": "reviewdog/action-yamllint",
-    "version": "v1",
-    "license": "MIT",
-    "description": "Run yamllint with reviewdog",
-    "website": "https://github.com/reviewdog/action-yamllint",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Runs yamllint with reviewdog for the yamllint linter",
-    "verification_reasoning": "Official reviewdog integration"
-  },
   "GHA:actions/setup-go": {
     "language": "GHA",
     "package": "actions/setup-go",
@@ -717,6 +645,18 @@
     "last_verified_at": "2026-09-14",
     "risk_level": "Low",
     "requirements": "Installs Go for the setup action",
+    "verification_reasoning": "Official GitHub toolchain action"
+  },
+  "GHA:actions/setup-java": {
+    "language": "GHA",
+    "package": "actions/setup-java",
+    "version": "v6",
+    "license": "MIT",
+    "description": "Set up your GitHub Actions workflow with a specific version of Java",
+    "website": "https://github.com/actions/setup-java",
+    "last_verified_at": "2026-09-14",
+    "risk_level": "Low",
+    "requirements": "Installs Java for the setup action and the PMD linter",
     "verification_reasoning": "Official GitHub toolchain action"
   },
   "GHA:amyu/setup-android": {
