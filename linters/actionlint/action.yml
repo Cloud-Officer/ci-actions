@@ -45,8 +45,27 @@ runs:
 
     # https://github.com/marketplace/actions/actionlint-with-reviewdog
     - name: Actionlint
+      id: actionlint
       uses: reviewdog/action-actionlint@v1
+      continue-on-error: true
       if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        # https://github.com/rhysd/actionlint
+        fail_level: any
+        filter_mode: nofilter
+        github_token: ${{ inputs.reviewdog-token }}
+        level: info
+        reporter: github-pr-review
+        tool_name: actionlint
+
+    - name: Wait before retrying Actionlint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' && steps.actionlint.outcome == 'failure' }}
+      run: sleep 30
+
+    - name: Actionlint (retry)
+      uses: reviewdog/action-actionlint@v1
+      if: ${{ steps.check.outputs.continue == 'true' && steps.actionlint.outcome == 'failure' }}
       with:
         # https://github.com/rhysd/actionlint
         fail_level: any

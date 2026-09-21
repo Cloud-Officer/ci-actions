@@ -56,8 +56,21 @@ runs:
 
     # https://github.com/marketplace/actions/setup-reviewdog
     - name: Setup Reviewdog
+      id: setup-reviewdog
       uses: reviewdog/action-setup@v1
+      continue-on-error: true
       if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        reviewdog_version: latest  # Intentionally using latest
+
+    - name: Wait before retrying Setup Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-reviewdog.outcome == 'failure' }}
+      run: sleep 30
+
+    - name: Setup Reviewdog (retry)
+      uses: reviewdog/action-setup@v1
+      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-reviewdog.outcome == 'failure' }}
       with:
         reviewdog_version: latest  # Intentionally using latest
 
@@ -75,7 +88,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       if: ${{ steps.check.outputs.continue == 'true' }}
       run: |
-        npm install -g markdownlint-cli2
+        npm install --fetch-retries=5 -g markdownlint-cli2
 
     - name: Run markdownlint
       shell: bash

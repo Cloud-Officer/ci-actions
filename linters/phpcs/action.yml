@@ -95,11 +95,11 @@ runs:
         # BBAB5DF0A0D6672989CF1869E82B2FB314E9906E = Dariusz Ruminski (php-cs-fixer).
         bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" BBAB5DF0A0D6672989CF1869E82B2FB314E9906E
         if [ "${PHP_CS_FIXER_VERSION}" == "latest" ] ;then
-          curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer
-          curl -L https://cs.symfony.com/download/php-cs-fixer-v3.phar.asc -o php-cs-fixer.asc
+          curl --fail --retry 5 --retry-all-errors -L https://cs.symfony.com/download/php-cs-fixer-v3.phar -o php-cs-fixer
+          curl --fail --retry 5 --retry-all-errors -L https://cs.symfony.com/download/php-cs-fixer-v3.phar.asc -o php-cs-fixer.asc
         else
-          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar" -o php-cs-fixer
-          curl -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar.asc" -o php-cs-fixer.asc
+          curl --fail --retry 5 --retry-all-errors -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar" -o php-cs-fixer
+          curl --fail --retry 5 --retry-all-errors -L "https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/${PHP_CS_FIXER_VERSION}/php-cs-fixer.phar.asc" -o php-cs-fixer.asc
         fi
         gpg --verify php-cs-fixer.asc php-cs-fixer
         rm -f php-cs-fixer.asc

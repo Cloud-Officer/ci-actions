@@ -52,10 +52,10 @@ function swiftlint_resolve_version()
   fi
 
   if [ -n "${GITHUB_TOKEN:-}" ]; then
-    body="$(curl --fail --silent --show-error --location \
+    body="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors \
       --header "Authorization: Bearer ${GITHUB_TOKEN}" "${SWIFTLINT_API_URL}")" || body=''
   else
-    body="$(curl --fail --silent --show-error --location "${SWIFTLINT_API_URL}")" || body=''
+    body="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "${SWIFTLINT_API_URL}")" || body=''
   fi
 
   # Parsed with sed rather than jq so the resolver has no dependency beyond
@@ -89,7 +89,7 @@ function swiftlint_install()
 
   echo "Installing SwiftLint ${version} from ${url}"
 
-  if ! curl --fail --silent --show-error --location --output "${tmp}/swiftlint.zip" "${url}"; then
+  if ! curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output "${tmp}/swiftlint.zip" "${url}"; then
     echo "::error::failed to download ${url}" >&2
     rm -rf "${tmp}"
     return 1

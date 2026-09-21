@@ -8,7 +8,7 @@ setup() {
 #!/usr/bin/env bash
 printf '%s|' "\$@" >> "${LOG}"
 printf '\n' >> "${LOG}"
-if [ -n "\${SUDO_FAIL_ON:-}" ] && [ "\$3" = "\${SUDO_FAIL_ON}" ]; then exit 100; fi
+if [ -n "\${SUDO_FAIL_ON:-}" ] && [ "\$5" = "\${SUDO_FAIL_ON}" ]; then exit 100; fi
 EOF
   chmod +x "${BIN}/sudo"
   export PATH="${BIN}:${PATH}"
@@ -21,14 +21,14 @@ teardown() {
 @test "updates the package index then installs each package as its own argument" {
   APT_PACKAGES='libpq-dev imagemagick' run bash "${SCRIPT}"
   [ "$status" -eq 0 ]
-  [ "$(sed -n 1p "${LOG}")" = 'apt-get|--yes|update|' ]
-  [ "$(sed -n 2p "${LOG}")" = 'apt-get|--yes|--no-install-recommends|install|libpq-dev|imagemagick|' ]
+  [ "$(sed -n 1p "${LOG}")" = 'apt-get|--yes|-o|Acquire::Retries=5|update|' ]
+  [ "$(sed -n 2p "${LOG}")" = 'apt-get|--yes|-o|Acquire::Retries=5|--no-install-recommends|install|libpq-dev|imagemagick|' ]
 }
 
 @test "installs a single package" {
   APT_PACKAGES='graphviz' run bash "${SCRIPT}"
   [ "$status" -eq 0 ]
-  [ "$(sed -n 2p "${LOG}")" = 'apt-get|--yes|--no-install-recommends|install|graphviz|' ]
+  [ "$(sed -n 2p "${LOG}")" = 'apt-get|--yes|-o|Acquire::Retries=5|--no-install-recommends|install|graphviz|' ]
 }
 
 @test "does not install when the package index update fails" {

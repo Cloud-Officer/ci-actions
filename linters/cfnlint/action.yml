@@ -38,8 +38,19 @@ runs:
 
     # https://github.com/marketplace/actions/cfn-lint-action
     - name: Setup cfn-lint
+      id: setup-cfn-lint
       uses: ScottBrenner/cfn-lint-action@v2
+      continue-on-error: true
       if: ${{ steps.check.outputs.continue == 'true' }}
+
+    - name: Wait before retrying Setup cfn-lint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-cfn-lint.outcome == 'failure' }}
+      run: sleep 30
+
+    - name: Setup cfn-lint (retry)
+      uses: ScottBrenner/cfn-lint-action@v2
+      if: ${{ steps.check.outputs.continue == 'true' && steps.setup-cfn-lint.outcome == 'failure' }}
 
     - name: Run cfn-lint
       shell: bash

@@ -57,8 +57,30 @@ runs:
 
     # https://github.com/marketplace/actions/run-rubocop-with-reviewdog
     - name: Run Rubocop with Reviewdog
+      id: run-rubocop-with-reviewdog
       uses: reviewdog/action-rubocop@v2
+      continue-on-error: true
       if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        fail_level: any
+        filter_mode: nofilter
+        github_token: ${{ inputs.reviewdog-token }}
+        level: info
+        reporter: github-pr-review
+        rubocop_extensions: "rubocop-capybara rubocop-graphql rubocop-i18n rubocop-minitest rubocop-performance rubocop-rails rubocop-rake rubocop-rspec rubocop-rspec_rails rubocop-thread_safety"
+        # https://rubocop.org/
+        rubocop_flags: " --except Layout/LineLength,Metrics/BlockLength"
+        tool_name: rubocop
+        workdir: "."
+
+    - name: Wait before retrying Run Rubocop with Reviewdog
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' && steps.run-rubocop-with-reviewdog.outcome == 'failure' }}
+      run: sleep 30
+
+    - name: Run Rubocop with Reviewdog (retry)
+      uses: reviewdog/action-rubocop@v2
+      if: ${{ steps.check.outputs.continue == 'true' && steps.run-rubocop-with-reviewdog.outcome == 'failure' }}
       with:
         fail_level: any
         filter_mode: nofilter

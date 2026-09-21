@@ -46,8 +46,29 @@ runs:
 
     # https://github.com/marketplace/actions/run-golangci-lint-with-reviewdog
     - name: Golangci-lint
+      id: golangci-lint
       uses: reviewdog/action-golangci-lint@v2
+      continue-on-error: true
       if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        fail_level: any
+        filter_mode: nofilter
+        github_token: ${{ inputs.reviewdog-token }}
+        # https://github.com/golangci/golangci-lint
+        golangci_lint_flags: ""
+        level: info
+        reporter: github-pr-review
+        tool_name: golangci
+        workdir: "."
+
+    - name: Wait before retrying Golangci-lint
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' && steps.golangci-lint.outcome == 'failure' }}
+      run: sleep 30
+
+    - name: Golangci-lint (retry)
+      uses: reviewdog/action-golangci-lint@v2
+      if: ${{ steps.check.outputs.continue == 'true' && steps.golangci-lint.outcome == 'failure' }}
       with:
         fail_level: any
         filter_mode: nofilter

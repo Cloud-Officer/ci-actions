@@ -39,10 +39,10 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        latest_tag="$(curl --fail --silent --header "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
+        latest_tag="$(curl --fail --silent --retry 5 --retry-all-errors --header "Authorization: Bearer ${GITHUB_TOKEN}" https://api.github.com/repos/Cloud-Officer/soup/tags | jq -r '.[0].name')"
         echo "Latest soup tag: ${latest_tag}"
         asset_url="https://github.com/Cloud-Officer/soup/archive/refs/tags/${latest_tag}.zip"
-        curl --fail -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
+        curl --fail --retry 5 --retry-all-errors -L "${asset_url}" -o "${RUNNER_TEMP}/soup.zip"
         unzip -q "${RUNNER_TEMP}/soup.zip" -d "${RUNNER_TEMP}"
         rm -rf "${RUNNER_TEMP}/soup.zip"
         # Publish as a step output rather than into GITHUB_ENV. The env file is

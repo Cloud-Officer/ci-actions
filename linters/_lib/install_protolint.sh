@@ -38,7 +38,7 @@ function protolint_resolve_version()
     auth=(--header "Authorization: Bearer ${GITHUB_TOKEN}")
   fi
 
-  body="$(curl --fail --silent --show-error --location "${auth[@]}" "${PROTOLINT_API_URL}")" || body=''
+  body="$(curl --fail --silent --show-error --location --retry 5 --retry-all-errors "${auth[@]}" "${PROTOLINT_API_URL}")" || body=''
   version="$(printf '%s' "${body}" \
     | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 
@@ -85,8 +85,8 @@ function protolint_install()
 
   echo "Installing protolint ${version} from ${url}"
 
-  if ! curl --fail --silent --show-error --location --output "${tmp}/${asset}" "${url}" \
-    || ! curl --fail --silent --show-error --location --output "${tmp}/checksums.txt" \
+  if ! curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output "${tmp}/${asset}" "${url}" \
+    || ! curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output "${tmp}/checksums.txt" \
       "$(protolint_download_url "${version}" checksums.txt)"; then
     echo "::error::failed to download protolint ${version}" >&2
     rm -rf "${tmp}"
