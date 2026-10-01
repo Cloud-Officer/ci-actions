@@ -194,11 +194,11 @@
   "JS:follow-redirects": {
     "language": "JS",
     "package": "follow-redirects",
-    "version": "1.16.0",
+    "version": "1.16.1",
     "license": "MIT",
     "description": "HTTP and HTTPS modules that follow redirects.",
     "website": "https://github.com/follow-redirects/follow-redirects",
-    "last_verified_at": "2026-05-22",
+    "last_verified_at": "2026-10-01",
     "risk_level": "Low",
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
