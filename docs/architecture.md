@@ -285,6 +285,15 @@ surface, and neither may take the other's content.
   `linters/tests/clean_workspace.bats`
 - `recv_gpg_key.sh`: fetches a GPG public key with retries and keyserver
   fallback (used by phpcs and pmd before signature verification)
+- `detect_php_cs_fixer_source.sh`: invoked by `linters/phpcs/action.yml` to
+  write `use-composer=true|false` to `GITHUB_OUTPUT` from the
+  `composer-command` input. `none` always selects the signed phar; `auto` (the
+  default) selects Composer when `composer.lock` requires
+  `friendsofphp/php-cs-fixer` or `php-cs-fixer/shim`, so the project's locked
+  php-cs-fixer and custom fixers are used; any other value is run as the
+  Composer command. On the Composer path phpcs starts the SSH agent and passes
+  `github-token` through `COMPOSER_AUTH` so private dependencies install.
+  Unit-tested by `linters/tests/detect_php_cs_fixer_source.bats`
 - `require_aws_credentials.sh`: fails the first step of `aws`, `codedeploy/deploy` and `codedeploy/s3copy` unless
   `ROLE_TO_ASSUME` (GitHub OIDC) or both `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY` are non-blank, and whenever only one
   half of the key pair is set, so a missing credential surfaces before any AWS call. Unit-tested by
@@ -730,7 +739,11 @@ a newer upstream version, preserving the existing pin style.
 
 #### GPG Signature Verification
 
-- phpcs: Downloads php-cs-fixer and verifies GPG signature before execution
+- phpcs: When it uses the phar (`detect_php_cs_fixer_source.sh` outputs
+  `use-composer=false`), downloads php-cs-fixer and verifies its GPG signature
+  before execution. When the project's `composer.lock` provides php-cs-fixer,
+  the version Composer installs into `vendor/bin` is used instead and no
+  signature check applies
 - pmd: Downloads PMD release and verifies GPG signature before execution
 - Public keys are fetched via the shared `linters/_lib/recv_gpg_key.sh` helper,
   which retries across multiple keyservers to avoid flaky imports

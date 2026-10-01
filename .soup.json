@@ -608,7 +608,7 @@
     "website": "https://github.com/webfactory/ssh-agent",
     "last_verified_at": "2026-09-14",
     "risk_level": "Medium",
-    "requirements": "Loads the SSH key into ssh-agent in the setup action and the PHPStan linter",
+    "requirements": "Loads the SSH key into ssh-agent in the setup action and the PHPStan and PHPCS linters",
     "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
   },
   "GHA:shivammathur/setup-php": {
