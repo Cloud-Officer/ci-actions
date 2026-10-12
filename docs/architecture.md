@@ -307,8 +307,9 @@ surface, and neither may take the other's content.
   The gate treats whitespace-only as empty, names every empty input at once and
   fails the step (CFG-002). Despite living under `linters/_lib/`, it is consumed
   by the deployment actions: `aws` (`shell-commands`), `codedeploy/deploy`
-  (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`) and
-  `codedeploy/s3copy` (`source`, `target`). Unit-tested by
+  (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`),
+  `codedeploy/s3copy` (`source`, `target`) and `docker` (`platforms`, plus
+  `username` and `password` when `push` is `true`). Unit-tested by
   `linters/tests/require_inputs.bats`
 - `apt_install.sh`: runs `apt-get update` then installs the space-separated
   `APT_PACKAGES` list, failing before the update when the variable is unset.
@@ -317,8 +318,9 @@ surface, and neither may take the other's content.
 - `composer_cache_dir.sh`: writes `dir=<composer cache-files-dir>` to
   `GITHUB_OUTPUT` for the following `actions/cache` step, failing with an error
   when composer is missing, fails or returns nothing. Called by the
-  `Cache - Composer Location` step of `setup` and `linters/phpstan`;
-  unit-tested by `linters/tests/composer_cache_dir.bats`
+  `Cache - Composer Location` step of `setup`, `linters/phpstan` and
+  `linters/phpcs` (the latter only on its Composer path); unit-tested by
+  `linters/tests/composer_cache_dir.bats`
 - `install_swiftlint.sh`: resolves a realm/SwiftLint release (pinned via the
   `swiftlint-version` input, `latest` by default), downloads the matching
   `swiftlint_linux_{amd64,arm64}.zip` and installs the statically linked
@@ -501,12 +503,11 @@ end-to-end in CI without secrets or side effects.
   `GITHUB_TOKEN`, and that `linters/bandit` mirrors `linters/semgrep` step for
   step -- the two pip-installed Python linters must not drift apart again
 - `required_inputs_contract.py`: asserts the actions whose empty inputs would
-  fail silently (`aws`, `codedeploy/deploy`, `codedeploy/s3copy`) each call the
-  shared `linters/_lib/require_inputs.sh` gate and name every such input.
-  Actions that already fail loudly on their own are deliberately not listed:
-  `docker` errors on an empty registry password, `setup` on an unusable
-  version, and `slack` validates `webhook-url` and the `jobs` payload in
-  `index.js`
+  fail silently (`aws`, `codedeploy/deploy`, `codedeploy/s3copy`, `docker`)
+  each call the shared `linters/_lib/require_inputs.sh` gate and name every
+  such input. Actions that already fail loudly on their own are deliberately
+  not listed: `setup` errors on an unusable version, and `slack` validates
+  `webhook-url` and the `jobs` payload in `index.js`
 - `readme_version_contract.py`: derives the current major from the highest
   `Cloud-Officer/ci-actions/<path>@vN` reference in the root `README.md` and
   asserts every other `README.md` references that same major, so a major roll
@@ -523,9 +524,9 @@ end-to-end in CI without secrets or side effects.
   configures AWS credentials when only `aws-role-to-assume` is set
 - `shared_snippets_contract.py`: asserts `setup/action.yml` and
   `linters/phpstan/action.yml` call `linters/_lib/apt_install.sh` and
-  `linters/_lib/composer_cache_dir.sh`, and that no other shell script or
-  `action.yml` re-implements the `${APT_PACKAGES}` install or the
-  `composer config cache-files-dir` lookup
+  `linters/_lib/composer_cache_dir.sh`, and that no shell script or
+  `action.yml` other than the helpers re-implements the `${APT_PACKAGES}`
+  install or the `composer config cache-files-dir` lookup
 
 ### .github/workflows
 
@@ -547,8 +548,10 @@ end-to-end in CI without secrets or side effects.
   runs the `tests/` contract checks, invokes every linter action on its
   disabled path to assert the `check_enabled.sh` gate, runs the
   `linters/tests/` bats suite for `linters/_lib/` (linters/ carries no `.bats`
-  marker, so the generated build.yml does not pick it up), and runs the
-  variables action asserting its outputs are populated
+  marker, so the generated build.yml does not pick it up), runs the
+  variables action asserting its outputs are populated, and builds
+  `tests/docker/Dockerfile` through the docker action without pushing
+  (`docker-smoke`)
 - `external-actions-bump.yml`: hand-maintained (explicitly not generated)
   weekly cron (Monday 06:00 UTC) driving `bump-actions.sh`, opening a single
   PR for human review
@@ -599,7 +602,8 @@ Each entry carries three review fields:
 - **GitHub Actions (`GHA`)** — every `owner/repo` referenced by `uses:` in an
   `action.yml` or `.github/workflows` file, found by soup's `--gha` scan, with
   all of its refs as the version. The external actions run on a consumer's
-  runner in the same job as `SSH_KEY`, `GH_PAT` and AWS credentials, so they
+  runner in the same job as the SSH key, the `github-token` and AWS
+  credentials, so they
   carry the same review fields as a library. `cloud-officer/ci-actions` is
   listed for the references the generated workflows make to this repository;
   local `./` references are not recorded
@@ -855,7 +859,16 @@ unless the premise stated for each one changes.
 
 ### Permissions
 
-The build workflow grants minimal permissions at the workflow level:
+The build workflow grants only `contents: read` at the workflow level:
+
+```yaml
+permissions:
+  contents: read
+```
+
+Each reviewdog-reporting linter job (actionlint, eslint, flake8, hadolint,
+markdownlint, shellcheck and yamllint in this repository) widens that with its
+own block:
 
 ```yaml
 permissions:
@@ -863,12 +876,13 @@ permissions:
   pull-requests: write
 ```
 
-`pull-requests: write` is what the reviewdog-reporting linters need to post
-their review comments with the job's own `GITHUB_TOKEN`, which is why the run
-token suffices for `reviewdog-token` and no long-lived secret is needed there.
+`pull-requests: write` is what those linters need to post their review
+comments with the job's own `GITHUB_TOKEN`, which is why the run token
+suffices for `reviewdog-token` and no long-lived secret is needed there. The
+`bandit` and `trivy` jobs restate `contents: read` only.
 
-The `semgrep` job narrows this further with its own block — `actions: read`
-plus `contents: read`, dropping `pull-requests: write` — because the SARIF
+The `semgrep` job carries its own block too — `actions: read` plus
+`contents: read`, without `pull-requests: write` — because the SARIF
 upload needs to read the workflow run. `auto-approve.yml`,
 `external-actions-bump.yml` and `smoke.yml` each grant `contents: read` only;
 the write scopes those workflows need (approving a PR, opening a bump PR) come
