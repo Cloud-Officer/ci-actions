@@ -404,7 +404,7 @@
     "website": "https://github.com/actions/checkout",
     "last_verified_at": "2026-09-14",
     "risk_level": "Medium",
-    "requirements": "Checks out the repository with the SSH key or token in every composite action and in the smoke and auto-approve workflows",
+    "requirements": "Checks out the repository with the SSH key or token in the composite actions that need the source tree and in the smoke and auto-approve workflows",
     "verification_reasoning": "Official GitHub checkout action"
   },
   "GHA:cloud-officer/ci-actions": {
@@ -632,7 +632,7 @@
     "website": "https://github.com/actions/cache",
     "last_verified_at": "2026-09-14",
     "risk_level": "Medium",
-    "requirements": "Caches dependency directories for the setup action and the PHPStan linter",
+    "requirements": "Caches dependency directories for the setup action and the PHPStan and PHPCS linters",
     "verification_reasoning": "Official GitHub caching action"
   },
   "GHA:actions/setup-java": {
