@@ -386,11 +386,11 @@
   "JS:undici": {
     "language": "JS",
     "package": "undici",
-    "version": "6.29.0",
+    "version": "6.29.1",
     "license": "MIT",
     "description": "An HTTP/1.1 client, written from scratch for Node.js",
     "website": "https://undici.nodejs.org",
-    "last_verified_at": "2026-09-28",
+    "last_verified_at": "2026-10-18",
     "risk_level": "Low",
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
