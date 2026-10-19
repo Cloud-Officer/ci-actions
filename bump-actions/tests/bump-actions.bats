@@ -36,6 +36,9 @@ case "$args" in
   *"repos/branchy/action/releases/latest"*)           echo "v3.0.0" ;;
   *"repos/ahead/action/releases/latest"*)             echo "v7.0.0" ;;
   *"repos/tagonly/action/releases/latest"*)           echo "" ;;
+  *"repos/evil/action/releases/latest"*)              echo 'v9#;s#u#true;echo${IFS}PWNED>>'"${PWN_FILE:-/dev/null}"';#e;s#(z)(z)#y' ;;
+  *"repos/evil/action/tags"*)                         printf 'v1.2.0\nv1.1.0\n' ;;
+  *"repos/evilonly/action/releases/latest"*)          echo 'v9#e' ;;
   *"repos/tagonly/action/tags"*)                      printf 'v3.1.0\nv3.0.0\nv2.0.0\n' ;;
   *"repos/actions/checkout/git/ref/tags/v7"*)         echo "refs/tags/v7" ;;
   *"repos/docker/build-push-action/git/ref/tags/v7"*) echo "refs/tags/v7" ;;
@@ -67,6 +70,8 @@ runs:
   - uses: branchy/action@main
   - uses: ahead/action@v8.0.0
   - uses: tagonly/action@v2
+  - uses: evil/action@v1.0.0
+  - uses: evilonly/action@v1.0.0
 EOF
 
   # A ref with a trailing comment, to prove the rewrite preserves it.
@@ -188,6 +193,31 @@ EOF
   run "${SCRIPT}"
   # releases/latest empty -> highest semver tag v3.1.0; no floating v3 tag -> exact
   [[ "${output}" == *"tagonly/action"*"v2 -> v3.1.0"* ]]
+}
+
+@test "is_version_tag accepts only plain version tags" {
+  is_version_tag v7
+  is_version_tag 1.12.1
+  is_version_tag v0.10.0
+  ! is_version_tag 'v9#;s#u#id#e'
+  ! is_version_tag 'v1.0.0-rc1'
+  ! is_version_tag ''
+}
+
+@test "malicious release tag is ignored and falls back to version tags" {
+  export PWN_FILE="${FIX}/pwned"
+  run "${SCRIPT}" --apply
+  [ "${status}" -eq 0 ]
+  [ ! -e "${PWN_FILE}" ]
+  [[ "${output}" == *"evil/action"*"v1.0.0 -> v1.2.0"* ]]
+  grep -q 'evil/action@v1.2.0' "${FIX}/setup/action.yml"
+}
+
+@test "repo with only a malicious release tag is skipped" {
+  run "${SCRIPT}" --apply
+  [ "${status}" -eq 0 ]
+  [[ "${output}" != *"BUMP"*"evilonly/action"* ]]
+  grep -q 'evilonly/action@v1.0.0' "${FIX}/setup/action.yml"
 }
 
 @test "github-build-generated files are not scanned" {
