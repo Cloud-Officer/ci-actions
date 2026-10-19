@@ -29,6 +29,7 @@
 function is_sha()            { [[ "$1" =~ ^[0-9a-f]{40}$ ]]; }
 function is_floating_major() { [[ "$1" =~ ^v?[0-9]+$ ]]; }
 function is_exact_semver()   { [[ "$1" =~ ^v?[0-9]+\.[0-9]+ ]]; }
+function is_version_tag()    { [[ "$1" =~ ^v?[0-9]+(\.[0-9]+)*$ ]]; }
 function major_of()          { local v="${1#v}"; echo "${v%%.*}"; }
 function esc_re()            { printf '%s' "$1" | sed 's/[.[\*^$/]/\\&/g'; }
 
@@ -74,6 +75,10 @@ function latest_version()
 {
   local or="$1" tag
   tag="$(gh api "repos/${or}/releases/latest" --jq '.tag_name' 2>/dev/null || true)"
+  if [ -n "${tag}" ] && [ "${tag}" != "null" ] && ! is_version_tag "${tag}"; then
+    echo "::warning::ignoring non-version release tag for ${or}" >&2
+    tag=""
+  fi
   if [ -z "${tag}" ] || [ "${tag}" == "null" ]; then
     tag="$(gh api "repos/${or}/tags?per_page=100" --jq '.[].name' 2>/dev/null \
             | grep -E '^v?[0-9]+(\.[0-9]+)*$' | sort -V | tail -1 || true)"
@@ -120,6 +125,10 @@ function resolve_bump()
     echo "::warning::${or}@${ver} is not a version tag (branch/unknown); skipping" >&2
   fi
 
+  if [ -n "${new}" ] && ! is_version_tag "${new}"; then
+    echo "::warning::${or}: refusing non-version tag; skipping" >&2
+    return 0
+  fi
   printf '%s' "${new}"
 }
 
