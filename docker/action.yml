@@ -7,6 +7,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  ssh-key:
+    description: 'ssh key'
+    required: false
+    default: ''
   username:
     description: 'Username used to log against the Docker registry (required when push is true)'
     required: false
@@ -65,6 +69,7 @@ runs:
       uses: actions/checkout@v7
       with:
         token: ${{ inputs.github-token }}
+        ssh-key: ${{ inputs.ssh-key }}
         persist-credentials: false
         lfs: true
         submodules: recursive

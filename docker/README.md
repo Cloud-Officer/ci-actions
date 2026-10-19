@@ -11,6 +11,10 @@ inputs:
     description: 'github token'
     required: false
     default: ${{ github.token }}
+  ssh-key:
+    description: 'ssh key'
+    required: false
+    default: ''
   username:
     description: 'Username used to log against the Docker registry (required when push is true)'
     required: false

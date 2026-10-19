@@ -98,19 +98,23 @@ function buildHeaderAttachment(variablesOutputs, variableFields) {
           }
         ]
       },
-      {
+    ];
+
+    if (variablesOutputs.COMMIT_MESSAGE) {
+      blocks.push({
         "type": "context",
         "elements": [
           {
             "type": "plain_text",
-            "text": `${variablesOutputs.COMMIT_MESSAGE || ''}`
+            "text": variablesOutputs.COMMIT_MESSAGE
           }
         ]
-      },
-      {
-        "type": "divider"
-      }
-    ];
+      });
+    }
+
+    blocks.push({
+      "type": "divider"
+    });
 
     if (variableFields.length > 0) {
       blocks.push({
