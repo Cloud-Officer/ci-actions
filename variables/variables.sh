@@ -65,8 +65,6 @@ function set_flag_from_trigger()
 # Helper function to add linter if config file/directory exists
 # Usage: add_linter_if_file "LINTER_NAME" "config_file"
 #        add_linter_if_dir "LINTER_NAME" "config_dir"
-# Note: explicit `if`/`return 0` rather than `[ -f x ] && ...` so a missing
-# config file is a no-op, not a non-zero return that aborts under `set -e`.
 function add_linter_if_file()
 {
   if [ -f "$2" ]; then
@@ -83,22 +81,9 @@ function add_linter_if_dir()
   return 0
 }
 
-# TRIVY is enabled when IaC files or package-manager manifests are present
-# anywhere within the first three directory levels of the working tree. Kept as
-# a sourceable predicate (like add_linter_if_*) so the detection can be unit
-# tested without re-implementing the find expression. Returns 0 when at least
-# one matching file exists, 1 otherwise.
-#
-# The package-manager lock-file portion is single-sourced from
-# linters/_lib/lock_files.sh (QUAL-010, #238) so it can never drift from the
-# trivy action's vuln-scanner list. Dockerfile*/*.tf/.cfnlintrc/.hadolint.yaml
-# (IaC markers) and package.json (manifest without a lock file) additionally
-# enable TRIVY here and are intentionally not part of that shared list.
+# Succeeds when an IaC marker, package.json or a TRIVY_LOCK_FILES entry exists outside submodules.
 function detect_trivy()
 {
-  # Resolve the shared list relative to this script so it works both when run as
-  # the action (variables.sh is on PATH, BASH_SOURCE is absolute) and when the
-  # bats suite sources this file from variables/tests/.
   local lib_dir
   lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../linters/_lib"
   # shellcheck source=/dev/null
@@ -116,11 +101,6 @@ function detect_trivy()
     find_args+=( -o -name "${lock_file}" )
   done
 
-  # Walk the whole tree, pruning submodules, exactly as the trivy action's own
-  # vuln-scanner detection does (linters/_lib/detect_trivy_scanners.sh). A former -maxdepth 3
-  # here meant a monorepo whose only lock file sat four or more directories deep
-  # never got TRIVY into LINTERS, so the shared gate resolved to continue=false
-  # and the vulnerability scan silently never ran.
   local prune_args=()
   local path
   while IFS= read -r path; do
@@ -132,48 +112,24 @@ function detect_trivy()
   find . "${prune_args[@]}" '(' "${find_args[@]}" ')' -print -quit 2>/dev/null | grep -q .
 }
 
-# Resolve build identifiers and skip/deploy flags from the environment and the
-# commit message, then export them to GITHUB_ENV / GITHUB_OUTPUT. Wrapped in a
-# function so the test suite can source this file for its helpers without
-# triggering git calls or writing to the runner files.
+# Exports build identifiers, trigger flags and LINTERS to GITHUB_ENV and GITHUB_OUTPUT.
 function main()
 {
-  # Fail fast: abort on any command error, unset variable, or failed pipe so a
-  # shallow clone / network blip / missing tag surfaces instead of silently
-  # producing empty build vars and skipped deploys. Scoped to main so sourcing
-  # this file for the test suite does not change the caller's shell options.
   set -euo pipefail
-
-  # set environment variables
 
   # Capture timestamp once to avoid race condition across second boundaries
   TIMESTAMP="$(date +%Y%m%d%H%M%S)"
   SHORT_COMMIT="$(git rev-parse --short HEAD)"
   SAFE_BRANCH="${GITHUB_REF:-/refs/heads/}"
   SAFE_BRANCH="${SAFE_BRANCH/refs\/heads\//}"
-  # Global substitution (//): a branch nested two or more levels deep
-  # (e.g. feature/a/b) contains multiple slashes; replacing only the first left
-  # a literal slash in BUILD_NAME. SOURCE_REF below is sanitized again uniformly,
-  # but keep SAFE_BRANCH self-consistent for any direct use.
   SAFE_BRANCH="${SAFE_BRANCH//\//_}"
   MODIFIED_GITHUB_RUN_NUMBER=$(( ${GITHUB_RUN_NUMBER:-0} + 15000 ))
   export MODIFIED_GITHUB_RUN_NUMBER
-  # Resolve the source ref and the raw commit message; only these differ
-  # between a tag build, a PR-head build, and a branch build. BUILD_NAME /
-  # BUILD_VERSION are then derived identically for all three.
   TAG=""
-  # Anchored prefix match: a substring `grep tags` also matched branch refs that
-  # merely contain "tags" (e.g. refs/heads/feature/tags-cleanup), routing them
-  # through the tag path -> empty COMMIT_MESSAGE, slash-mangled BUILD_NAME, and a
-  # spurious tag fetch.
   if [[ "${GITHUB_REF:-}" == refs/tags/* ]]; then
     TAG="${GITHUB_REF/refs\/tags\//}"
     SOURCE_REF="${TAG}"
-    # Fetch over an authenticated HTTPS URL rather than `origin`. The checkout
-    # step runs with persist-credentials:false, which strips the deploy key's
-    # core.sshCommand while leaving origin pointed at git@github.com, so a plain
-    # `git fetch origin` here fails with "Permission denied (publickey)" on tag
-    # builds. GITHUB_TOKEN is exported by the action step for this purpose.
+    # persist-credentials:false leaves origin on SSH with no key; fetch over HTTPS with GITHUB_TOKEN.
     git fetch --depth=1 "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" +refs/tags/*:refs/tags/*
     COMMIT_MESSAGE="$(git tag -l --format='%(contents:subject)' "${TAG}")"
   elif [ -n "${GITHUB_HEAD_REF:-}" ]; then
@@ -184,15 +140,9 @@ function main()
     COMMIT_MESSAGE="$(git log --format=%B -n 1 "${GITHUB_SHA:-HEAD}")"
   fi
 
-  # Take only the first line: `git ... | head` would mask a git failure under
-  # pipefail (and head closing the pipe trips pipefail too).
+  # Parameter expansion, not | head, so pipefail cannot mask a git failure.
   COMMIT_MESSAGE="${COMMIT_MESSAGE%%$'\n'*}"
 
-  # Sanitize the resolved ref once, for all three paths (tag, PR head, branch):
-  # the tag and PR-head paths assign SOURCE_REF from raw refs with no cleanup, so
-  # a slash-named PR branch (feature/foo) or a slash-containing tag (releases/1.0)
-  # would otherwise leak a literal slash into BUILD_NAME/BUILD_VERSION, which are
-  # used downstream as S3 keys and zip/CodeDeploy identifiers.
   SOURCE_REF="${SOURCE_REF//\//_}"
 
   BUILD_NAME="${SOURCE_REF}-${SHORT_COMMIT}-${TIMESTAMP}-${MODIFIED_GITHUB_RUN_NUMBER}"
@@ -263,8 +213,6 @@ function main()
   done
 }
 
-# Only run main when executed directly (via the action's shebang invocation),
-# not when sourced by the bats test suite.
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   main
 fi
