@@ -1,35 +1,16 @@
 #!/usr/bin/env bash
 
-# Shared workspace cleanup for the linters that lint the whole checkout rather
-# than a language-specific subset (markdownlint, yamllint). Both actions check
-# out with `submodules: recursive`, so third-party code lands in the workspace
-# and would otherwise be reported as this repository's lint findings.
+# Removes submodule checkouts (except `scripts`) and every directory named DIR_NAME before a whole-checkout lint.
 #
 # Usage (from a composite action step):
 #   run: bash "${GITHUB_ACTION_PATH}/../_lib/clean_workspace.sh" [DIR_NAME...]
-#
-# Always removes the submodule checkouts listed in .gitmodules (see the
-# `scripts` exception below). Each optional DIR_NAME is additionally removed
-# anywhere it appears in the tree (markdownlint passes vendor, node_modules and
-# Libraries; yamllint passes nothing). Centralised here so the pipeline and its
-# rationale live in one place instead of being duplicated per action.
-#
-# QUAL-006 (#262).
 
 set -euo pipefail
 
 # shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/submodule_paths.sh"
 
-# Delete every submodule checkout except the shared `scripts` submodule.
-#
-# The `scripts` exclusion is deliberate: github-build symlinks a consumer repo's
-# linter config files (.markdownlint-cli2.yaml, .yamllint.yml, ...) to
-# <scripts-submodule>/linters/<config> when that submodule provides them
-# (GHB::LinterJobBuilder#copy_single_config). Deleting the submodule here would
-# leave those root-level symlinks dangling and the linter would silently run
-# with its default rules instead of the shared ones. The match is on the
-# submodule path containing "scripts", mirroring the generator's own detection.
+# github-build symlinks the root linter configs into the `scripts` submodule, so it must survive.
 function remove_submodules()
 {
   [[ -f .gitmodules ]] || return 0
@@ -41,9 +22,7 @@ function remove_submodules()
     [[ -n "${path}" ]] || continue
     [[ "${path}" == *scripts* ]] && continue
 
-    # Reject anything that could escape the workspace before it reaches `rm -rf`.
-    # .gitmodules is attacker-controlled content on a fork PR, and a `path = /`
-    # or `path = ../../_temp` entry would otherwise delete outside the checkout.
+    # .gitmodules is attacker-controlled on a fork PR.
     case "${path}" in
       /* | *..*)
         echo "::warning::skipping out-of-workspace submodule path '${path}'"
@@ -59,12 +38,6 @@ function remove_submodules()
   fi
 }
 
-# Delete every directory named after one of the given names.
-#
-# -prune stops find from descending into a directory it is about to delete;
-# without it the old `-exec rm -rf {} \;` form always ended with find failing on
-# the entries it had just removed ("No such file or directory"), which is why
-# the callers needed a `|| true` that also masked genuine rm failures.
 function remove_directories()
 {
   local name

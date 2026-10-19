@@ -292,74 +292,6 @@ teardown() {
   [ "$UPDATE_PACKAGES" = "1" ]
 }
 
-@test "DEPLOY_ON_PROD requires both trigger and TAG" {
-  export COMMIT_MESSAGE="Release #prod-deploy"
-  export TAG="v1.0.0"
-  DEPLOY_ON_PROD=0
-  if on_prod && [ "${TAG}" != "" ]; then
-    DEPLOY_ON_PROD=1
-  fi
-  [ "$DEPLOY_ON_PROD" = "1" ]
-}
-
-@test "DEPLOY_ON_PROD is 0 with trigger but no TAG" {
-  export COMMIT_MESSAGE="Release #prod-deploy"
-  export TAG=""
-  DEPLOY_ON_PROD=0
-  if on_prod && [ "${TAG}" != "" ]; then
-    DEPLOY_ON_PROD=1
-  fi
-  [ "$DEPLOY_ON_PROD" = "0" ]
-}
-
-@test "DEPLOY_ON_PROD is 0 with TAG but no trigger" {
-  export COMMIT_MESSAGE="Normal release"
-  export TAG="v1.0.0"
-  DEPLOY_ON_PROD=0
-  if on_prod && [ "${TAG}" != "" ]; then
-    DEPLOY_ON_PROD=1
-  fi
-  [ "$DEPLOY_ON_PROD" = "0" ]
-}
-
-@test "DEPLOY_OPTIONS extracts value from commit message" {
-  export COMMIT_MESSAGE="Deploy with #deploy-options=verbose,dry-run"
-  DEPLOY_OPTIONS=""
-  if deploy_options; then
-    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
-  fi
-  [ "$DEPLOY_OPTIONS" = "verbose,dry-run" ]
-}
-
-@test "DEPLOY_OPTIONS is empty without trigger" {
-  export COMMIT_MESSAGE="Normal deploy"
-  DEPLOY_OPTIONS=""
-  if deploy_options; then
-    DEPLOY_OPTIONS="$(echo "${COMMIT_MESSAGE}" | sed -n 's/.*#deploy-options=\([^ ]*\).*/\1/p')"
-  fi
-  [ "$DEPLOY_OPTIONS" = "" ]
-}
-
-@test "skip_all overrides all individual skip flags" {
-  export COMMIT_MESSAGE="Quick fix #skip-all"
-  set_flag_from_trigger SKIP_LICENSES "skip-licenses"
-  set_flag_from_trigger SKIP_LINTERS "skip-linters"
-  set_flag_from_trigger SKIP_TESTS "skip-tests"
-  # Before skip_all, individual flags are 0
-  [ "$SKIP_LICENSES" = "0" ]
-  [ "$SKIP_LINTERS" = "0" ]
-  [ "$SKIP_TESTS" = "0" ]
-  # Apply skip_all override
-  if skip_all; then
-    export SKIP_LICENSES=1
-    export SKIP_LINTERS=1
-    export SKIP_TESTS=1
-  fi
-  [ "$SKIP_LICENSES" = "1" ]
-  [ "$SKIP_LINTERS" = "1" ]
-  [ "$SKIP_TESTS" = "1" ]
-}
-
 @test "skip_all does not affect non-skip flags" {
   export COMMIT_MESSAGE="Quick fix #skip-all"
   set_flag_from_trigger DEPLOY_ON_BETA "beta-deploy"
@@ -956,6 +888,16 @@ run_variables_with_message() {
       *) grep -qx "${var}=1" "${GITHUB_OUTPUT}" ;;
     esac
   done
+}
+
+@test "running variables.sh with #skip-all sets every skip flag and leaves the other flags off" {
+  run_variables_with_message "Quick fix #skip-all"
+  [ "$status" -eq 0 ]
+  grep -qx "SKIP_LICENSES=1" "${GITHUB_OUTPUT}"
+  grep -qx "SKIP_LINTERS=1" "${GITHUB_OUTPUT}"
+  grep -qx "SKIP_TESTS=1" "${GITHUB_OUTPUT}"
+  grep -qx "DEPLOY_ON_BETA=0" "${GITHUB_OUTPUT}"
+  grep -qx "UPDATE_PACKAGES=0" "${GITHUB_OUTPUT}"
 }
 
 @test "running variables.sh leaves every flag off when no trigger is in the commit message" {

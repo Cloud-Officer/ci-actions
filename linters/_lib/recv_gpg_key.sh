@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 
-# Fetch a GPG public key with retries and keyserver fallback.
+# Fetches a GPG public key with retries and keyserver fallback; keyserver.ubuntu.com is intermittently unavailable.
 #
 # Usage (from a composite action step):
 #   run: bash "${GITHUB_ACTION_PATH}/../_lib/recv_gpg_key.sh" <KEY_ID_OR_FINGERPRINT>
-#
-# keyserver.ubuntu.com is well known to be slow / intermittently unavailable,
-# which made the pmd/phpcs linters flaky. Try several keyservers, a few times,
-# before failing the step with an actionable message.
 
 set -euo pipefail
 
@@ -28,8 +24,6 @@ for attempt in $(seq 1 "${attempts}"); do
     fi
     echo "gpg --recv-keys ${key} from ${keyserver} failed (attempt ${attempt})" >&2
   done
-  # Only back off between attempts. Sleeping after the last one delayed the
-  # error by 15 seconds without ever retrying again (BUG-018).
   if [ "${attempt}" -lt "${attempts}" ]; then
     sleep $(( attempt * 5 ))
   fi

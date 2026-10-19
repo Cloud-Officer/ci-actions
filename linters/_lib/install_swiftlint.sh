@@ -1,30 +1,14 @@
 #!/usr/bin/env bash
 
-# Install SwiftLint straight from the upstream realm/SwiftLint GitHub release.
+# Installs SwiftLint from the upstream realm/SwiftLint GitHub release.
 #
 # Usage (from a composite action step):
 #   run: bash "${GITHUB_ACTION_PATH}/../_lib/install_swiftlint.sh" /opt/swiftlint
 #
-# Replaces norio-nomura/action-swiftlint@3.2.1 (issue #258 / DEP-001), whose
-# last release predates 2021 and pinned a `norionomura/swiftlint:swift-5`
-# Docker base — an unmaintained supply-chain dependency running a frozen
-# toolchain. Upstream publishes `swiftlint_linux_{amd64,arm64}.zip` on every
-# release; the `swiftlint-static` binary inside is fully statically linked, so
-# it runs on a stock ubuntu runner with no Swift toolchain installed.
-#
-# Set SWIFTLINT_VERSION to a release tag (e.g. 0.65.0) to pin, or leave it at
-# `latest` to track upstream the way the other linters do. SWIFTLINT_API_URL /
-# SWIFTLINT_DOWNLOAD_URL exist so the test suite can point the resolver and the
-# downloader at fixtures instead of the network. The body runs only when this
-# file is executed directly, so the suite can source it to unit-test the
-# helpers below.
+# SWIFTLINT_VERSION pins a release (e.g. 0.65.0); empty or `latest` tracks upstream.
 
 SWIFTLINT_API_URL="${SWIFTLINT_API_URL:-https://api.github.com/repos/realm/SwiftLint/releases/latest}"
 SWIFTLINT_DOWNLOAD_URL="${SWIFTLINT_DOWNLOAD_URL:-https://github.com/realm/SwiftLint/releases/download}"
-
-# ===========================================================================
-# Helpers (individually testable)
-# ===========================================================================
 
 # swiftlint_asset ARCH -> the release asset name for that runner architecture.
 function swiftlint_asset()
@@ -39,9 +23,7 @@ function swiftlint_asset()
   esac
 }
 
-# swiftlint_resolve_version [REQUESTED] -> a concrete release tag. Anything but
-# an empty value or `latest` is taken as an explicit pin (a leading `v` is
-# dropped: upstream tags are bare, e.g. 0.65.0).
+# swiftlint_resolve_version [REQUESTED] -> a release tag without a leading `v`.
 function swiftlint_resolve_version()
 {
   local requested="${1:-latest}" body version
@@ -58,8 +40,6 @@ function swiftlint_resolve_version()
     body="$(curl --fail --silent --show-error --location "${SWIFTLINT_API_URL}")" || body=''
   fi
 
-  # Parsed with sed rather than jq so the resolver has no dependency beyond
-  # curl (jq is present on the runners but not necessarily anywhere else).
   version="$(printf '%s' "${body}" \
     | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 
@@ -77,8 +57,7 @@ function swiftlint_download_url()
   printf '%s/%s/%s\n' "${SWIFTLINT_DOWNLOAD_URL}" "${1}" "${2}"
 }
 
-# swiftlint_install VERSION DEST -> downloads the release zip for this runner's
-# architecture and leaves an executable `swiftlint` in DEST.
+# swiftlint_install VERSION DEST -> leaves an executable `swiftlint` in DEST.
 function swiftlint_install()
 {
   local version="${1}" dest="${2}" asset url tmp binary
@@ -101,8 +80,7 @@ function swiftlint_install()
     return 1
   fi
 
-  # Prefer the statically linked binary: the dynamic one needs the Swift
-  # runtime, which a stock ubuntu runner does not have.
+  # The dynamic binary needs a Swift runtime that stock ubuntu runners lack.
   binary="${tmp}/swiftlint-static"
   [ -f "${binary}" ] || binary="${tmp}/swiftlint"
 
@@ -117,10 +95,6 @@ function swiftlint_install()
   chmod +x "${dest}/swiftlint"
   rm -rf "${tmp}"
 }
-
-# ===========================================================================
-# Body
-# ===========================================================================
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   set -euo pipefail

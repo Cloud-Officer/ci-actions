@@ -1,24 +1,6 @@
 #!/usr/bin/env bash
 
-# Single source of truth for the package-manager lock/manifest files that mark a
-# project Trivy should run a vulnerability scan against (QUAL-010, #238).
-#
-# Sourced by both consumers so the list lives in exactly one place:
-#   - variables/variables.sh  detect_trivy()  -> enables the TRIVY linter
-#       source ".../variables/../linters/_lib/lock_files.sh"
-#   - linters/_lib/detect_trivy_scanners.sh    -> adds the `vuln` scanner
-#       source "$(dirname "${BASH_SOURCE[0]}")/lock_files.sh"
-#
-# Adding or removing an ecosystem here updates both consumers at once; without
-# single-sourcing, a list that drifts silently produces a Trivy job that runs
-# without the vuln scanner (or never runs at all) with no error surfaced.
-# tests/lock_file_contract.py asserts both consumers keep sourcing this list and
-# do not re-introduce a hardcoded copy.
-#
-# Note: Dockerfile* / *.tf / .cfnlintrc / .hadolint.yaml are IaC markers handled
-# separately (they drive TRIVY's misconfig scanner, not vuln), and package.json
-# enables TRIVY in variables.sh as a manifest without a lock file — none of those
-# belong in this lock-file list.
+# Lock/manifest files that enable Trivy's vuln scanner; sourced by variables.sh and detect_trivy_scanners.sh.
 
 # shellcheck disable=SC2034  # consumed by the scripts that source this file
 TRIVY_LOCK_FILES=(
