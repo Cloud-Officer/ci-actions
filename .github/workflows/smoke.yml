@@ -311,3 +311,104 @@ jobs:
         test "${BAD_PUSH}" = failure || { echo "::error::push=maybe should fail, got ${BAD_PUSH}"; exit 1; }
         test "${NO_CREDENTIALS}" = failure || { echo "::error::push=true without credentials should fail, got ${NO_CREDENTIALS}"; exit 1; }
         echo "docker input validation OK"
+
+  setup-smoke:
+    name: Setup action (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Run setup action
+      uses: ./setup
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        node-version: '24'
+        python-version: '3.13'
+        python-cache: ''
+        xcode-version: latest-stable
+    - name: Assert the toolchain is installed
+      shell: bash
+      run: |
+        set -euo pipefail
+        node --version | grep -q '^v24\.' || { echo "::error::expected Node 24, got $(node --version)"; exit 1; }
+        python --version | grep -q '^Python 3\.13\.' || { echo "::error::expected Python 3.13, got $(python --version)"; exit 1; }
+        expected_ruby="$(cat .ruby-version)"
+        actual_ruby="$(ruby -e 'print RUBY_VERSION')"
+        test "${actual_ruby}" = "${expected_ruby}" || { echo "::error::expected Ruby ${expected_ruby} from .ruby-version, got ${actual_ruby}"; exit 1; }
+        if [[ "${RUNNER_OS}" == 'macOS' ]]; then
+          xcodebuild -version
+        fi
+        echo "setup OK on ${RUNNER_OS}"
+
+  soup-smoke:
+    name: SOUP action
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Run soup action
+      uses: ./soup
+      with:
+        ssh-key: ''
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parameters: '--no_prompt --gha'
+
+  aws-smoke:
+    name: AWS action (input validation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Reject a run without credentials
+      id: no-credentials
+      continue-on-error: true
+      uses: ./aws
+      with:
+        ssh-key: ''
+        aws-region: us-east-1
+        shell-commands: aws --version
+    - name: Reject an access key without its secret
+      id: half-keys
+      continue-on-error: true
+      uses: ./aws
+      with:
+        ssh-key: ''
+        aws-region: us-east-1
+        aws-access-key-id: smoke-key-id
+        shell-commands: aws --version
+    - name: Reject a run without shell commands
+      id: no-commands
+      continue-on-error: true
+      uses: ./aws
+      with:
+        ssh-key: ''
+        aws-region: us-east-1
+        aws-role-to-assume: arn:aws:iam::123456789012:role/smoke
+        shell-commands: ''
+    - name: Assert invalid inputs failed
+      shell: bash
+      env:
+        NO_CREDENTIALS: ${{ steps.no-credentials.outcome }}
+        HALF_KEYS: ${{ steps.half-keys.outcome }}
+        NO_COMMANDS: ${{ steps.no-commands.outcome }}
+      run: |
+        set -euo pipefail
+        test "${NO_CREDENTIALS}" = failure || { echo "::error::a run without credentials should fail, got ${NO_CREDENTIALS}"; exit 1; }
+        test "${HALF_KEYS}" = failure || { echo "::error::an access key without its secret should fail, got ${HALF_KEYS}"; exit 1; }
+        test "${NO_COMMANDS}" = failure || { echo "::error::empty shell-commands should fail, got ${NO_COMMANDS}"; exit 1; }
+        echo "aws input validation OK"

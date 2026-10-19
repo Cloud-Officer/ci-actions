@@ -551,7 +551,11 @@ end-to-end in CI without secrets or side effects.
   marker, so the generated build.yml does not pick it up), runs the
   variables action asserting its outputs are populated, and builds
   `tests/docker/Dockerfile` through the docker action without pushing
-  (`docker-smoke`)
+  (`docker-smoke`). It also runs the setup action with Node, Python, the
+  `.ruby-version` Ruby and Xcode on ubuntu-latest and macos-latest
+  (`setup-smoke`), runs the soup action with `--no_prompt --gha`
+  (`soup-smoke`), and asserts the aws action rejects missing credentials,
+  a half key pair and empty `shell-commands` (`aws-smoke`)
 - `external-actions-bump.yml`: hand-maintained (explicitly not generated)
   weekly cron (Monday 06:00 UTC) driving `bump-actions.sh`, opening a single
   PR for human review
