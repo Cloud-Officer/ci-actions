@@ -643,7 +643,35 @@ describe('Slack Action', () => {
       const hasEmptyCommitMessage = contextBlocks.some(block =>
         block.elements.some(el => el.type === 'plain_text' && el.text === '')
       );
-      expect(hasEmptyCommitMessage).toBe(true);
+      expect(hasEmptyCommitMessage).toBe(false);
+    });
+
+    it('should not emit an empty text object when the variables job is absent', async () => {
+      const jobs = {
+        build: { result: 'failure' }
+      };
+
+      core.getInput.mockImplementation((name) => {
+        if (name === 'webhook-url') return 'https://hooks.slack.com/test';
+        if (name === 'jobs') return JSON.stringify(jobs);
+        return '';
+      });
+
+      await run();
+
+      const textObjects = [];
+      const collect = (node) => {
+        if (Array.isArray(node)) {
+          node.forEach(collect);
+        } else if (node && typeof node === 'object') {
+          if (typeof node.text === 'string') textObjects.push(node.text);
+          Object.values(node).forEach(collect);
+        }
+      };
+      collect(axios.post.mock.calls[0][1]);
+
+      expect(textObjects.length).toBeGreaterThan(0);
+      expect(textObjects).not.toContain('');
     });
   });
 });
