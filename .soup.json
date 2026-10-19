@@ -455,6 +455,18 @@
     "requirements": "Logs in to the container registry in the docker action",
     "verification_reasoning": "Official Docker action"
   },
+  "GHA:docker/setup-qemu-action": {
+    "language": "GHA",
+    "package": "docker/setup-qemu-action",
+    "version": "v4",
+    "license": "Apache-2.0",
+    "description": "GitHub Action to install QEMU static binaries",
+    "website": "https://github.com/docker/setup-qemu-action",
+    "last_verified_at": "2026-10-19",
+    "risk_level": "Medium",
+    "requirements": "Registers QEMU binfmt handlers so the docker action can build emulated platforms",
+    "verification_reasoning": "Official Docker action"
+  },
   "GHA:docker/setup-buildx-action": {
     "language": "GHA",
     "package": "docker/setup-buildx-action",

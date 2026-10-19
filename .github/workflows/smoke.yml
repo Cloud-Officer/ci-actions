@@ -285,6 +285,16 @@ jobs:
         platforms: linux/amd64
         context: tests/docker
         file: tests/docker/Dockerfile
+    - name: Build an emulated arm64 image that runs an env shebang
+      uses: ./docker
+      with:
+        push: 'false'
+        platforms: linux/arm64
+        context: tests/docker-env-shebang
+        file: tests/docker-env-shebang/Dockerfile
+    - name: Rebuild the emulated arm64 image without cache
+      shell: bash
+      run: docker buildx build --no-cache --platform linux/arm64 --file tests/docker-env-shebang/Dockerfile tests/docker-env-shebang
     - name: Reject an invalid push value
       id: bad-push
       continue-on-error: true
