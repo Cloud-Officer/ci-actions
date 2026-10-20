@@ -41,7 +41,7 @@ runs:
       if: ${{ steps.check.outputs.continue == 'true' }}
       with:
         token: ${{ inputs.github-token }}
-        python-version: '3.x'
+        python-version: '3.14'
 
     - name: Install Semgrep
       shell: bash
