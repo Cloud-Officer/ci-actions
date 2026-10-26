@@ -167,7 +167,8 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 **Key Components:**
 
 - Input validation: `push` must be `true` or `false`, `platforms` must be non-empty, and `username`/`password` must be non-empty when `push` is `true`
-- Multi-platform builds (linux/amd64, linux/arm64 by default)
+- Multi-platform builds (linux/amd64, linux/arm64 by default); `docker/setup-qemu-action` registers QEMU binfmt
+  handlers before Buildx so emulated platforms build on runners that do not register them (#372)
 - Docker Buildx setup with BuildKit and a GitHub Actions cache scoped per `platforms` value
 - Registry login, metadata extraction for tags and labels, and build provenance attestation, only when `push` is `true`
 
@@ -178,8 +179,9 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 - `platforms`: target platforms (default `linux/amd64,linux/arm64`)
 - `context`, `file`: build context (default `.`) and Dockerfile path (default `./Dockerfile`)
 - `github-token`: GitHub token
+- `ssh-key`: SSH key passed to checkout for private submodule access
 
-**Tests:** the `docker-smoke` job in `.github/workflows/smoke.yml` builds `tests/docker/Dockerfile` with `push: 'false'` and asserts that an invalid `push` value and a publish without credentials both fail.
+**Tests:** the `docker-smoke` job in `.github/workflows/smoke.yml` builds `tests/docker/Dockerfile` with `push: 'false'`, builds `tests/docker-env-shebang/Dockerfile` for an emulated `linux/arm64` (with and without cache) as the #372 regression, and asserts that an invalid `push` value and a publish without credentials both fail.
 
 ### linters
 
