@@ -24,6 +24,30 @@ inputs:
     description: 'php extensions'
     required: false
     default: ''
+  php-packages:
+    description: 'Apt packages installed with PHP from the Ubuntu archive instead of shivammathur/setup-php (see setup); php-extensions is then ignored'
+    required: false
+    default: ''
+  php-apt-repository:
+    description: 'S3 apt repository read when php-packages is set'
+    required: false
+    default: 's3://ugm-builds/apt'
+  php-apt-key:
+    description: 'S3 location of the ASCII-armored public key that signs php-apt-repository'
+    required: false
+    default: 's3://ugm-builds/apt/ugroupmedia-apt.asc'
+  aws-region:
+    description: 'AWS region, used with php-packages'
+    required: false
+  aws-role-to-assume:
+    description: 'IAM role assumed through GitHub OIDC to read php-apt-repository'
+    required: false
+  aws-access-key-id:
+    description: 'AWS access key ID to read php-apt-repository, when no role is set'
+    required: false
+  aws-secret-access-key:
+    description: 'AWS secret access key, required with aws-access-key-id'
+    required: false
   composer-command:
     description: 'composer command; auto runs composer install when composer.lock requires php-cs-fixer, none always uses the phar'
     required: false
@@ -37,6 +61,9 @@ inputs:
     required: false
     default: './php-cs-fixer fix --dry-run --diff --verbose'
 ```
+
+With `php-packages`, PHP is installed from apt as described in the
+[setup README](../../setup/README.md#php-from-apt); pass the AWS inputs and grant the job `id-token: write`.
 
 ## Example usage
 

@@ -291,6 +291,22 @@ inputs:
     description: 'Setup popular tools globally'
     required: false
     default: 'composer'
+  php-packages:
+    description: >-
+      Apt packages (space or newline separated, e.g. php8.5-intl php8.5-grpc) installed with PHP from the Ubuntu archive
+      instead of shivammathur/setup-php. Extensions Ubuntu lacks come from php-apt-repository, read with the AWS
+      credentials configured by this action. php-extensions and php-ini-file are ignored; php-tools supports composer.
+      Needs an Ubuntu runner whose release the repository publishes.
+    required: false
+    default: ''
+  php-apt-repository:
+    description: 'S3 apt repository read when php-packages is set'
+    required: false
+    default: 's3://ugm-builds/apt'
+  php-apt-key:
+    description: 'S3 location of the ASCII-armored public key that signs php-apt-repository'
+    required: false
+    default: 's3://ugm-builds/apt/ugroupmedia-apt.asc'
 
   # ===== Python =====
   python-version:
@@ -737,7 +753,7 @@ runs:
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
+      if: ${{ inputs.php-packages == '' && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
       with:
         php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
         php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
@@ -746,6 +762,21 @@ runs:
         ini-values: ${{ inputs.php-ini-values }}
         coverage: ${{ inputs.php-coverage }}
         tools: ${{ inputs.php-tools }}
+
+    - name: Setup PHP (apt)
+      shell: bash
+      if: ${{ inputs.php-packages != '' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PHP_VERSION: ${{ inputs.php-version }}
+        PHP_VERSION_FILE: ${{ inputs.php-version-file || steps.detect-versions.outputs.php-file }}
+        PHP_PACKAGES: ${{ inputs.php-packages }}
+        PHP_COVERAGE: ${{ inputs.php-coverage }}
+        PHP_INI_VALUES: ${{ inputs.php-ini-values }}
+        PHP_TOOLS: ${{ inputs.php-tools }}
+        PHP_APT_REPOSITORY: ${{ inputs.php-apt-repository }}
+        PHP_APT_KEY: ${{ inputs.php-apt-key }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/php_apt_install.sh"
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Composer Location

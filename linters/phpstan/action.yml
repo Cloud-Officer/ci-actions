@@ -25,6 +25,30 @@ inputs:
     description: 'php extensions'
     required: false
     default: ''
+  php-packages:
+    description: 'Apt packages installed with PHP from the Ubuntu archive instead of shivammathur/setup-php (see setup); php-extensions is then ignored'
+    required: false
+    default: ''
+  php-apt-repository:
+    description: 'S3 apt repository read when php-packages is set'
+    required: false
+    default: 's3://ugm-builds/apt'
+  php-apt-key:
+    description: 'S3 location of the ASCII-armored public key that signs php-apt-repository'
+    required: false
+    default: 's3://ugm-builds/apt/ugroupmedia-apt.asc'
+  aws-region:
+    description: 'AWS region, used with php-packages'
+    required: false
+  aws-role-to-assume:
+    description: 'IAM role assumed through GitHub OIDC to read php-apt-repository'
+    required: false
+  aws-access-key-id:
+    description: 'AWS access key ID to read php-apt-repository, when no role is set'
+    required: false
+  aws-secret-access-key:
+    description: 'AWS secret access key, required with aws-access-key-id'
+    required: false
   composer-command:
     description: 'composer command'
     required: false
@@ -72,10 +96,32 @@ runs:
         APT_PACKAGES: ${{ inputs.apt-packages }}
       run: bash "${GITHUB_ACTION_PATH}/../_lib/apt_install.sh"
 
+    # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      if: ${{ inputs.php-packages != '' && steps.check.outputs.continue == 'true' }}
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.aws-role-to-assume }}
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+
+    - name: Setup PHP (apt)
+      shell: bash
+      if: ${{ inputs.php-packages != '' && steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PHP_VERSION: ${{ inputs.php-version }}
+        PHP_PACKAGES: ${{ inputs.php-packages }}
+        PHP_TOOLS: composer
+        PHP_APT_REPOSITORY: ${{ inputs.php-apt-repository }}
+        PHP_APT_KEY: ${{ inputs.php-apt-key }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/php_apt_install.sh"
+
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ steps.check.outputs.continue == 'true' }}
+      if: ${{ inputs.php-packages == '' && steps.check.outputs.continue == 'true' }}
       with:
         php-version: ${{ inputs.php-version }}
         extensions: ${{ inputs.php-extensions }}

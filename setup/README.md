@@ -33,9 +33,20 @@ This action automatically detects language version files in your repository and 
 If a version file is present, the language will be installed using the version specified in the file. Explicit version inputs (e.g.,
 `ruby-version: '3.2'`) will override auto-detection.
 
+### PHP from apt
+
+When `php-packages` is set, setup-php is skipped. PHP comes from the Ubuntu archive and the extensions Ubuntu lacks
+from the signed S3 repository in `php-apt-repository`, read through `apt-transport-s3` with the AWS credentials this
+action configures (`aws-role-to-assume` with `id-token: write`, or an access key pair). The step installs
+`php<major.minor>-cli` for `php-version` (or `.php-version`), the listed packages and `php<major.minor>-pcov` or
+`-xdebug` for `php-coverage`, writes `php-ini-values` to the CLI ini, installs Composer with the checksum-verified
+official installer when `php-tools` is `composer`, then prints `php -v` and `php -m`. `php-extensions` and
+`php-ini-file` are ignored. The runner must be an Ubuntu release the repository publishes (`ubuntu-26.04` for the
+default repository); the repository credentials and source are removed once the packages are installed.
+
 ## Inputs
 
-`setup` is a single composite action that orchestrates 124 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
+`setup` is a single composite action that orchestrates 140 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
 
 ### Core
 
@@ -123,6 +134,9 @@ If a version file is present, the language will be installed using the version s
 | `php-ini-values` | no | — | Add values to php.ini |
 | `php-coverage` | no | — | Setup code coverage driver |
 | `php-tools` | no | `composer` | Setup popular tools globally |
+| `php-packages` | no | — | Apt packages installed with PHP from the Ubuntu archive instead of setup-php (see [PHP from apt](#php-from-apt)) |
+| `php-apt-repository` | no | `s3://ugm-builds/apt` | S3 apt repository read when `php-packages` is set |
+| `php-apt-key` | no | `s3://ugm-builds/apt/ugroupmedia-apt.asc` | S3 location of the public key that signs `php-apt-repository` |
 
 #### Python
 
