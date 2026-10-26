@@ -168,3 +168,12 @@ in_script() {
   [ "$status" -eq 1 ]
   [ ! -e "${LOG}" ]
 }
+
+@test "runs the Composer installer as the runner user and only copies the binary as root" {
+  stub curl 'for arg in "$@"; do prev="${out:-}"; out="${arg}"; [ "${prev}" = --output ] && { echo installer > "${arg}"; exit 0; }; done; echo installer | sha384sum | cut -d " " -f 1'
+  stub php 'for arg in "$@"; do case "${arg}" in --install-dir=*) dir="${arg#--install-dir=}" ;; esac; done; echo "${USER:-runner}" > "${BIN}/php-user"; touch "${dir}/composer"'
+  in_script 'install_composer'
+  [ "$status" -eq 0 ]
+  ! grep -q '^php|' "${LOG}"
+  grep -q '^install|-m|0755|.*/composer|/usr/local/bin/composer|$' "${LOG}"
+}

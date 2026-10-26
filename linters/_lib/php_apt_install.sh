@@ -175,7 +175,9 @@ function install_composer()
   expected="$(curl --fail --silent --show-error --location https://composer.github.io/installer.sig)"
   curl --fail --silent --show-error --location https://getcomposer.org/installer --output "${tmp}/composer-setup.php"
   [[ "$(sha384sum "${tmp}/composer-setup.php" | cut -d ' ' -f 1)" == "${expected}" ]] || fail "the Composer installer checksum does not match composer.github.io/installer.sig"
-  sudo php "${tmp}/composer-setup.php" --quiet --install-dir=/usr/local/bin --filename=composer
+  # as root the installer would leave ~/.config/composer owned by root and break every later composer command
+  php "${tmp}/composer-setup.php" --quiet --install-dir="${tmp}" --filename=composer
+  sudo install -m 0755 "${tmp}/composer" /usr/local/bin/composer
   rm -rf "${tmp}"
 }
 
