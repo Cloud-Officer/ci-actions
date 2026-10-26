@@ -313,6 +313,16 @@ surface, and neither may take the other's content.
   `codedeploy/s3copy` (`source`, `target`) and `docker` (`platforms`, plus
   `username` and `password` when `push` is `true`). Unit-tested by
   `linters/tests/require_inputs.bats`
+- `php_apt_install.sh`: the `php-packages` path of `setup`, `linters/phpstan` and
+  `linters/phpcs`, used instead of setup-php. Installs `php<major.minor>-cli`, the
+  listed packages and the coverage driver from the Ubuntu archive plus the signed S3
+  repository in `php-apt-repository`, read through `apt-transport-s3` with the AWS
+  credentials of the job written to a root-only `/etc/apt/s3auth.conf` (removed with
+  the source on exit). Rejects package names that are not plain apt names, fails
+  clearly without credentials or when the repository cannot be read, refuses a
+  `php-cli` that is not an Ubuntu build, applies `php-ini-values` and installs
+  Composer with the checksum-verified official installer. Unit-tested by
+  `linters/tests/php_apt_install.bats`
 - `apt_install.sh`: runs `apt-get update` then installs the space-separated
   `APT_PACKAGES` list, failing before the update when the variable is unset.
   Called by the `Install APT Packages` step of `setup` and `linters/phpstan`;
@@ -373,6 +383,7 @@ surface, and neither may take the other's content.
   access key pair
 - SSH agent setup
 - APT package installation
+- PHP from the Ubuntu archive and a signed S3 apt repository instead of setup-php when `php-packages` is set
 
 ### slack
 
