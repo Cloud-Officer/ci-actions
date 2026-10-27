@@ -769,7 +769,7 @@ runs:
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ (inputs.php-packages == '' || steps.php-apt.outputs.installed == 'false') && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
+      if: ${{ steps.php-apt.outputs.installed != 'true' && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
       with:
         php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
         php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
