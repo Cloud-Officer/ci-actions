@@ -750,20 +750,8 @@ runs:
         cache: ${{ inputs.node-cache }}
         cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
 
-    # https://github.com/marketplace/actions/setup-php-action
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      if: ${{ inputs.php-packages == '' && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
-      with:
-        php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
-        php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
-        extensions: ${{ inputs.php-extensions }}
-        ini-file: ${{ inputs.php-ini-file }}
-        ini-values: ${{ inputs.php-ini-values }}
-        coverage: ${{ inputs.php-coverage }}
-        tools: ${{ inputs.php-tools }}
-
     - name: Setup PHP (apt)
+      id: php-apt
       shell: bash
       if: ${{ inputs.php-packages != '' }}
       env:
@@ -777,6 +765,19 @@ runs:
         PHP_APT_REPOSITORY: ${{ inputs.php-apt-repository }}
         PHP_APT_KEY: ${{ inputs.php-apt-key }}
       run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/php_apt_install.sh"
+
+    # https://github.com/marketplace/actions/setup-php-action
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      if: ${{ (inputs.php-packages == '' || steps.php-apt.outputs.installed == 'false') && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
+      with:
+        php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
+        php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
+        extensions: ${{ inputs.php-extensions }}
+        ini-file: ${{ inputs.php-ini-file }}
+        ini-values: ${{ inputs.php-ini-values }}
+        coverage: ${{ inputs.php-coverage }}
+        tools: ${{ inputs.php-tools }}
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Composer Location

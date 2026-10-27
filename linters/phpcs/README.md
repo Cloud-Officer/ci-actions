@@ -63,7 +63,8 @@ inputs:
 ```
 
 With `php-packages`, PHP is installed from apt as described in the
-[setup README](../../setup/README.md#php-from-apt); pass the AWS inputs and grant the job `id-token: write`.
+[setup README](../../setup/README.md#php-from-apt); pass the AWS inputs and grant the job `id-token: write`. When the repository does not publish the
+runner's Ubuntu release, setup-php installs PHP instead.
 
 ## Example usage
 

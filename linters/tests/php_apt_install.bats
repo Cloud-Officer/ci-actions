@@ -12,7 +12,7 @@ if [[ \"\$1\" == tee || \" \$* \" == *\" /dev/stdin \"* ]]; then cat >> '${LOG}'
 if [ -n \"\${SUDO_FAIL_ON:-}\" ] && [[ \" \$* \" == *\" \${SUDO_FAIL_ON} \"* ]]; then exit 100; fi"
   stub uname 'echo Linux'
   stub curl "printf 'HTTP/1.1 403 Forbidden\r\nx-amz-bucket-region: us-east-2\r\n'"
-  stub aws "[ -z \"\${AWS_FAIL:-}\" ] || exit 1; echo key > \"\$5\""
+  stub aws "if [ \"\$2\" = ls ]; then echo \"\$3\" >> '${BIN}/ls.log'; [ -z \"\${UNPUBLISHED:-}\" ]; exit; fi; [ -z \"\${AWS_FAIL:-}\" ] || exit 1; echo key > \"\$5\""
   stub dpkg-query "echo \"\${CLI_VERSION:-8.5.4-0ubuntu1.5}\""
   stub php 'echo php "$@"'
   export PATH="${BIN}:${PATH}"
@@ -176,4 +176,29 @@ in_script() {
   [ "$status" -eq 0 ]
   ! grep -q '^php|' "${LOG}"
   grep -q '^install|-m|0755|.*/composer|/usr/local/bin/composer|$' "${LOG}"
+}
+
+@test "falls back to setup-php when the repository does not publish the runner's codename" {
+  export GITHUB_OUTPUT="${BIN}/output"
+  echo 'VERSION_CODENAME=noble' > "${OS_RELEASE_FILE}"
+  UNPUBLISHED=1 run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"does not publish noble; setup-php installs PHP instead"* ]]
+  [ "$(cat "${GITHUB_OUTPUT}")" = "installed=false" ]
+  grep -qx 's3://ugm-builds/apt/dists/noble/InRelease' "${BIN}/ls.log"
+  [ ! -e "${LOG}" ]
+}
+
+@test "reports the apt install so setup-php is skipped" {
+  export GITHUB_OUTPUT="${BIN}/output"
+  run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  [ "$(cat "${GITHUB_OUTPUT}")" = "installed=true" ]
+}
+
+@test "fails instead of falling back when AWS credentials are missing" {
+  export GITHUB_OUTPUT="${BIN}/output"
+  AWS_ACCESS_KEY_ID='' UNPUBLISHED=1 run bash "${SCRIPT}"
+  [ "$status" -eq 1 ]
+  [ ! -e "${GITHUB_OUTPUT}" ]
 }

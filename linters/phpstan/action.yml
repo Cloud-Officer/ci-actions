@@ -107,6 +107,7 @@ runs:
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
 
     - name: Setup PHP (apt)
+      id: php-apt
       shell: bash
       if: ${{ inputs.php-packages != '' && steps.check.outputs.continue == 'true' }}
       env:
@@ -121,7 +122,7 @@ runs:
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ inputs.php-packages == '' && steps.check.outputs.continue == 'true' }}
+      if: ${{ (inputs.php-packages == '' || steps.php-apt.outputs.installed == 'false') && steps.check.outputs.continue == 'true' }}
       with:
         php-version: ${{ inputs.php-version }}
         extensions: ${{ inputs.php-extensions }}

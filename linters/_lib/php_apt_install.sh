@@ -130,6 +130,22 @@ function cleanup()
   sudo rm -f "${S3AUTH_CONF}" "${SOURCE_LIST}"
 }
 
+function require_aws()
+{
+  local repository="${PHP_APT_REPOSITORY:?PHP_APT_REPOSITORY must be set}"
+
+  if [[ -z "${AWS_ACCESS_KEY_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
+    fail "php-packages reads ${repository} with AWS credentials: set aws-role-to-assume (GitHub OIDC, job permission id-token: write) or aws-access-key-id and aws-secret-access-key"
+  fi
+
+  command -v aws > /dev/null || fail "the aws CLI is required to read ${repository}"
+}
+
+function repository_publishes()
+{
+  aws s3 ls "${PHP_APT_REPOSITORY%/}/dists/${1}/InRelease" > /dev/null 2>&1
+}
+
 function add_repository()
 {
   local codename="${1}"
@@ -143,11 +159,6 @@ function add_repository()
   [[ "${repository}" =~ ^s3://([a-z0-9-]+)(/.*)?$ ]] || fail "php-apt-repository must be s3://<bucket>[/path] with a bucket name without dots, got '${repository}'"
   bucket="${BASH_REMATCH[1]}"
 
-  if [[ -z "${AWS_ACCESS_KEY_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
-    fail "php-packages reads ${repository} with AWS credentials: set aws-role-to-assume (GitHub OIDC, job permission id-token: write) or aws-access-key-id and aws-secret-access-key"
-  fi
-
-  command -v aws > /dev/null || fail "the aws CLI is required to fetch ${key}"
   tmp="$(mktemp -d)"
   aws s3 cp --only-show-errors "${key}" "${tmp}/key.asc" || fail "cannot read ${key}: check that the AWS role can read ${repository}"
   keyring="/usr/share/keyrings/$(basename "${key}")"
@@ -208,6 +219,14 @@ function main()
     composer=true
   fi
 
+  require_aws
+
+  if ! repository_publishes "${codename}"; then
+    echo "::warning::${PHP_APT_REPOSITORY} does not publish ${codename}; setup-php installs PHP instead"
+    echo "installed=false" >> "${GITHUB_OUTPUT:-/dev/null}"
+    return 0
+  fi
+
   sudo apt-get --yes update
   add_repository "${codename}"
   sudo apt-get --yes --no-install-recommends install "${packages[@]}"
@@ -237,6 +256,7 @@ function main()
 
   php -v
   php -m
+  echo "installed=true" >> "${GITHUB_OUTPUT:-/dev/null}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
