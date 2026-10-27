@@ -12,7 +12,7 @@ if [[ \"\$1\" == tee || \" \$* \" == *\" /dev/stdin \"* ]]; then cat >> '${LOG}'
 if [ -n \"\${SUDO_FAIL_ON:-}\" ] && [[ \" \$* \" == *\" \${SUDO_FAIL_ON} \"* ]]; then exit 100; fi"
   stub uname 'echo Linux'
   stub curl "printf 'HTTP/1.1 403 Forbidden\r\nx-amz-bucket-region: us-east-2\r\n'"
-  stub aws "if [ \"\$2\" = ls ]; then echo \"\$3\" >> '${BIN}/ls.log'; [ -z \"\${UNPUBLISHED:-}\" ]; exit; fi; [ -z \"\${AWS_FAIL:-}\" ] || exit 1; echo key > \"\$5\""
+  stub aws "if [ \"\$2\" = ls ]; then echo \"\$4\" >> '${BIN}/ls.log'; [ -z \"\${LS_ERROR:-}\" ] || { echo \"\${LS_ERROR}\" >&2; exit 254; }; [ -z \"\${UNPUBLISHED:-}\" ]; exit; fi; [ -z \"\${AWS_FAIL:-}\" ] || exit 1; echo key > \"\$5\""
   stub dpkg-query "echo \"\${CLI_VERSION:-8.5.4-0ubuntu1.5}\""
   stub php 'echo php "$@"'
   export PATH="${BIN}:${PATH}"
@@ -201,4 +201,18 @@ in_script() {
   AWS_ACCESS_KEY_ID='' UNPUBLISHED=1 run bash "${SCRIPT}"
   [ "$status" -eq 1 ]
   [ ! -e "${GITHUB_OUTPUT}" ]
+}
+
+@test "fails instead of falling back when the repository cannot be queried" {
+  export GITHUB_OUTPUT="${BIN}/output"
+  LS_ERROR='An error occurred (AccessDenied) when calling the ListObjectsV2 operation' run bash "${SCRIPT}"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"cannot query s3://ugm-builds/apt: An error occurred (AccessDenied)"* ]]
+  [ ! -e "${GITHUB_OUTPUT}" ]
+}
+
+@test "rejects an invalid repository before calling AWS" {
+  PHP_APT_REPOSITORY='s3://ugm-builds/apt --endpoint-url=https://evil.example' run bash "${SCRIPT}"
+  [ "$status" -eq 1 ]
+  [ ! -e "${BIN}/ls.log" ]
 }

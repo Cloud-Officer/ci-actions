@@ -130,6 +130,13 @@ function cleanup()
   sudo rm -f "${S3AUTH_CONF}" "${SOURCE_LIST}"
 }
 
+# apt-transport-s3 2.2 rejects s3://<bucket>.s3.amazonaws.com URIs.
+function repository_bucket()
+{
+  [[ "${PHP_APT_REPOSITORY:-}" =~ ^s3://([a-z0-9-]+)(/[A-Za-z0-9._/-]*)?$ ]] || fail "php-apt-repository must be s3://<bucket>[/path] with a bucket name without dots, got '${PHP_APT_REPOSITORY:-}'"
+  echo "${BASH_REMATCH[1]}"
+}
+
 function require_aws()
 {
   local repository="${PHP_APT_REPOSITORY:?PHP_APT_REPOSITORY must be set}"
@@ -141,9 +148,16 @@ function require_aws()
   command -v aws > /dev/null || fail "the aws CLI is required to read ${repository}"
 }
 
+# 0 when the suite exists, 1 when it is absent; any other error (access, network) fails the job
 function repository_publishes()
 {
-  aws s3 ls "${PHP_APT_REPOSITORY%/}/dists/${1}/InRelease" > /dev/null 2>&1
+  local output
+
+  if output="$(aws s3 ls -- "${PHP_APT_REPOSITORY%/}/dists/${1}/InRelease" 2>&1)"; then
+    return 0
+  fi
+  [[ -z "${output}" ]] || fail "cannot query ${PHP_APT_REPOSITORY}: ${output//$'\n'/ }"
+  return 1
 }
 
 function add_repository()
@@ -155,9 +169,7 @@ function add_repository()
   local bucket
   local tmp
 
-  # apt-transport-s3 2.2 rejects s3://<bucket>.s3.amazonaws.com URIs.
-  [[ "${repository}" =~ ^s3://([a-z0-9-]+)(/.*)?$ ]] || fail "php-apt-repository must be s3://<bucket>[/path] with a bucket name without dots, got '${repository}'"
-  bucket="${BASH_REMATCH[1]}"
+  bucket="$(repository_bucket)"
 
   tmp="$(mktemp -d)"
   aws s3 cp --only-show-errors "${key}" "${tmp}/key.asc" || fail "cannot read ${key}: check that the AWS role can read ${repository}"
@@ -219,6 +231,7 @@ function main()
     composer=true
   fi
 
+  repository_bucket > /dev/null
   require_aws
 
   if ! repository_publishes "${codename}"; then
