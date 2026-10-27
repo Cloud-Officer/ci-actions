@@ -41,8 +41,10 @@ action configures (`aws-role-to-assume` with `id-token: write`, or an access key
 `php<major.minor>-cli` for `php-version` (or `.php-version`), the listed packages and `php<major.minor>-pcov` or
 `-xdebug` for `php-coverage`, writes `php-ini-values` to the CLI ini, installs Composer with the checksum-verified
 official installer when `php-tools` is `composer`, then prints `php -v` and `php -m`. `php-extensions` and
-`php-ini-file` are ignored. The runner must be an Ubuntu release the repository publishes (`ubuntu-26.04` for the
-default repository); the repository credentials and source are removed once the packages are installed.
+`php-ini-file` are ignored. When the repository does not publish the runner's Ubuntu release (for example
+`ubuntu-latest` still on 24.04 during GitHub's move to 26.04), the step warns and setup-php installs PHP as without
+`php-packages`, using `php-extensions`. The repository credentials and source are removed once the packages are
+installed.
 
 ## Inputs
 

@@ -322,7 +322,8 @@ surface, and neither may take the other's content.
   clearly without credentials or when the repository cannot be read, refuses a
   `php-cli` that is not an Ubuntu build, applies `php-ini-values` and installs
   Composer with the checksum-verified official installer. Unit-tested by
-  `linters/tests/php_apt_install.bats`
+  `linters/tests/php_apt_install.bats`. When the repository has no `dists/<codename>/InRelease` for the runner,
+  it warns and writes `installed=false` to the step output so the action falls back to setup-php.
 - `apt_install.sh`: runs `apt-get update` then installs the space-separated
   `APT_PACKAGES` list, failing before the update when the variable is unset.
   Called by the `Install APT Packages` step of `setup` and `linters/phpstan`;
