@@ -396,8 +396,9 @@ surface, and neither may take the other's content.
 
 - `action.yml`: Action definition (`using: node24`, entry point `dist/index.js`)
 - `index.js`: Notification logic using Slack webhook (`parseInputs`,
-  `validateJobs`, `buildHeaderAttachment`, `buildJobAttachments`,
-  `sendWebhook`, `run`)
+  `validateJobs`, `githubEnv`, `buildVariableFields`,
+  `buildHeaderAttachment`, `buildJobAttachments`, `worstColor`,
+  `sendWebhook`, `run`, `reportError`)
 - `dist/index.js`: Committed `@vercel/ncc` bundle actually executed by the
   runner; the `pretest` script rebuilds it and fails on `git diff` so the
   bundle can never drift from the source
