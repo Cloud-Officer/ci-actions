@@ -74,11 +74,11 @@
   "JS:axios": {
     "language": "JS",
     "package": "axios",
-    "version": "1.21.0",
+    "version": "1.21.1",
     "license": "MIT",
     "description": "Promise based HTTP client for the browser and node.js",
     "website": "https://axios-http.com",
-    "last_verified_at": "2026-11-03",
+    "last_verified_at": "2026-11-09",
     "risk_level": "Low",
     "requirements": "HTTP client for Slack webhook API calls",
     "verification_reasoning": "Industry standard HTTP client with active maintenance"
@@ -194,11 +194,11 @@
   "JS:follow-redirects": {
     "language": "JS",
     "package": "follow-redirects",
-    "version": "1.16.2",
+    "version": "1.16.3",
     "license": "MIT",
     "description": "HTTP and HTTPS modules that follow redirects.",
     "website": "https://github.com/follow-redirects/follow-redirects",
-    "last_verified_at": "2026-10-26",
+    "last_verified_at": "2026-11-09",
     "risk_level": "Low",
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
