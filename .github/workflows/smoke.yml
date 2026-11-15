@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   action-contracts:
-    name: Action contracts (all 29)
+    name: Action contracts
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
