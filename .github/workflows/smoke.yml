@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   action-contracts:
-    name: Action contracts (all 28)
+    name: Action contracts (all 29)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -89,7 +89,7 @@ jobs:
     # Each linter is invoked with an empty `linters` list so the shared
     # check_enabled.sh gate resolves to continue=false and every downstream
     # step is skipped. This exercises action.yml load + the QUAL-001 shared
-    # gate end-to-end for all 19 without needing any linter toolchain.
+    # gate end-to-end for all 20 without needing any linter toolchain.
     - name: actionlint
       uses: ./linters/actionlint
       with:
@@ -97,6 +97,11 @@ jobs:
         ssh-key: ''
     - name: bandit
       uses: ./linters/bandit
+      with:
+        linters: ''
+        ssh-key: ''
+    - name: brakeman
+      uses: ./linters/brakeman
       with:
         linters: ''
         ssh-key: ''
@@ -193,7 +198,7 @@ jobs:
       with:
         linters: ''
         ssh-key: ''
-    # The 19 invocations above only prove the actions load and run the gate;
+    # The 20 invocations above only prove the actions load and run the gate;
     # they would still pass green if check_enabled.sh were flipped to
     # continue=true (checkout + reviewdog would simply run). Assert the gate
     # output directly so a regression in the shared QUAL-001 gate fails here.

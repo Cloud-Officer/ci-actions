@@ -182,6 +182,7 @@ function main()
   LINTERS=""
   add_linter_if_dir  "ACTIONLINT"    ".github/workflows"
   add_linter_if_file "BANDIT"        ".bandit"
+  add_linter_if_file "BRAKEMAN"      "config/brakeman.yml"
   add_linter_if_file "CFNLINT"       ".cfnlintrc"
   add_linter_if_file "ESLINT"        ".eslintrc.json"
   add_linter_if_file "FLAKE8"        ".flake8"

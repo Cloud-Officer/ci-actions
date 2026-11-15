@@ -318,6 +318,14 @@ teardown() {
   [[ "$LINTERS" == *"BANDIT"* ]]
 }
 
+@test "linter detection: BRAKEMAN detected from config/brakeman.yml file" {
+  mkdir -p "${TEST_DIR}/config"
+  touch "${TEST_DIR}/config/brakeman.yml"
+  LINTERS=""
+  add_linter_if_file "BRAKEMAN" "${TEST_DIR}/config/brakeman.yml"
+  [[ "$LINTERS" == *"BRAKEMAN"* ]]
+}
+
 @test "linter detection: CFNLINT detected from .cfnlintrc file" {
   touch "${TEST_DIR}/.cfnlintrc"
   LINTERS=""
@@ -482,6 +490,7 @@ teardown() {
   LINTERS=""
   add_linter_if_dir  "ACTIONLINT"    "${TEST_DIR}/.github/workflows" || true
   add_linter_if_file "BANDIT"        "${TEST_DIR}/.bandit" || true
+  add_linter_if_file "BRAKEMAN"      "${TEST_DIR}/config/brakeman.yml" || true
   add_linter_if_file "ESLINT"        "${TEST_DIR}/.eslintrc.json" || true
   add_linter_if_file "FLAKE8"        "${TEST_DIR}/.flake8" || true
   add_linter_if_file "GOLANGCI"      "${TEST_DIR}/.golangci.yml" || true
@@ -504,6 +513,8 @@ teardown() {
 @test "linter detection: full chain detects all linters when all config files present" {
   mkdir -p "${TEST_DIR}/.github/workflows"
   touch "${TEST_DIR}/.bandit"
+  mkdir -p "${TEST_DIR}/config"
+  touch "${TEST_DIR}/config/brakeman.yml"
   touch "${TEST_DIR}/.eslintrc.json"
   touch "${TEST_DIR}/.flake8"
   touch "${TEST_DIR}/.golangci.yml"
@@ -523,6 +534,7 @@ teardown() {
   LINTERS=""
   add_linter_if_dir  "ACTIONLINT"    "${TEST_DIR}/.github/workflows"
   add_linter_if_file "BANDIT"        "${TEST_DIR}/.bandit"
+  add_linter_if_file "BRAKEMAN"      "${TEST_DIR}/config/brakeman.yml"
   add_linter_if_file "ESLINT"        "${TEST_DIR}/.eslintrc.json"
   add_linter_if_file "FLAKE8"        "${TEST_DIR}/.flake8"
   add_linter_if_file "GOLANGCI"      "${TEST_DIR}/.golangci.yml"
@@ -541,6 +553,7 @@ teardown() {
   add_linter_if_file "YAMLLINT"      "${TEST_DIR}/.yamllint.yml"
   [[ "$LINTERS" == *"ACTIONLINT"* ]]
   [[ "$LINTERS" == *"BANDIT"* ]]
+  [[ "$LINTERS" == *"BRAKEMAN"* ]]
   [[ "$LINTERS" == *"ESLINT"* ]]
   [[ "$LINTERS" == *"FLAKE8"* ]]
   [[ "$LINTERS" == *"GOLANGCI"* ]]

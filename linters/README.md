@@ -4,6 +4,7 @@ A collection of Linter GitHub Actions.
 
 * [actionlint](actionlint/README.md) is a static checker for GitHub Actions workflow files
 * [bandit](bandit/README.md) is a security linter from PyCQA
+* [brakeman](brakeman/README.md) is a static analysis security scanner for Ruby on Rails applications
 * [cfnlint](cfnlint/README.md) is a linter for AWS CloudFormation templates that validates syntax, resource properties, and best practices
 * [eslint](eslint/README.md) is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code
 * [flake8](flake8/README.md) is a wrapper around PyFlakes, pycodestyle and Ned Batchelder's McCabe script
@@ -111,10 +112,11 @@ runs:
 
 ### Checklist: Updating Common Sections
 
-When updating the checkout action version or common inputs, **all 19 linter actions must be updated**:
+When updating the checkout action version or common inputs, **all 20 linter actions must be updated**:
 
 * [ ] actionlint/action.yml
 * [ ] bandit/action.yml
+* [ ] brakeman/action.yml
 * [ ] cfnlint/action.yml
 * [ ] eslint/action.yml
 * [ ] flake8/action.yml
@@ -169,6 +171,7 @@ Linters are auto-detected in `variables/variables.sh` based on config file prese
 |--------------|------------------------------------------------------------|
 | ACTIONLINT   | `.github/workflows/`                                       |
 | BANDIT       | `.bandit`                                                  |
+| BRAKEMAN     | `config/brakeman.yml`                                      |
 | CFNLINT      | `.cfnlintrc`                                               |
 | ESLINT       | `.eslintrc.json`                                           |
 | FLAKE8       | `.flake8`                                                  |

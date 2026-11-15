@@ -195,6 +195,7 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 | :--- | :--- | :--- |
 | actionlint | GitHub Actions workflows | `.github/workflows/` |
 | bandit | Python security | `.bandit` |
+| brakeman | Ruby on Rails security | `config/brakeman.yml` |
 | cfnlint | AWS CloudFormation | `.cfnlintrc` |
 | eslint | JavaScript/TypeScript | `.eslintrc.json` |
 | flake8 | Python style | `.flake8` |
@@ -230,9 +231,9 @@ third-party code. The org-wide `GH_PAT` that used to fill that role is retired:
 github-build rewrites `${{ secrets.GH_PAT }}` to `${{ github.token }}`, so the
 generated workflows now pass the run's own ephemeral token to both inputs. The
 `reviewdog-token` input descriptions in the linter `action.yml` files still
-phrase the rationale in terms of that PAT. The remaining six linters (bandit,
-cfnlint, phpcs, phpstan, semgrep, trivy) do not use reviewdog and take no such
-input.
+phrase the rationale in terms of that PAT. The remaining seven linters (bandit,
+brakeman, cfnlint, phpcs, phpstan, semgrep, trivy) do not use reviewdog and take
+no such input.
 
 **Shared Trivy suppression policy:** two root-level files split the suppression
 surface, and neither may take the other's content.
@@ -483,7 +484,7 @@ end-to-end in CI without secrets or side effects.
   `composite_steps`, and `fail`/`report`, which print violations to stderr and
   the summary to stdout and return the exit code. Each script keeps only its
   domain assertions; `contract_lib_selftest.py` unit-tests the harness itself
-- `action_contracts.py`: parses every `action.yml` in the repository (28 as of
+- `action_contracts.py`: parses every `action.yml` in the repository (29 as of
   writing) and asserts each is a well-formed composite/JS/Docker action —
   required top-level keys, input mappings with descriptions, a valid
   `runs.using`, and a `shell:` on every `run:` step
@@ -498,7 +499,7 @@ end-to-end in CI without secrets or side effects.
 - `linters_readme_template_contract.py`: asserts the "Common Structure"
   template and the `sed` bulk-update recipe in `linters/README.md` still match
   the real linter actions — the shared `check_enabled.sh` gate and the single
-  `actions/checkout` version the 19 actions agree on. The version is read from
+  `actions/checkout` version the 20 actions agree on. The version is read from
   the actions, never hardcoded, so a checkout bump keeps the doc honest
 - `linters_readme_template_contract_selftest.py`: runs the contract above
   against synthetic repo fixtures, one per way the doc can go stale, so the
@@ -508,7 +509,7 @@ end-to-end in CI without secrets or side effects.
   actions is genuinely inert with `linters: ''` — either gated on
   `steps.check.outputs.continue == 'true'` or falsified by an input the job
   pins (`ssh-key: ''`, phpstan's `apt-packages`/`php-version`)
-- `linter_gate_contract.py`: asserts every step of the 19 linter actions —
+- `linter_gate_contract.py`: asserts every step of the 20 linter actions —
   other than the shared `check` step itself — carries
   `steps.check.outputs.continue == 'true'` in its `if:`, so nothing runs when
   the linter is disabled (self-checks its own detector against fixtures first)
@@ -774,6 +775,7 @@ a newer upstream version, preserving the existing pin style.
 #### Code Analysis
 
 - Semgrep security scanning with `--error` flag
+- Brakeman Rails security scanning with `--exit-on-warn`
 - Bandit Python security linting
 - ESLint for JavaScript patterns
 - Multiple language-specific linters for code quality

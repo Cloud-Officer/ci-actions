@@ -1,0 +1,62 @@
+---
+name: 'Brakeman'
+description: 'Execute Brakeman Rails security scanner'
+
+inputs:
+  linters:
+    description: 'List of all enabled linters'
+    required: true
+  ssh-key:
+    description: 'ssh key'
+    required: true
+  github-token:
+    description: 'github token'
+    required: false
+    default: ${{ github.token }}
+  ruby-version:
+    description: 'ruby version'
+    required: false
+    default: '4.0'
+
+runs:
+  using: "composite"
+  steps:
+    - id: check
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        LINTERS: ${{ inputs.linters }}
+      run: bash "${GITHUB_ACTION_PATH}/../_lib/check_enabled.sh" BRAKEMAN
+
+    # https://github.com/marketplace/actions/checkout
+    - name: Checkout
+      uses: actions/checkout@v7
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        token: ${{ inputs.github-token }}
+        ssh-key: ${{ inputs.ssh-key }}
+        persist-credentials: false
+        lfs: true
+        submodules: recursive
+
+    # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+
+    - name: Install Brakeman
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: gem install brakeman --no-document
+
+    # https://brakemanscanner.org/
+    - name: Run Brakeman
+      shell: bash
+      if: ${{ steps.check.outputs.continue == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: brakeman --no-pager --exit-on-warn --exit-on-error --quiet .
