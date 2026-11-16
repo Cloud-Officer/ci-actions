@@ -350,6 +350,14 @@ inputs:
     description: "When 'true', a version range passed to 'python-version' input will match prerelease versions if no GA versions are found. Only 'x.y' version range is supported for CPython."
     required: false
     default: false
+  python-venv-cache:
+    description: >-
+      When 'true', create a virtualenv after setting up Python, put it first on PATH with VIRTUAL_ENV for the later
+      steps of the job, and cache it keyed on the runner image, the exact Python version and the dependency files in
+      python-cache-dependency-path (or every requirements, pyproject.toml, setup.py, setup.cfg, Pipfile.lock,
+      poetry.lock and uv.lock file), so a later pip install finds its packages already installed.
+    required: false
+    default: 'false'
 
   # ===== Ruby =====
   ruby-version:
@@ -561,6 +569,9 @@ outputs:
   tuist-cache-hit:
     description: 'Cache hit for Tuist'
     value: ${{ steps.tuist.outputs.cache-hit }}
+  python-venv-cache-hit:
+    description: 'Cache hit for the Python virtualenv'
+    value: ${{ steps.python-venv-cache.outputs.cache-hit }}
 
 runs:
   using: 'composite'
@@ -841,6 +852,7 @@ runs:
 
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
+      id: setup-python
       uses: actions/setup-python@v7
       if: ${{ inputs.python-version != 'none' || inputs.python-version-file != '' || steps.detect-versions.outputs.python-file }}
       with:
@@ -853,6 +865,32 @@ runs:
         cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
         update-environment: ${{ inputs.python-update-environment }}
         allow-prereleases: ${{ inputs.python-allow-prereleases }}
+
+    - name: Cache - Python Venv Key
+      id: python-venv-key
+      shell: bash
+      if: ${{ inputs.python-venv-cache == 'true' && steps.setup-python.outputs.python-path != '' }}
+      env:
+        PYTHON_VERSION: ${{ steps.setup-python.outputs.python-version }}
+        DEPENDENCY_HASH: ${{ inputs.python-cache-dependency-path != '' && hashFiles(inputs.python-cache-dependency-path) || hashFiles('**/*requirements*.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg', '**/Pipfile.lock', '**/poetry.lock', '**/uv.lock') }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/python_venv_cache_key.sh"
+
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - Python Venv
+      id: python-venv-cache
+      uses: actions/cache@v6
+      if: ${{ steps.python-venv-key.outputs.key != '' }}
+      with:
+        path: ${{ steps.python-venv-key.outputs.dir }}
+        key: ${{ steps.python-venv-key.outputs.key }}
+
+    - name: Activate Python Venv
+      shell: bash
+      if: ${{ steps.python-venv-key.outputs.key != '' }}
+      env:
+        VENV_DIR: ${{ steps.python-venv-key.outputs.dir }}
+        PYTHON: ${{ steps.setup-python.outputs.python-path }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/python_venv_activate.sh"
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
