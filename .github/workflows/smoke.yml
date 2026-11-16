@@ -82,6 +82,9 @@ jobs:
     - name: Assert setup installs only requested languages and caches each once
       shell: bash
       run: python3 tests/setup_cache_contract.py
+    - name: Check every action used is allowed in consumer organizations
+      shell: bash
+      run: python3 tests/allowed_actions_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
