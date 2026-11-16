@@ -1,4 +1,4 @@
-# github-build --organization Cloud-Officer --skip_slack
+# github-build --organization Cloud-Officer --skip_slack --excluded_folders tests/python-venv
 ---
 name: Build
 'on':
@@ -271,29 +271,6 @@ jobs:
     - name: Jest (slack)
       shell: bash
       run: cd slack && npm test
-  python_unit_tests:
-    name: Python Unit Tests
-    runs-on: ubuntu-latest
-    needs:
-    - variables
-    if: "${{needs.variables.outputs.SKIP_TESTS != '1'}}"
-    timeout-minutes: 30
-    steps:
-    - name: Setup
-      uses: cloud-officer/ci-actions/setup@v3
-      with:
-        ssh-key: "${{secrets.SSH_KEY}}"
-        github-token: "${{github.token}}"
-        python-version: "${{env.PYTHON-VERSION}}"
-        python-cache: "${{env.PYTHON-CACHE}}"
-    - name: Pip (tests/python-venv)
-      shell: bash
-      run: cd tests/python-venv && pip install -r requirements.txt
-      env:
-        GITHUB_TOKEN: "${{github.token}}"
-    - name: Coverage (tests/python-venv)
-      shell: bash
-      run: cd tests/python-venv && coverage run -m unittest
   shell_script_unit_tests:
     name: Shell Script Unit Tests
     runs-on: ubuntu-latest
