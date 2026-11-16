@@ -19,12 +19,12 @@ Take note that when you enable the setup action for a language, the correspondin
 
 ## Language Selection
 
-A language is set up only when the job asks for it: pass its `<language>-version` or `<language>-version-file` input
-(for Ruby, `ruby-version: default` reads `.ruby-version`). A version file in the repository does not, on its own, make
-a job install that language or restore its caches.
+By default (`detect-version-files: 'true'`), every language whose version file is in the repository root is set up
+from that file, whether or not the job asks for it.
 
-Set `detect-version-files: 'true'` to opt in to auto-detection: every language whose version file is in the
-repository root is then set up from that file, whether or not the job asks for it.
+Set `detect-version-files: 'false'` to set up a language only when the job asks for it: pass its `<language>-version`
+or `<language>-version-file` input (for Ruby, `ruby-version: default` reads `.ruby-version`). A version file in the
+repository then does not, on its own, make a job install that language or restore its caches.
 
 | Language | Version File              |
 |----------|---------------------------|
@@ -72,7 +72,7 @@ installed.
 | `fetch-depth` | no | `1` | Number of commits to fetch. 0 indicates all history for all branches and tags. |
 | `ssh-key` | no | — | ssh key |
 | `persist-credentials` | no | `'false'` | Leave the token in `.git/config` after checkout so later steps can run authenticated git commands against `origin`. Off by default so the credential is not readable by every subsequent step; private submodules resolve over the SSH agent started from `ssh-key` and do not need it. |
-| `detect-version-files` | no | `'false'` | Set to `'true'` to also set up every language whose version file is in the repository root, even when the job does not ask for it. See [Language Selection](#language-selection). |
+| `detect-version-files` | no | `'true'` | Set up every language whose version file is in the repository root, even when the job does not ask for it. Set to `'false'` to set up only requested languages. See [Language Selection](#language-selection). |
 
 ### Languages & toolchains
 
