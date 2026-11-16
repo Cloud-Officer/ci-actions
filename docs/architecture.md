@@ -326,9 +326,23 @@ surface, and neither may take the other's content.
   `linters/tests/php_apt_install.bats`. When the repository has no `dists/<codename>/InRelease` for the runner,
   it warns and writes `installed=false` to the step output so the action falls back to setup-php.
 - `apt_install.sh`: runs `apt-get update` then installs the space-separated
-  `APT_PACKAGES` list, failing before the update when the variable is unset.
-  Called by the `Install APT Packages` step of `setup` and `linters/phpstan`;
-  unit-tested by `linters/tests/apt_install.bats`
+  `APT_PACKAGES` list, failing before the update when the variable is unset and
+  doing nothing when dpkg reports every package installed. With `APT_CACHE_DIR`
+  (set by `setup`) it copies the downloaded `.deb` files there and, when they are
+  already there, installs them without `apt-get update`, falling back to the full
+  update and install if that fails. Called by the `Install APT Packages` step of
+  `setup` and `linters/phpstan`; unit-tested by `linters/tests/apt_install.bats`
+- `apt_cache_key.sh`: writes the apt `.deb` cache `dir` and a `key` built from the
+  runner image (`ImageOS`, `ImageVersion`, `RUNNER_ARCH`) and the sorted package
+  list for the `Cache - APT` step of `setup`; unit-tested by
+  `linters/tests/apt_cache_key.bats`
+- `node_cache_dir.sh`: writes `dir=<npm, Yarn or pnpm cache directory>`, resolved as
+  `actions/setup-node` does, for the `Cache - Node` step of `setup` (nothing for a
+  Yarn 2+ project that commits `.yarn/cache`); unit-tested by
+  `linters/tests/node_cache_dir.bats`
+- `prune_empty_cache_dir.sh`: removes `CACHE_DIR` when it holds no files, so a job
+  that misses the Node cache and installs nothing does not save an empty archive
+  over the key; unit-tested by `linters/tests/prune_empty_cache_dir.bats`
 - `composer_cache_dir.sh`: writes `dir=<composer cache-files-dir>` to
   `GITHUB_OUTPUT` for the following `actions/cache` step, failing with an error
   when composer is missing, fails or returns nothing. Called by the
@@ -538,6 +552,10 @@ end-to-end in CI without secrets or side effects.
   inputs, no longer require the access key pair, run `require_aws_credentials.sh` in their first step with the role
   and keys bound from inputs, and pass role, keys and OIDC options to `configure-aws-credentials`; and that `setup`
   configures AWS credentials when only `aws-role-to-assume` is set
+- `setup_cache_contract.py`: asserts `setup` runs version-file detection only when `detect-version-files` is `'true'`,
+  gates every detected-language step on that language's explicit version inputs, caches pip only through
+  `actions/setup-python`, caches Node packages through its own `actions/cache` step (pruned when empty) rather than
+  `actions/setup-node`, and installs apt packages through the cache-key helper and `APT_CACHE_DIR`
 - `shared_snippets_contract.py`: asserts `setup/action.yml` and
   `linters/phpstan/action.yml` call `linters/_lib/apt_install.sh` and
   `linters/_lib/composer_cache_dir.sh`, and that no shell script or

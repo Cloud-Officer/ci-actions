@@ -76,6 +76,12 @@ jobs:
     - name: Assert the AWS actions accept GitHub OIDC credentials
       shell: bash
       run: python3 tests/aws_credentials_contract.py
+    - name: Assert setup builds no Docker action for unrequested services
+      shell: bash
+      run: python3 tests/setup_services_contract.py
+    - name: Assert setup installs only requested languages and caches each once
+      shell: bash
+      run: python3 tests/setup_cache_contract.py
 
   linters-smoke:
     name: Linter actions (disabled path)
@@ -349,6 +355,7 @@ jobs:
         node-version: '24'
         python-version: '3.13'
         python-cache: ''
+        ruby-version: default
         xcode-version: latest-stable
     - name: Assert the toolchain is installed
       shell: bash

@@ -24,6 +24,14 @@ inputs:
       ssh-key. Only set it to true if a later step genuinely needs an authenticated git remote.
     required: false
     default: 'false'
+  detect-version-files:
+    description: >-
+      Set to 'true' to also set up every language whose version file (.go-version, .java-version, .nvmrc or
+      .node-version, .php-version, .python-version, .ruby-version) is in the repository root, even when the job does
+      not ask for that language. By default a language is set up only when its <language>-version or
+      <language>-version-file input is passed (ruby-version: default reads .ruby-version).
+    required: false
+    default: 'false'
 
   # ===== AWS (cloud credentials) =====
   aws-region:
@@ -572,6 +580,7 @@ runs:
     - name: Detect Language Versions
       id: detect-versions
       shell: bash
+      if: ${{ inputs.detect-version-files == 'true' }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
@@ -643,6 +652,22 @@ runs:
         retry-max-attempts: ${{ inputs.aws-retry-max-attempts }}
         special-characters-workaround: ${{ inputs.aws-special-characters-workaround }}
 
+    - name: Cache - APT Key
+      id: apt-cache-key
+      shell: bash
+      if: ${{ inputs.apt-packages != 'none' }}
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/apt_cache_key.sh"
+
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - APT
+      uses: actions/cache@v6
+      if: ${{ inputs.apt-packages != 'none' }}
+      with:
+        path: ${{ steps.apt-cache-key.outputs.dir }}
+        key: ${{ steps.apt-cache-key.outputs.key }}
+
     # install apt packages
     - name: Install APT Packages
       shell: bash
@@ -650,12 +675,13 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         APT_PACKAGES: ${{ inputs.apt-packages }}
+        APT_CACHE_DIR: ${{ steps.apt-cache-key.outputs.dir }}
       run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/apt_install.sh"
 
     # https://github.com/marketplace/actions/setup-go-environment
     - name: Setup Go
       uses: actions/setup-go@v7
-      if: ${{ inputs.go-version != 'none' || steps.detect-versions.outputs.go-file }}
+      if: ${{ inputs.go-version != 'none' || inputs.go-version-file != '' || steps.detect-versions.outputs.go-file }}
       with:
         go-version: ${{ inputs.go-version != 'none' && inputs.go-version || '' }}
         go-version-file: ${{ inputs.go-version == 'none' && steps.detect-versions.outputs.go-file || inputs.go-version-file }}
@@ -668,7 +694,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Go
       uses: actions/cache@v6
-      if: ${{ inputs.go-version != 'none' || steps.detect-versions.outputs.go-file }}
+      if: ${{ inputs.go-version != 'none' || inputs.go-version-file != '' || steps.detect-versions.outputs.go-file }}
       with:
         path: |
           ~/.cache/go-build
@@ -679,7 +705,7 @@ runs:
     # https://github.com/marketplace/actions/setup-java-jdk
     - name: Setup Java
       uses: actions/setup-java@v6
-      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
+      if: ${{ inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file }}
       with:
         java-version: ${{ inputs.java-version != 'none' && inputs.java-version || '' }}
         java-version-file: ${{ inputs.java-version == 'none' && steps.detect-versions.outputs.java-file || inputs.java-version-file }}
@@ -718,7 +744,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Gradle
       uses: actions/cache@v6
-      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
+      if: ${{ inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file }}
       with:
         path: |
           ~/.gradle/caches
@@ -729,7 +755,7 @@ runs:
     # https://github.com/marketplace/actions/cache
     - name: Cache - Maven
       uses: actions/cache@v6
-      if: ${{ inputs.java-version != 'none' || steps.detect-versions.outputs.java-file }}
+      if: ${{ inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file }}
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -738,7 +764,7 @@ runs:
     # https://github.com/marketplace/actions/setup-node-js-environment
     - name: Setup Node
       uses: actions/setup-node@v7
-      if: ${{ inputs.node-version != 'none' || steps.detect-versions.outputs.node-file }}
+      if: ${{ inputs.node-version != 'none' || inputs.node-version-file != '' || steps.detect-versions.outputs.node-file }}
       with:
         node-version: ${{ inputs.node-version != 'none' && inputs.node-version || '' }}
         node-version-file: ${{ inputs.node-version == 'none' && steps.detect-versions.outputs.node-file || inputs.node-version-file }}
@@ -747,8 +773,32 @@ runs:
         registry-url: ${{ inputs.node-registry-url }}
         scope: ${{ inputs.node-scope }}
         token: ${{ inputs.node-token }}
-        cache: ${{ inputs.node-cache }}
-        cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
+        package-manager-cache: false
+
+    - name: Cache - Node Location
+      id: node-cache-dir
+      shell: bash
+      if: ${{ inputs.node-cache != '' && (inputs.node-version != 'none' || inputs.node-version-file != '' || steps.detect-versions.outputs.node-file) }}
+      env:
+        NODE_CACHE: ${{ inputs.node-cache }}
+        NODE_CACHE_DEPENDENCY_PATH: ${{ inputs.node-cache-dependency-path }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/node_cache_dir.sh"
+
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - Node
+      id: node-cache
+      uses: actions/cache@v6
+      if: ${{ steps.node-cache-dir.outputs.dir != '' }}
+      with:
+        path: ${{ steps.node-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-${{ runner.arch }}-node-${{ inputs.node-cache }}-${{ inputs.node-cache-dependency-path != '' && hashFiles(inputs.node-cache-dependency-path) || hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock', '**/pnpm-lock.yaml') }}
+
+    - name: Cache - Node Prune Empty
+      shell: bash
+      if: ${{ steps.node-cache-dir.outputs.dir != '' && steps.node-cache.outputs.cache-hit != 'true' }}
+      env:
+        CACHE_DIR: ${{ steps.node-cache-dir.outputs.dir }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/prune_empty_cache_dir.sh"
 
     - name: Setup PHP (apt)
       id: php-apt
@@ -769,7 +819,7 @@ runs:
     # https://github.com/marketplace/actions/setup-php-action
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
-      if: ${{ steps.php-apt.outputs.installed != 'true' && (inputs.php-version != 'none' || steps.detect-versions.outputs.php-file) }}
+      if: ${{ steps.php-apt.outputs.installed != 'true' && (inputs.php-version != 'none' || inputs.php-version-file != '' || steps.detect-versions.outputs.php-file) }}
       with:
         php-version: ${{ inputs.php-version != 'none' && inputs.php-version || '' }}
         php-version-file: ${{ inputs.php-version == 'none' && steps.detect-versions.outputs.php-file || inputs.php-version-file }}
@@ -783,13 +833,13 @@ runs:
     - name: Cache - Composer Location
       id: composer-cache
       shell: bash
-      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
+      if: ${{ inputs.php-version != 'none' || inputs.php-version-file != '' || steps.detect-versions.outputs.php-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/composer_cache_dir.sh"
     - name: Cache - Composer
       uses: actions/cache@v6
-      if: ${{ inputs.php-version != 'none' || steps.detect-versions.outputs.php-file }}
+      if: ${{ inputs.php-version != 'none' || inputs.php-version-file != '' || steps.detect-versions.outputs.php-file }}
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -798,7 +848,7 @@ runs:
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
       uses: actions/setup-python@v7
-      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
+      if: ${{ inputs.python-version != 'none' || inputs.python-version-file != '' || steps.detect-versions.outputs.python-file }}
       with:
         python-version: ${{ inputs.python-version != 'none' && inputs.python-version || '' }}
         python-version-file: ${{ inputs.python-version == 'none' && steps.detect-versions.outputs.python-file || inputs.python-version-file }}
@@ -809,25 +859,6 @@ runs:
         cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
         update-environment: ${{ inputs.python-update-environment }}
         allow-prereleases: ${{ inputs.python-allow-prereleases }}
-
-    # https://github.com/marketplace/actions/cache
-    - name: Cache - PIP Location
-      id: pip-cache
-      shell: bash
-      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: |
-        dir="$(pip cache dir)" || { echo "::error::pip is not available - cannot resolve the pip cache directory"; exit 1; }
-        [ -n "$dir" ] || { echo "::error::pip cache dir returned empty"; exit 1; }
-        echo "dir=$dir" >> "${GITHUB_OUTPUT}"
-    - name: Cache - PIP
-      uses: actions/cache@v6
-      if: ${{ inputs.python-version != 'none' || steps.detect-versions.outputs.python-file }}
-      with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: ${{ runner.os }}-pip-
 
     # https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
     - name: Setup Ruby
@@ -916,17 +947,17 @@ runs:
         opensearch-version: ${{ inputs.opensearch-version }}
         plugins: ${{ inputs.opensearch-plugins }}
 
-    # https://github.com/marketplace/actions/mongodb-in-github-actions
     - name: Setup MongoDB
-      uses: supercharge/mongodb-github-action@1.12.1
+      shell: bash
       if: ${{ inputs.mongodb-version != 'none' }}
-      with:
-        mongodb-version: ${{ inputs.mongodb-version }}
-        mongodb-replica-set: ${{ inputs.mongodb-replica-set }}
-        mongodb-port: ${{ inputs.mongodb-port }}
-        mongodb-db: ${{ inputs.mongodb-db }}
-        mongodb-username: ${{ inputs.mongodb-username }}
-        mongodb-password: ${{ inputs.mongodb-password }}
+      env:
+        MONGODB_VERSION: ${{ inputs.mongodb-version }}
+        MONGODB_REPLICA_SET: ${{ inputs.mongodb-replica-set }}
+        MONGODB_PORT: ${{ inputs.mongodb-port }}
+        MONGODB_DB: ${{ inputs.mongodb-db }}
+        MONGODB_USERNAME: ${{ inputs.mongodb-username }}
+        MONGODB_PASSWORD: ${{ inputs.mongodb-password }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_mongodb.sh"
 
     # https://github.com/marketplace/actions/actions-setup-mysql
     - name: Setup MySQL
@@ -941,18 +972,18 @@ runs:
         user: ${{ inputs.mysql-user }}
         password: ${{ inputs.mysql-password }}
 
-    # https://github.com/marketplace/actions/rabbitmq-in-github-actions
     - name: Setup RabbitMQ
-      uses: namoshek/rabbitmq-github-action@v1
-      if: ${{ inputs.rabbitmq-version != 'none'}}
-      with:
-        version: ${{ inputs.rabbitmq-version }}
-        ports: ${{ inputs.rabbitmq-ports }}
-        certificates: ${{ inputs.rabbitmq-certificates }}
-        config: ${{ inputs.rabbitmq-config }}
-        definitions: ${{ inputs.rabbitmq-definitions }}
-        plugins: ${{ inputs.rabbitmq-plugins }}
-        container-name: ${{ inputs.rabbitmq-container-name }}
+      shell: bash
+      if: ${{ inputs.rabbitmq-version != 'none' }}
+      env:
+        RABBITMQ_VERSION: ${{ inputs.rabbitmq-version }}
+        RABBITMQ_PORTS: ${{ inputs.rabbitmq-ports }}
+        RABBITMQ_CERTIFICATES: ${{ inputs.rabbitmq-certificates }}
+        RABBITMQ_CONFIG: ${{ inputs.rabbitmq-config }}
+        RABBITMQ_DEFINITIONS: ${{ inputs.rabbitmq-definitions }}
+        RABBITMQ_PLUGINS: ${{ inputs.rabbitmq-plugins }}
+        RABBITMQ_CONTAINER_NAME: ${{ inputs.rabbitmq-container-name }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_rabbitmq.sh"
 
     # https://github.com/marketplace/actions/actions-setup-redis
     - name: Setup Redis
