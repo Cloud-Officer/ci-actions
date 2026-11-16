@@ -916,17 +916,17 @@ runs:
         opensearch-version: ${{ inputs.opensearch-version }}
         plugins: ${{ inputs.opensearch-plugins }}
 
-    # https://github.com/marketplace/actions/mongodb-in-github-actions
     - name: Setup MongoDB
-      uses: supercharge/mongodb-github-action@1.12.1
+      shell: bash
       if: ${{ inputs.mongodb-version != 'none' }}
-      with:
-        mongodb-version: ${{ inputs.mongodb-version }}
-        mongodb-replica-set: ${{ inputs.mongodb-replica-set }}
-        mongodb-port: ${{ inputs.mongodb-port }}
-        mongodb-db: ${{ inputs.mongodb-db }}
-        mongodb-username: ${{ inputs.mongodb-username }}
-        mongodb-password: ${{ inputs.mongodb-password }}
+      env:
+        MONGODB_VERSION: ${{ inputs.mongodb-version }}
+        MONGODB_REPLICA_SET: ${{ inputs.mongodb-replica-set }}
+        MONGODB_PORT: ${{ inputs.mongodb-port }}
+        MONGODB_DB: ${{ inputs.mongodb-db }}
+        MONGODB_USERNAME: ${{ inputs.mongodb-username }}
+        MONGODB_PASSWORD: ${{ inputs.mongodb-password }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_mongodb.sh"
 
     # https://github.com/marketplace/actions/actions-setup-mysql
     - name: Setup MySQL
@@ -941,18 +941,18 @@ runs:
         user: ${{ inputs.mysql-user }}
         password: ${{ inputs.mysql-password }}
 
-    # https://github.com/marketplace/actions/rabbitmq-in-github-actions
     - name: Setup RabbitMQ
-      uses: namoshek/rabbitmq-github-action@v1
-      if: ${{ inputs.rabbitmq-version != 'none'}}
-      with:
-        version: ${{ inputs.rabbitmq-version }}
-        ports: ${{ inputs.rabbitmq-ports }}
-        certificates: ${{ inputs.rabbitmq-certificates }}
-        config: ${{ inputs.rabbitmq-config }}
-        definitions: ${{ inputs.rabbitmq-definitions }}
-        plugins: ${{ inputs.rabbitmq-plugins }}
-        container-name: ${{ inputs.rabbitmq-container-name }}
+      shell: bash
+      if: ${{ inputs.rabbitmq-version != 'none' }}
+      env:
+        RABBITMQ_VERSION: ${{ inputs.rabbitmq-version }}
+        RABBITMQ_PORTS: ${{ inputs.rabbitmq-ports }}
+        RABBITMQ_CERTIFICATES: ${{ inputs.rabbitmq-certificates }}
+        RABBITMQ_CONFIG: ${{ inputs.rabbitmq-config }}
+        RABBITMQ_DEFINITIONS: ${{ inputs.rabbitmq-definitions }}
+        RABBITMQ_PLUGINS: ${{ inputs.rabbitmq-plugins }}
+        RABBITMQ_CONTAINER_NAME: ${{ inputs.rabbitmq-container-name }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_rabbitmq.sh"
 
     # https://github.com/marketplace/actions/actions-setup-redis
     - name: Setup Redis
