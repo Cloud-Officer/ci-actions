@@ -954,10 +954,18 @@ runs:
         plugins: ${{ inputs.rabbitmq-plugins }}
         container-name: ${{ inputs.rabbitmq-container-name }}
 
+    - name: Detect Running Redis
+      id: redis-running
+      shell: bash
+      if: ${{ inputs.redis-version != 'none'}}
+      env:
+        PORT: ${{ inputs.redis-port }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/redis_running.sh"
+
     # https://github.com/marketplace/actions/actions-setup-redis
     - name: Setup Redis
       uses: shogo82148/actions-setup-redis@v1
-      if: ${{ inputs.redis-version != 'none'}}
+      if: ${{ inputs.redis-version != 'none' && steps.redis-running.outputs.running != 'true' }}
       with:
         distribution: ${{ inputs.redis-distribution }}
         redis-version: ${{ inputs.redis-version }}

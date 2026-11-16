@@ -261,6 +261,8 @@ installed.
 
 #### Redis
 
+Setup Redis is skipped when a Redis server already answers `PING` on `redis-port` (for example a `services.redis` container), so a job that declares a Redis service does not install a second one.
+
 | Input | Required | Default | Description |
 | ----- | -------- | ------- | ----------- |
 | `redis-distribution` | no | `redis` | the distribution of redis |
