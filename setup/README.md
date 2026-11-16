@@ -41,6 +41,13 @@ Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
 
 * **pip:** one cache, the one `actions/setup-python` keeps for `python-cache` (default `pip`), keyed on the dependency
   files. Set `python-cache: ''` to turn it off.
+* **Python virtualenv:** with `python-venv-cache: 'true'`, a virtualenv is created after Python is set up and activated
+  for the rest of the job (`VIRTUAL_ENV` set, its `bin` first on `PATH`), so a plain `pip3 install -r ...` installs into
+  it. It is cached per runner image, architecture, exact Python version and the hash of `python-cache-dependency-path`
+  (or every `*requirements*.txt`, `pyproject.toml`, `setup.py`, `setup.cfg`, `Pipfile.lock`, `poetry.lock` and
+  `uv.lock`), without restore-keys, so a dependency change builds a fresh virtualenv. On a hit pip finds every pinned
+  package already installed; editable installs (`-e .`) only relink the project. With it on, the pip cache from
+  `python-cache` is rarely used, so `python-cache: ''` avoids saving both.
 * **npm, Yarn, pnpm:** `node-cache` restores the package manager's cache directory, keyed on the lockfile(s) in
   `node-cache-dependency-path` (or every lockfile in the repository). When nothing was restored and the job installs
   nothing, the empty directory is removed so no empty cache is saved over the key.
@@ -169,6 +176,7 @@ installed.
 | `python-cache-dependency-path` | no | — | Used to specify the path to dependency files. Supports wildcards or a list of file names for caching multiple dependencies. |
 | `python-update-environment` | no | `True` | Set this option if you want the action to update environment variables. |
 | `python-allow-prereleases` | no | `False` | When 'true', a version range passed to 'python-version' input will match prerelease versions if no GA versions are found. Only 'x.y' version range is supported for CPython. |
+| `python-venv-cache` | no | `false` | Create, activate and cache a virtualenv keyed on the exact Python version and the dependency files (see [Caching](#caching)) |
 
 #### Ruby
 
@@ -297,6 +305,7 @@ installed.
 | Output | Description |
 | ------ | ----------- |
 | `tuist-cache-hit` | Cache hit for Tuist |
+| `python-venv-cache-hit` | Cache hit for the Python virtualenv |
 
 ## Example usage
 
