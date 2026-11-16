@@ -2,7 +2,8 @@
 
 # Installs the space-separated APT_PACKAGES list with apt-get, unless every package is already installed.
 #
-# With APT_CACHE_DIR set, downloaded .deb files are kept there and later reinstalled from it without `apt-get update`.
+# With APT_CACHE_DIR set, apt uses it as its archive directory: verified .deb files found there are not downloaded again,
+# and `apt-get update` runs only when installing from the image's package index fails.
 #
 # Usage (from a composite action step):
 #   env:
@@ -15,7 +16,6 @@ set -euo pipefail
 : "${APT_PACKAGES?APT_PACKAGES must be set}"
 
 cache_dir="${APT_CACHE_DIR:-}"
-archives="${APT_ARCHIVES_DIR:-/var/cache/apt/archives}"
 
 all_installed() {
   local status
@@ -25,7 +25,7 @@ all_installed() {
 }
 
 if [ -n "${cache_dir}" ]; then
-  mkdir -p "${cache_dir}"
+  mkdir -p "${cache_dir}/partial"
 fi
 
 if all_installed; then
@@ -33,29 +33,24 @@ if all_installed; then
   exit 0
 fi
 
-if [ -n "${cache_dir}" ] && compgen -G "${cache_dir}/*.deb" > /dev/null; then
-  if sudo apt-get --yes --no-install-recommends install "${cache_dir}"/*.deb && all_installed; then
-    echo "Installed from the apt cache: ${APT_PACKAGES}"
-    exit 0
-  fi
-
-  echo "::warning::Installing from the apt cache failed - falling back to apt-get update and install"
-fi
-
-sudo apt-get --yes update
-
 if [ -z "${cache_dir}" ]; then
+  sudo apt-get --yes update
   # shellcheck disable=SC2086 # APT_PACKAGES is word-split on purpose: one input carries several packages.
   sudo apt-get --yes --no-install-recommends install ${APT_PACKAGES}
   exit 0
 fi
 
-sudo apt-get clean
-# shellcheck disable=SC2086 # APT_PACKAGES is word-split on purpose: one input carries several packages.
-sudo apt-get --yes --no-install-recommends -o APT::Keep-Downloaded-Packages=true install ${APT_PACKAGES}
+install_with_cache() {
+  # shellcheck disable=SC2086 # APT_PACKAGES is word-split on purpose: one input carries several packages.
+  sudo apt-get --yes --no-install-recommends -o "Dir::Cache::Archives=${cache_dir}" -o APT::Keep-Downloaded-Packages=true install ${APT_PACKAGES}
+}
 
-rm -f "${cache_dir}"/*.deb
-
-if compgen -G "${archives}/*.deb" > /dev/null; then
-  cp "${archives}"/*.deb "${cache_dir}/"
+if install_with_cache; then
+  echo "Installed without apt-get update: ${APT_PACKAGES}"
+else
+  echo "::warning::Installing without apt-get update failed - updating the package index and retrying"
+  sudo apt-get --yes update
+  install_with_cache
 fi
+
+sudo chown -R "$(id -u):$(id -g)" "${cache_dir}"

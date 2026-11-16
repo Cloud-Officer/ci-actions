@@ -44,8 +44,9 @@ Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
 * **npm, Yarn, pnpm:** `node-cache` restores the package manager's cache directory, keyed on the lockfile(s) in
   `node-cache-dependency-path` (or every lockfile in the repository). When nothing was restored and the job installs
   nothing, the empty directory is removed so no empty cache is saved over the key.
-* **apt:** the `.deb` files downloaded for `apt-packages` are cached per runner image and package list. On a hit they
-  are installed without `apt-get update`; packages that are already installed are skipped.
+* **apt:** the `.deb` files downloaded for `apt-packages` are cached per runner image and package list and used as apt's
+  archive directory, so on a hit apt verifies them against its package index instead of downloading them. Installing
+  first runs without `apt-get update` and updates only if that fails; packages that are already installed are skipped.
 
 ### PHP from apt
 

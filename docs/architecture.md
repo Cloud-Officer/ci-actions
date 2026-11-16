@@ -328,9 +328,9 @@ surface, and neither may take the other's content.
 - `apt_install.sh`: runs `apt-get update` then installs the space-separated
   `APT_PACKAGES` list, failing before the update when the variable is unset and
   doing nothing when dpkg reports every package installed. With `APT_CACHE_DIR`
-  (set by `setup`) it copies the downloaded `.deb` files there and, when they are
-  already there, installs them without `apt-get update`, falling back to the full
-  update and install if that fails. Called by the `Install APT Packages` step of
+  (set by `setup`) it uses that directory as apt's archive directory, so verified
+  cached `.deb` files are not downloaded again, and installs without
+  `apt-get update` first, updating and retrying only if that fails. Called by the `Install APT Packages` step of
   `setup` and `linters/phpstan`; unit-tested by `linters/tests/apt_install.bats`
 - `apt_cache_key.sh`: writes the apt `.deb` cache `dir` and a `key` built from the
   runner image (`ImageOS`, `ImageVersion`, `RUNNER_ARCH`) and the sorted package
