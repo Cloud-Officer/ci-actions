@@ -10,10 +10,10 @@ This action performs setup of many common tools all at once. Please see the indi
 * [setup-ruby](<https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby>)
 * [setup-xcode](<https://github.com/marketplace/actions/setup-xcode-version>)
 * [setup-opensearch](<https://github.com/marketplace/actions/setup-opensearch>)
-* [setup-mongodb](<https://github.com/marketplace/actions/mongodb-in-github-actions>)
 * [setup-mysql](<https://github.com/marketplace/actions/actions-setup-mysql>)
-* [setup-rabbitmq](<https://github.com/marketplace/actions/rabbitmq-in-github-actions>)
 * [setup-redis](<https://github.com/marketplace/actions/actions-setup-redis>)
+
+MongoDB and RabbitMQ are started with `docker run` from the official `mongo` and `rabbitmq` images, and only when their version input is set.
 
 Take note that when you enable the setup action for a language, the corresponding [cache](<https://github.com/marketplace/actions/cache>) action(s) will also be automatically enabled.
 
