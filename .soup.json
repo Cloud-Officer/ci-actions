@@ -659,18 +659,6 @@
     "requirements": "Installs Java for the setup action and the PMD linter",
     "verification_reasoning": "Official GitHub toolchain action"
   },
-  "GHA:gradle/actions": {
-    "language": "GHA",
-    "package": "gradle/actions",
-    "version": "v6",
-    "license": "MIT",
-    "description": "A collection of GitHub Actions to accelerate your Gradle Builds on GitHub",
-    "website": "https://github.com/gradle/actions",
-    "last_verified_at": "2026-11-16",
-    "risk_level": "Low",
-    "requirements": "Caches the Gradle User Home for the setup action",
-    "verification_reasoning": "Official Gradle action maintained by Gradle Inc."
-  },
   "GHA:ruby/setup-ruby": {
     "language": "GHA",
     "package": "ruby/setup-ruby",

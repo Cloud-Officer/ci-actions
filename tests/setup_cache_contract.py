@@ -13,9 +13,8 @@
      by actions/setup-node, and an empty miss is pruned before the save.
   5. apt packages go through the cache-key helper, an actions/cache step and
      apt_install.sh with APT_CACHE_DIR bound to that cache directory.
-  6. Gradle is cached once, by gradle/actions/setup-gradle, only when the job
-     asks for it or the repository has Gradle build files; actions/setup-java
-     never caches Gradle and no actions/cache step caches ~/.gradle.
+  6. Gradle is cached by one actions/cache step whenever Java is set up, and
+     actions/setup-java caches what java-cache asks for.
   7. The Maven repository is restored by actions/cache only when a pom.xml
      exists, and not when `java-cache: maven` already has setup-java cache it.
   8. The opt-in Python virtualenv is keyed on the exact Python version and
@@ -149,23 +148,17 @@ def check_java(steps: list[dict]) -> list[str]:
     java_gate = "inputs.java-version!='none'||inputs.java-version-file!=''||steps.detect-versions.outputs.java-file"
 
     java = [step for step in steps if uses(step, "actions/setup-java")]
-    if len(java) != 1 or compact((java[0].get("with") or {}).get("cache")) != (
-        "${{inputs.java-cache!='gradle'&&inputs.java-cache||''}}"
-    ):
-        errors.append(f"{SETUP}: actions/setup-java must not cache Gradle (setup-gradle does)")
+    if len(java) != 1 or compact((java[0].get("with") or {}).get("cache")) != "${{inputs.java-cache}}":
+        errors.append(f"{SETUP}: actions/setup-java must cache what java-cache asks for")
 
-    for step in steps:
-        if uses(step, "actions/cache") and ".gradle" in compact((step.get("with") or {}).get("path")):
-            errors.append(f"{SETUP}: step '{step.get('name')}' caches ~/.gradle - gradle/actions/setup-gradle does")
-
-    gradle = [step for step in steps if uses(step, "gradle/actions/setup-gradle")]
+    gradle = [
+        step for step in steps
+        if uses(step, "actions/cache") and "~/.gradle/caches" in str((step.get("with") or {}).get("path", ""))
+    ]
     if len(gradle) != 1:
-        errors.append(f"{SETUP}: expected one gradle/actions/setup-gradle step, found {len(gradle)}")
-    else:
-        condition = compact(gradle[0].get("if"))
-        for part in (java_gate, "inputs.java-cache=='gradle'", "hashFiles('**/*.gradle*','**/gradle-wrapper.properties')!=''"):
-            if part not in condition:
-                errors.append(f"{SETUP}: setup-gradle condition is missing {part}")
+        errors.append(f"{SETUP}: expected one actions/cache step on ~/.gradle/caches, found {len(gradle)}")
+    elif java_gate not in compact(gradle[0].get("if")):
+        errors.append(f"{SETUP}: Gradle cache condition is missing {java_gate}")
 
     maven = [
         step for step in steps
