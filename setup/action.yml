@@ -26,12 +26,12 @@ inputs:
     default: 'false'
   detect-version-files:
     description: >-
-      Set to 'true' to also set up every language whose version file (.go-version, .java-version, .nvmrc or
-      .node-version, .php-version, .python-version, .ruby-version) is in the repository root, even when the job does
-      not ask for that language. By default a language is set up only when its <language>-version or
-      <language>-version-file input is passed (ruby-version: default reads .ruby-version).
+      Set up every language whose version file (.go-version, .java-version, .nvmrc or .node-version, .php-version,
+      .python-version, .ruby-version) is in the repository root, even when the job does not ask for that language.
+      Defaults to 'true' because generated workflows rely on version files; set to 'false' so a language is set up only
+      when its <language>-version or <language>-version-file input is passed (ruby-version: default reads .ruby-version).
     required: false
-    default: 'false'
+    default: 'true'
 
   # ===== AWS (cloud credentials) =====
   aws-region:

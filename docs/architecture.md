@@ -552,7 +552,7 @@ end-to-end in CI without secrets or side effects.
   inputs, no longer require the access key pair, run `require_aws_credentials.sh` in their first step with the role
   and keys bound from inputs, and pass role, keys and OIDC options to `configure-aws-credentials`; and that `setup`
   configures AWS credentials when only `aws-role-to-assume` is set
-- `setup_cache_contract.py`: asserts `setup` runs version-file detection only when `detect-version-files` is `'true'`,
+- `setup_cache_contract.py`: asserts `setup` runs version-file detection only when `detect-version-files` is `'true'` (its default),
   gates every detected-language step on that language's explicit version inputs, caches pip only through
   `actions/setup-python`, caches Node packages through its own `actions/cache` step (pruned when empty) rather than
   `actions/setup-node`, and installs apt packages through the cache-key helper and `APT_CACHE_DIR`

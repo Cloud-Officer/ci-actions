@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Contract: `setup` sets up only the languages a job asks for, and caches each thing once.
 
-  1. Version-file auto-detection is opt-in: the detect step runs only when
-     `detect-version-files` is 'true', and that input defaults to 'false'.
+  1. Version-file auto-detection can be turned off: the detect step runs only when
+     `detect-version-files` is 'true', and that input defaults to 'true' because
+     generated workflows rely on version files.
   2. Every step gated on a detected version file is also gated on the
      language's explicit `<language>-version` input, and on
      `<language>-version-file` when the action declares one.
@@ -41,8 +42,8 @@ def uses(step: dict, action: str) -> bool:
 def check_detection(inputs: dict, steps: list[dict]) -> list[str]:
     errors: list[str] = []
 
-    if str((inputs.get("detect-version-files") or {}).get("default")) != "false":
-        errors.append(f"{SETUP}: input 'detect-version-files' must default to 'false'")
+    if str((inputs.get("detect-version-files") or {}).get("default")) != "true":
+        errors.append(f"{SETUP}: input 'detect-version-files' must default to 'true'")
 
     detect = [step for step in steps if step.get("id") == DETECT_ID]
     if len(detect) != 1:
