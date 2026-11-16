@@ -371,6 +371,90 @@ jobs:
         fi
         echo "setup OK on ${RUNNER_OS}"
 
+  python-venv-smoke:
+    name: Setup Python venv cache (fill)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      image-version: ${{ steps.image.outputs.version }}
+    steps:
+    - name: Record the runner image version
+      id: image
+      shell: bash
+      run: echo "version=${ImageVersion}" >> "${GITHUB_OUTPUT}"
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Run setup action
+      id: setup
+      uses: ./setup
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        detect-version-files: 'false'
+        python-version: '3.x'
+        python-cache: ''
+        python-cache-dependency-path: tests/python-venv/requirements.txt
+        python-venv-cache: 'true'
+    - name: Assert the venv is active
+      shell: bash
+      run: |
+        set -euo pipefail
+        test -n "${VIRTUAL_ENV:-}" || { echo "::error::VIRTUAL_ENV is not set"; exit 1; }
+        test "$(command -v pip3)" = "${VIRTUAL_ENV}/bin/pip3" || { echo "::error::pip3 is $(command -v pip3), not the venv's"; exit 1; }
+    - name: Install requirements into the venv
+      shell: bash
+      run: |
+        set -euo pipefail
+        pip3 install -r tests/python-venv/requirements.txt
+        python -c 'import os, six; assert six.__file__.startswith(os.environ["VIRTUAL_ENV"]), six.__file__'
+
+  python-venv-reuse-smoke:
+    name: Setup Python venv cache (reuse)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: python-venv-smoke
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Run setup action
+      id: setup
+      uses: ./setup
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        detect-version-files: 'false'
+        python-version: '3.x'
+        python-cache: ''
+        python-cache-dependency-path: tests/python-venv/requirements.txt
+        python-venv-cache: 'true'
+    - name: Assert the venv is active
+      shell: bash
+      run: |
+        set -euo pipefail
+        test -n "${VIRTUAL_ENV:-}" || { echo "::error::VIRTUAL_ENV is not set"; exit 1; }
+        test "$(command -v pip3)" = "${VIRTUAL_ENV}/bin/pip3" || { echo "::error::pip3 is $(command -v pip3), not the venv's"; exit 1; }
+    - name: Assert the packages were restored with the venv
+      shell: bash
+      env:
+        CACHE_HIT: ${{ steps.setup.outputs.python-venv-cache-hit }}
+        FILL_IMAGE_VERSION: ${{ needs.python-venv-smoke.outputs.image-version }}
+      run: |
+        set -euo pipefail
+        if [ "${ImageVersion}" != "${FILL_IMAGE_VERSION}" ]; then
+          echo "::notice::runner image ${ImageVersion} differs from the fill job's ${FILL_IMAGE_VERSION}, so the venv key differs too"
+          exit 0
+        fi
+        test "${CACHE_HIT}" = true || { echo "::error::expected a venv cache hit, got '${CACHE_HIT}'"; exit 1; }
+        python -c 'import six' || { echo "::error::six is not in the restored venv"; exit 1; }
+    - name: Install requirements into the venv
+      shell: bash
+      run: |
+        set -euo pipefail
+        pip3 install -r tests/python-venv/requirements.txt
+        python -c 'import os, six; assert six.__file__.startswith(os.environ["VIRTUAL_ENV"]), six.__file__'
+
   soup-smoke:
     name: SOUP action
     runs-on: ubuntu-latest

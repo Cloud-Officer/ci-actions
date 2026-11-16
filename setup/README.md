@@ -41,12 +41,33 @@ Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
 
 * **pip:** one cache, the one `actions/setup-python` keeps for `python-cache` (default `pip`), keyed on the dependency
   files. Set `python-cache: ''` to turn it off.
+* **Python virtualenv:** with `python-venv-cache: 'true'`, a virtualenv is created after Python is set up and activated
+  for the rest of the job (`VIRTUAL_ENV` set, its `bin` first on `PATH`), so a plain `pip3 install -r ...` installs into
+  it. It is cached per runner image, architecture, exact Python version and the hash of `python-cache-dependency-path`
+  (or every `*requirements*.txt`, `pyproject.toml`, `setup.py`, `setup.cfg`, `Pipfile.lock`, `poetry.lock` and
+  `uv.lock`), without restore-keys, so a dependency change builds a fresh virtualenv. On a hit pip finds every pinned
+  package already installed; editable installs (`-e .`) only relink the project. With it on, the pip cache from
+  `python-cache` is rarely used, so `python-cache: ''` avoids saving both.
+* **Python interpreter:** on Linux, an exact CPython version (e.g. `3.13.13`, from `python-version` or the version
+  file) that the runner image does not ship is restored into the tool cache before `actions/setup-python` runs, keyed
+  on the runner image, architecture and version, so it is downloaded only on the first run. Version ranges (`3.13`,
+  `3.x`), PyPy and free-threaded builds are left to `actions/setup-python`.
 * **npm, Yarn, pnpm:** `node-cache` restores the package manager's cache directory, keyed on the lockfile(s) in
   `node-cache-dependency-path` (or every lockfile in the repository). When nothing was restored and the job installs
   nothing, the empty directory is removed so no empty cache is saved over the key.
-* **apt:** the `.deb` files downloaded for `apt-packages` are cached per runner image and package list and used as apt's
-  archive directory, so on a hit apt verifies them against its package index instead of downloading them. Installing
-  first runs without `apt-get update` and updates only if that fails; packages that are already installed are skipped.
+* **apt:** cached per runner image and package list. After installing on a miss, the files, dpkg records and
+  alternatives of the newly installed packages are saved with the downloaded `.deb` files; on a hit they are extracted
+  onto `/` and `ldconfig` runs, so `apt-get` and dpkg are skipped. When that snapshot is missing or cannot be restored,
+  the `.deb` files are used as apt's archive directory, so apt verifies them against its package index instead of
+  downloading them. Installing first runs without `apt-get update` and updates only if that fails; packages that are
+  already installed are skipped. Packages whose maintainer scripts add users or manage services are never snapshotted
+  and always install from the `.deb` files.
+* **Gradle:** [setup-gradle](<https://github.com/marketplace/actions/build-with-gradle>) caches the Gradle User Home
+  when Java is set up and `java-cache: gradle` is set or the repository has Gradle build files. It saves only the
+  entries the build used, removes unused ones, and writes the cache only from the default branch (other branches read
+  it). `java-cache: gradle` is not also passed to `actions/setup-java`.
+* **Maven:** `~/.m2/repository` is restored only when the repository has a `pom.xml`. With `java-cache: maven`,
+  `actions/setup-java` caches it instead.
 
 ### PHP from apt
 
@@ -169,6 +190,7 @@ installed.
 | `python-cache-dependency-path` | no | — | Used to specify the path to dependency files. Supports wildcards or a list of file names for caching multiple dependencies. |
 | `python-update-environment` | no | `True` | Set this option if you want the action to update environment variables. |
 | `python-allow-prereleases` | no | `False` | When 'true', a version range passed to 'python-version' input will match prerelease versions if no GA versions are found. Only 'x.y' version range is supported for CPython. |
+| `python-venv-cache` | no | `false` | Create, activate and cache a virtualenv keyed on the exact Python version and the dependency files (see [Caching](#caching)) |
 
 #### Ruby
 
@@ -297,6 +319,7 @@ installed.
 | Output | Description |
 | ------ | ----------- |
 | `tuist-cache-hit` | Cache hit for Tuist |
+| `python-venv-cache-hit` | Cache hit for the Python virtualenv |
 
 ## Example usage
 
