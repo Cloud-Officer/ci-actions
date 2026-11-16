@@ -399,7 +399,7 @@ surface, and neither may take the other's content.
 
 - Automatic language version detection from version files
 - Caching for Go, Gradle, Maven, Node.js, Composer, PIP, Bundler, Carthage,
-  CocoaPods, SPM, Tuist, Android
+  CocoaPods, SPM, Tuist, Android (Gradle through `gradle/actions/setup-gradle`; Maven only when a `pom.xml` exists)
 - AWS credential configuration, from an IAM role assumed through GitHub OIDC (`aws-role-to-assume`) or from an
   access key pair
 - SSH agent setup

@@ -729,8 +729,8 @@ runs:
         overwrite-settings: ${{ inputs.java-overwrite-settings }}
         gpg-private-key: ${{ inputs.java-gpg-private-key }}
         gpg-passphrase-env-var: ${{ inputs.java-gpg-passphrase-env-var }}
-        cache: ${{ inputs.java-cache }}
-        cache-jdk: ${{ inputs.java-cache-jdk }}
+        cache: ${{ inputs.java-cache != 'gradle' && inputs.java-cache || '' }}
+        cache-jdk: ${{ inputs.java-cache-jdk || (inputs.java-cache == 'gradle' && 'true' || '') }}
         cache-dependency-path: ${{ inputs.java-cache-dependency-path }}
         cache-path: ${{ inputs.java-cache-path }}
         cache-read-only: ${{ inputs.java-cache-read-only }}
@@ -741,21 +741,15 @@ runs:
         show-download-progress: ${{ inputs.java-show-download-progress }}
         problem-matcher: ${{ inputs.java-problem-matcher }}
 
-    # https://github.com/marketplace/actions/cache
+    # https://github.com/marketplace/actions/build-with-gradle
     - name: Cache - Gradle
-      uses: actions/cache@v6
-      if: ${{ inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file }}
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: ${{ runner.os }}-gradle-
+      uses: gradle/actions/setup-gradle@v6
+      if: ${{ (inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file) && (inputs.java-cache == 'gradle' || hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') != '') }}
 
     # https://github.com/marketplace/actions/cache
     - name: Cache - Maven
       uses: actions/cache@v6
-      if: ${{ inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file }}
+      if: ${{ (inputs.java-version != 'none' || inputs.java-version-file != '' || steps.detect-versions.outputs.java-file) && inputs.java-cache != 'maven' && hashFiles('**/pom.xml') != '' }}
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
