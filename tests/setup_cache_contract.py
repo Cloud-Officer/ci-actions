@@ -21,6 +21,8 @@
   8. The opt-in Python virtualenv is keyed on the exact Python version and
      the dependency files, restored without restore-keys and activated after
      the restore.
+  9. The Python interpreter is restored from the python-tool-cache helper's
+     path and key by an actions/cache step that runs before actions/setup-python.
 
 Usage: python3 tests/setup_cache_contract.py
 Exits non-zero and prints every violation found.
@@ -235,13 +237,42 @@ def check_python_venv(inputs: dict, outputs: dict, steps: list[dict]) -> list[st
     return errors
 
 
+def check_python_interpreter(steps: list[dict]) -> list[str]:
+    errors: list[str] = []
+    ids = [step.get("id") for step in steps]
+
+    if "python-tool-cache" not in ids:
+        return [f"{SETUP}: missing step 'python-tool-cache'"]
+
+    key_step = steps[ids.index("python-tool-cache")]
+    if "_lib/python_tool_cache.sh" not in str(key_step.get("run", "")):
+        errors.append(f"{SETUP}: step 'python-tool-cache' must run python_tool_cache.sh")
+
+    caches = [
+        step for step in steps
+        if uses(step, "actions/cache")
+        and compact((step.get("with") or {}).get("key")) == "${{steps.python-tool-cache.outputs.key}}"
+    ]
+    if len(caches) != 1 or compact(caches[0]["with"].get("path")) != "${{steps.python-tool-cache.outputs.path}}":
+        return errors + [f"{SETUP}: expected one actions/cache step on the python-tool-cache path and key"]
+
+    if compact(caches[0].get("if")) != "${{steps.python-tool-cache.outputs.key!=''}}":
+        errors.append(f"{SETUP}: the Python interpreter cache must run only when python-tool-cache wrote a key")
+
+    python = [step for step in steps if uses(step, "actions/setup-python")]
+    if python and not steps.index(key_step) < steps.index(caches[0]) < steps.index(python[0]):
+        errors.append(f"{SETUP}: the Python interpreter must be restored after its key and before actions/setup-python")
+
+    return errors
+
+
 def main() -> int:
     data = load_yaml(SETUP)
     inputs = data.get("inputs") or {}
     steps = composite_steps(data)
     errors = (
         check_detection(inputs, steps) + check_pip(steps) + check_node(steps) + check_apt(steps) + check_java(steps)
-        + check_python_venv(inputs, data.get("outputs") or {}, steps)
+        + check_python_venv(inputs, data.get("outputs") or {}, steps) + check_python_interpreter(steps)
     )
     return report(errors, f"Checked {SETUP} ({len(steps)} steps), {len(errors)} violation(s).")
 
