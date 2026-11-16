@@ -49,4 +49,5 @@ case "${NODE_CACHE}" in
 esac
 
 [ -n "${dir}" ] || { echo "::error::${NODE_CACHE} returned an empty cache directory"; exit 1; }
+[[ "${dir}" == /* && "${dir}" != *$'\n'* ]] || { echo "::error::${NODE_CACHE} returned a cache directory that is not a single absolute path"; exit 1; }
 echo "dir=${dir}" >> "${GITHUB_OUTPUT}"

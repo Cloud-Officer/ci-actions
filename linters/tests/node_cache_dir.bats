@@ -107,6 +107,21 @@ package-lock.json'
   [ ! -s "${GITHUB_OUTPUT}" ]
 }
 
+@test "fails when the package manager returns a relative directory" {
+  fake npm 'echo relative/cache'
+  run_script NODE_CACHE=npm
+  [ "$status" -eq 1 ]
+  [[ "$output" == *'::error::npm returned a cache directory that is not a single absolute path'* ]]
+  [ ! -s "${GITHUB_OUTPUT}" ]
+}
+
+@test "fails when the package manager returns a directory with a newline" {
+  fake npm 'printf "/home/runner/.npm\\nevil=1\\n"'
+  run_script NODE_CACHE=npm
+  [ "$status" -eq 1 ]
+  [ ! -s "${GITHUB_OUTPUT}" ]
+}
+
 @test "fails when NODE_CACHE is not set" {
   run env -u NODE_CACHE bash "${SCRIPT}"
   [ "$status" -ne 0 ]
