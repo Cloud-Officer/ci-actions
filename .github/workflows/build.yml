@@ -20,8 +20,6 @@ permissions:
 env:
   NODE-CACHE: npm
   NODE-VERSION: 26.13.1
-  PYTHON-CACHE: pip
-  PYTHON-VERSION: 3.15.2
 concurrency:
   group: build-${{github.ref}}
   cancel-in-progress: true
