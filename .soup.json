@@ -659,9 +659,9 @@
     "requirements": "Installs Java for the setup action and the PMD linter",
     "verification_reasoning": "Official GitHub toolchain action"
   },
-  "GHA:gradle/actions/setup-gradle": {
+  "GHA:gradle/actions": {
     "language": "GHA",
-    "package": "gradle/actions/setup-gradle",
+    "package": "gradle/actions",
     "version": "v6",
     "license": "MIT",
     "description": "A collection of GitHub Actions to accelerate your Gradle Builds on GitHub",

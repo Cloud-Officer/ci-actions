@@ -375,7 +375,13 @@ jobs:
     name: Setup Python venv cache (fill)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      image-version: ${{ steps.image.outputs.version }}
     steps:
+    - name: Record the runner image version
+      id: image
+      shell: bash
+      run: echo "version=${ImageVersion}" >> "${GITHUB_OUTPUT}"
     - name: Checkout
       uses: actions/checkout@v7
       with:
@@ -433,8 +439,13 @@ jobs:
       shell: bash
       env:
         CACHE_HIT: ${{ steps.setup.outputs.python-venv-cache-hit }}
+        FILL_IMAGE_VERSION: ${{ needs.python-venv-smoke.outputs.image-version }}
       run: |
         set -euo pipefail
+        if [ "${ImageVersion}" != "${FILL_IMAGE_VERSION}" ]; then
+          echo "::notice::runner image ${ImageVersion} differs from the fill job's ${FILL_IMAGE_VERSION}, so the venv key differs too"
+          exit 0
+        fi
         test "${CACHE_HIT}" = true || { echo "::error::expected a venv cache hit, got '${CACHE_HIT}'"; exit 1; }
         python -c 'import six' || { echo "::error::six is not in the restored venv"; exit 1; }
     - name: Install requirements into the venv
