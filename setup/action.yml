@@ -845,6 +845,24 @@ runs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
+    - name: Cache - Python Interpreter Key
+      id: python-tool-cache
+      shell: bash
+      if: ${{ inputs.python-version != 'none' || inputs.python-version-file != '' || steps.detect-versions.outputs.python-file }}
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        PYTHON_VERSION_FILE: ${{ inputs.python-version == 'none' && steps.detect-versions.outputs.python-file || inputs.python-version-file }}
+        PYTHON_ARCHITECTURE: ${{ inputs.python-architecture }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/python_tool_cache.sh"
+
+    # https://github.com/marketplace/actions/cache
+    - name: Cache - Python Interpreter
+      uses: actions/cache@v6
+      if: ${{ steps.python-tool-cache.outputs.key != '' }}
+      with:
+        path: ${{ steps.python-tool-cache.outputs.path }}
+        key: ${{ steps.python-tool-cache.outputs.key }}
+
     # https://github.com/marketplace/actions/setup-python
     - name: Setup Python
       uses: actions/setup-python@v7

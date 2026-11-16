@@ -41,6 +41,10 @@ Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
 
 * **pip:** one cache, the one `actions/setup-python` keeps for `python-cache` (default `pip`), keyed on the dependency
   files. Set `python-cache: ''` to turn it off.
+* **Python interpreter:** on Linux, an exact CPython version (e.g. `3.13.13`, from `python-version` or the version
+  file) that the runner image does not ship is restored into the tool cache before `actions/setup-python` runs, keyed
+  on the runner image, architecture and version, so it is downloaded only on the first run. Version ranges (`3.13`,
+  `3.x`), PyPy and free-threaded builds are left to `actions/setup-python`.
 * **npm, Yarn, pnpm:** `node-cache` restores the package manager's cache directory, keyed on the lockfile(s) in
   `node-cache-dependency-path` (or every lockfile in the repository). When nothing was restored and the job installs
   nothing, the empty directory is removed so no empty cache is saved over the key.
