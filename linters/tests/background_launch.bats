@@ -62,3 +62,13 @@ teardown() {
   [ "$status" -eq 0 ]
   [ "$output" = 'finished second' ]
 }
+
+@test "treats a non-numeric status as a failure" {
+  mkdir -p "${RUNNER_TEMP}/background-launch"
+  : > "${RUNNER_TEMP}/background-launch/svc.log"
+  echo 'x[$(touch pwned)]' > "${RUNNER_TEMP}/background-launch/svc.status"
+  cd "${RUNNER_TEMP}"
+  run wait_for_launch svc 5
+  [ "$status" -eq 1 ]
+  [ ! -e pwned ]
+}

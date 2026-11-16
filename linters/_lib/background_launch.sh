@@ -36,6 +36,7 @@ function wait_for_launch()
   done
 
   status="$(cat "${dir}/${name}.status")"
+  [[ "${status}" =~ ^[0-9]+$ ]] || status=1
   cat "${dir}/${name}.log"
   if ((status != 0)); then
     echo "::error::${name} failed to launch (exit ${status})"
