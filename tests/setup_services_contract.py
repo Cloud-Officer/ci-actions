@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Contract: setup starts MongoDB and RabbitMQ from gated run: steps, never Docker-based actions."""
+"""Contract: setup launches MongoDB and RabbitMQ in gated run: steps right after Checkout and waits for them last."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from _contract_lib import REPO_ROOT, composite_steps, load_yaml, report
 SETUP = os.path.join("setup", "action.yml")
 DOCKER_ACTIONS = ("supercharge/mongodb-github-action", "namoshek/rabbitmq-github-action")
 SERVICES = {
-    "Setup MongoDB": {
+    "MongoDB": {
         "gate": "mongodb-version",
         "script": "linters/_lib/start_mongodb.sh",
         "env": {
@@ -23,7 +23,7 @@ SERVICES = {
             "MONGODB_PASSWORD": "mongodb-password",
         },
     },
-    "Setup RabbitMQ": {
+    "RabbitMQ": {
         "gate": "rabbitmq-version",
         "script": "linters/_lib/start_rabbitmq.sh",
         "env": {
@@ -43,7 +43,7 @@ def compact(value: object) -> str:
     return str(value).replace(" ", "")
 
 
-def check_service(name: str, spec: dict, steps: list[dict]) -> list[str]:
+def check_step(name: str, phase: str, spec: dict, steps: list[dict]) -> list[str]:
     matches = [step for step in steps if step.get("name") == name]
     if len(matches) != 1:
         return [f"{SETUP}: expected exactly one '{name}' step, found {len(matches)}"]
@@ -55,7 +55,7 @@ def check_service(name: str, spec: dict, steps: list[dict]) -> list[str]:
         errors.append(f"{where} must be a run: step, not uses: {step['uses']}")
     if compact(step.get("if")) != f"${{{{inputs.{spec['gate']}!='none'}}}}":
         errors.append(f"{where} must be gated on inputs.{spec['gate']} != 'none' (if: {step.get('if')!r})")
-    expected_run = f'bash "${{GITHUB_ACTION_PATH}}/../{spec["script"]}"'
+    expected_run = f'bash "${{GITHUB_ACTION_PATH}}/../{spec["script"]}" {phase}'
     if str(step.get("run", "")).strip() != expected_run:
         errors.append(f"{where} must run {expected_run}")
     if not os.path.isfile(os.path.join(REPO_ROOT, spec["script"])):
@@ -68,6 +68,24 @@ def check_service(name: str, spec: dict, steps: list[dict]) -> list[str]:
     return errors
 
 
+def check_order(steps: list[dict]) -> list[str]:
+    names = [str(step.get("name", "")) for step in steps]
+    starts = {f"Start {service}" for service in SERVICES}
+    waits = {f"Wait for {service}" for service in SERVICES}
+    if not (starts | waits) <= set(names):
+        return []
+    errors: list[str] = []
+    first_other = next(i for i, name in enumerate(names) if name != "Checkout" and name not in starts)
+    last_other = max(i for i, name in enumerate(names) if name not in waits)
+    for name in sorted(starts):
+        if names.index(name) > first_other:
+            errors.append(f"{SETUP}: '{name}' must come right after Checkout, before '{names[first_other]}'")
+    for name in sorted(waits):
+        if names.index(name) < last_other:
+            errors.append(f"{SETUP}: '{name}' must come after every other step, including '{names[last_other]}'")
+    return errors
+
+
 def main() -> int:
     steps = composite_steps(load_yaml(SETUP))
     errors: list[str] = []
@@ -75,9 +93,11 @@ def main() -> int:
         action = str(step.get("uses", "")).split("@")[0]
         if action in DOCKER_ACTIONS:
             errors.append(f"{SETUP}: '{step.get('name')}' uses the Docker-based action {action}, which is built on every run")
-    for name, spec in SERVICES.items():
-        errors.extend(check_service(name, spec, steps))
-    return report(errors, f"Checked {len(SERVICES)} service step(s) in {SETUP}, {len(errors)} violation(s).")
+    for service, spec in SERVICES.items():
+        errors.extend(check_step(f"Start {service}", "launch", spec, steps))
+        errors.extend(check_step(f"Wait for {service}", "wait", spec, steps))
+    errors.extend(check_order(steps))
+    return report(errors, f"Checked {len(SERVICES)} service(s) in {SETUP}, {len(errors)} violation(s).")
 
 
 if __name__ == "__main__":

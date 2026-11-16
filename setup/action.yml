@@ -576,6 +576,31 @@ runs:
         lfs: true
         submodules: recursive
 
+    - name: Start MongoDB
+      shell: bash
+      if: ${{ inputs.mongodb-version != 'none' }}
+      env:
+        MONGODB_VERSION: ${{ inputs.mongodb-version }}
+        MONGODB_REPLICA_SET: ${{ inputs.mongodb-replica-set }}
+        MONGODB_PORT: ${{ inputs.mongodb-port }}
+        MONGODB_DB: ${{ inputs.mongodb-db }}
+        MONGODB_USERNAME: ${{ inputs.mongodb-username }}
+        MONGODB_PASSWORD: ${{ inputs.mongodb-password }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_mongodb.sh" launch
+
+    - name: Start RabbitMQ
+      shell: bash
+      if: ${{ inputs.rabbitmq-version != 'none' }}
+      env:
+        RABBITMQ_VERSION: ${{ inputs.rabbitmq-version }}
+        RABBITMQ_PORTS: ${{ inputs.rabbitmq-ports }}
+        RABBITMQ_CERTIFICATES: ${{ inputs.rabbitmq-certificates }}
+        RABBITMQ_CONFIG: ${{ inputs.rabbitmq-config }}
+        RABBITMQ_DEFINITIONS: ${{ inputs.rabbitmq-definitions }}
+        RABBITMQ_PLUGINS: ${{ inputs.rabbitmq-plugins }}
+        RABBITMQ_CONTAINER_NAME: ${{ inputs.rabbitmq-container-name }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_rabbitmq.sh" launch
+
     # Detect language version files
     - name: Detect Language Versions
       id: detect-versions
@@ -947,18 +972,6 @@ runs:
         opensearch-version: ${{ inputs.opensearch-version }}
         plugins: ${{ inputs.opensearch-plugins }}
 
-    - name: Setup MongoDB
-      shell: bash
-      if: ${{ inputs.mongodb-version != 'none' }}
-      env:
-        MONGODB_VERSION: ${{ inputs.mongodb-version }}
-        MONGODB_REPLICA_SET: ${{ inputs.mongodb-replica-set }}
-        MONGODB_PORT: ${{ inputs.mongodb-port }}
-        MONGODB_DB: ${{ inputs.mongodb-db }}
-        MONGODB_USERNAME: ${{ inputs.mongodb-username }}
-        MONGODB_PASSWORD: ${{ inputs.mongodb-password }}
-      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_mongodb.sh"
-
     # https://github.com/marketplace/actions/actions-setup-mysql
     - name: Setup MySQL
       uses: shogo82148/actions-setup-mysql@v1
@@ -972,19 +985,6 @@ runs:
         user: ${{ inputs.mysql-user }}
         password: ${{ inputs.mysql-password }}
 
-    - name: Setup RabbitMQ
-      shell: bash
-      if: ${{ inputs.rabbitmq-version != 'none' }}
-      env:
-        RABBITMQ_VERSION: ${{ inputs.rabbitmq-version }}
-        RABBITMQ_PORTS: ${{ inputs.rabbitmq-ports }}
-        RABBITMQ_CERTIFICATES: ${{ inputs.rabbitmq-certificates }}
-        RABBITMQ_CONFIG: ${{ inputs.rabbitmq-config }}
-        RABBITMQ_DEFINITIONS: ${{ inputs.rabbitmq-definitions }}
-        RABBITMQ_PLUGINS: ${{ inputs.rabbitmq-plugins }}
-        RABBITMQ_CONTAINER_NAME: ${{ inputs.rabbitmq-container-name }}
-      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_rabbitmq.sh"
-
     # https://github.com/marketplace/actions/actions-setup-redis
     - name: Setup Redis
       uses: shogo82148/actions-setup-redis@v1
@@ -996,3 +996,28 @@ runs:
         redis-tls-port: ${{ inputs.redis-tls-port }}
         auto-start: ${{ inputs.redis-auto-start }}
         redis-conf: ${{ inputs.redis-conf }}
+
+    - name: Wait for MongoDB
+      shell: bash
+      if: ${{ inputs.mongodb-version != 'none' }}
+      env:
+        MONGODB_VERSION: ${{ inputs.mongodb-version }}
+        MONGODB_REPLICA_SET: ${{ inputs.mongodb-replica-set }}
+        MONGODB_PORT: ${{ inputs.mongodb-port }}
+        MONGODB_DB: ${{ inputs.mongodb-db }}
+        MONGODB_USERNAME: ${{ inputs.mongodb-username }}
+        MONGODB_PASSWORD: ${{ inputs.mongodb-password }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_mongodb.sh" wait
+
+    - name: Wait for RabbitMQ
+      shell: bash
+      if: ${{ inputs.rabbitmq-version != 'none' }}
+      env:
+        RABBITMQ_VERSION: ${{ inputs.rabbitmq-version }}
+        RABBITMQ_PORTS: ${{ inputs.rabbitmq-ports }}
+        RABBITMQ_CERTIFICATES: ${{ inputs.rabbitmq-certificates }}
+        RABBITMQ_CONFIG: ${{ inputs.rabbitmq-config }}
+        RABBITMQ_DEFINITIONS: ${{ inputs.rabbitmq-definitions }}
+        RABBITMQ_PLUGINS: ${{ inputs.rabbitmq-plugins }}
+        RABBITMQ_CONTAINER_NAME: ${{ inputs.rabbitmq-container-name }}
+      run: bash "${GITHUB_ACTION_PATH}/../linters/_lib/start_rabbitmq.sh" wait
