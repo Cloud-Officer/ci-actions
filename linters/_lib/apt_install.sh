@@ -3,7 +3,10 @@
 # Installs the space-separated APT_PACKAGES list with apt-get, unless every package is already installed.
 #
 # With APT_CACHE_DIR set, apt uses it as its archive directory: verified .deb files found there are not downloaded again,
-# and `apt-get update` runs only when installing from the image's package index fails.
+# and `apt-get update` runs only when installing from the image's package index fails. After such an install, the files,
+# dpkg records and alternatives of the newly installed packages are saved to installed.tar and installed.status in that
+# directory; when they are there on a later run, they are extracted onto / instead of running apt-get, falling back to
+# the .deb install when that fails. Packages whose maintainer scripts add users or manage services are not snapshotted.
 #
 # Usage (from a composite action step):
 #   env:
@@ -16,12 +19,134 @@ set -euo pipefail
 : "${APT_PACKAGES?APT_PACKAGES must be set}"
 
 cache_dir="${APT_CACHE_DIR:-}"
+admin_dir="${DPKG_ADMINDIR:-/var/lib/dpkg}"
+snapshot="${cache_dir}/installed.tar"
+snapshot_status="${cache_dir}/installed.status"
 
 all_installed() {
   local status
   # shellcheck disable=SC2016,SC2086 # the format is dpkg-query's, not a shell expansion; APT_PACKAGES is word-split on purpose.
   status="$(dpkg-query --show --showformat='${db:Status-Status}\n' ${APT_PACKAGES} 2> /dev/null)" || return 1
   ! grep --quiet --invert-match '^installed$' <<< "${status}"
+}
+
+# Prints "<package>:<arch> <version>" per installed stanza, or "<package>:<arch>" per stanza with mode=all.
+status_entries() {
+  local mode="$1" file="$2"
+  [ -f "${file}" ] || return 0
+  awk -v mode="${mode}" 'BEGIN { RS = ""; FS = "\n" }
+    {
+      pkg = arch = ver = st = ""
+      for (i = 1; i <= NF; i++) {
+        if ($i ~ /^Package: /) pkg = substr($i, 10)
+        else if ($i ~ /^Architecture: /) arch = substr($i, 15)
+        else if ($i ~ /^Version: /) ver = substr($i, 10)
+        else if ($i ~ /^Status: /) st = substr($i, 9)
+      }
+      if (mode == "all") print pkg ":" arch
+      else if (st ~ / installed$/) print pkg ":" arch " " ver
+    }' "${file}" | LC_ALL=C sort
+}
+
+alternatives_state() {
+  [ -d "${admin_dir}/alternatives" ] || return 0
+  find "${admin_dir}/alternatives" -type f -exec cksum {} + | LC_ALL=C sort
+}
+
+restore_snapshot() {
+  [ -s "${snapshot}" ] && [ -s "${snapshot_status}" ] || return 1
+  if LC_ALL=C comm -12 <(status_entries all "${snapshot_status}") <(status_entries all "${admin_dir}/status") | grep --quiet .; then
+    return 1
+  fi
+  sudo tar -x -f "${snapshot}" -C / || return 1
+  { echo; cat "${snapshot_status}"; } | sudo tee -a "${admin_dir}/status" > /dev/null || return 1
+  sudo ldconfig || return 1
+}
+
+# dpkg names the info files of Multi-Arch: same packages with the architecture and the others without it.
+info_prefix() {
+  if [ -e "${admin_dir}/info/$1.list" ]; then
+    echo "${admin_dir}/info/$1"
+  else
+    echo "${admin_dir}/info/${1%%:*}"
+  fi
+}
+
+print_if_present() {
+  local path
+  for path in "$@"; do
+    if [ -L "${path}" ] || [ -f "${path}" ]; then
+      printf '%s\n' "${path#/}"
+    fi
+  done
+}
+
+snapshot_files() {
+  local new="$1" changed_alternatives="$2" key prefix file slave link master name
+  while read -r key _; do
+    prefix="$(info_prefix "${key}")"
+    while IFS= read -r file; do
+      print_if_present "${file}"
+    done < "${prefix}.list"
+    for file in "${prefix}".*; do
+      [[ "${file#"${prefix}."}" == *.* ]] || print_if_present "${file}"
+    done
+  done <<< "${new}"
+  while read -r _ _ file; do
+    [ -n "${file}" ] || continue
+    name="$(basename "${file}")"
+    print_if_present "${file}" "/etc/alternatives/${name}"
+    {
+      read -r _
+      read -r master
+      print_if_present "${master}"
+      while read -r slave && [ -n "${slave}" ]; do
+        read -r link
+        print_if_present "${link}" "/etc/alternatives/${slave}"
+      done
+    } < "${file}"
+  done <<< "${changed_alternatives}"
+}
+
+take_snapshot() {
+  local before="$1" before_alternatives="$2" new keys key prefix files
+  new="$(LC_ALL=C comm -13 <(printf '%s\n' "${before}") <(status_entries installed "${admin_dir}/status"))"
+  if [ -z "${new}" ]; then
+    return 0
+  fi
+  if LC_ALL=C comm -12 <(cut -d' ' -f1 <<< "${before}" | LC_ALL=C sort) <(cut -d' ' -f1 <<< "${new}" | LC_ALL=C sort) | grep --quiet .; then
+    echo "Not snapshotting: the install upgraded a package that was already installed"
+    return 0
+  fi
+  while read -r key _; do
+    prefix="$(info_prefix "${key}")"
+    if grep --quiet --no-messages --extended-regexp 'adduser|useradd|groupadd|systemctl|deb-systemd|invoke-rc\.d' \
+      "${prefix}.preinst" "${prefix}.postinst"; then
+      echo "Not snapshotting: ${key} has maintainer scripts that add users or manage services"
+      return 0
+    fi
+  done <<< "${new}"
+
+  keys="$(cut -d' ' -f1 <<< "${new}" | tr '\n' ' ')"
+  awk -v keys="${keys}" 'BEGIN { RS = ""; FS = "\n"; n = split(keys, k, " "); for (i = 1; i <= n; i++) want[k[i]] = 1 }
+    {
+      pkg = arch = ""
+      for (i = 1; i <= NF; i++) {
+        if ($i ~ /^Package: /) pkg = substr($i, 10)
+        else if ($i ~ /^Architecture: /) arch = substr($i, 15)
+      }
+      if ((pkg ":" arch) in want) printf "%s\n\n", $0
+    }' "${admin_dir}/status" > "${snapshot_status}.tmp" || return 1
+
+  files="$(mktemp)"
+  snapshot_files "${new}" "$(LC_ALL=C comm -13 <(printf '%s\n' "${before_alternatives}") <(alternatives_state))" > "${files}" \
+    && sudo tar -c -f "${snapshot}.tmp" -C / -T "${files}" \
+    && mv -f "${snapshot_status}.tmp" "${snapshot_status}" \
+    && mv -f "${snapshot}.tmp" "${snapshot}"
+  local result=$?
+  rm -f "${files}"
+  [ "${result}" -eq 0 ] || return "${result}"
+  echo "Saved the installed files of $(wc -l <<< "${new}" | tr -d ' ') packages for the next run"
 }
 
 if [ -n "${cache_dir}" ]; then
@@ -40,10 +165,20 @@ if [ -z "${cache_dir}" ]; then
   exit 0
 fi
 
+if restore_snapshot; then
+  echo "Restored from the installed-files snapshot: ${APT_PACKAGES}"
+  exit 0
+elif [ -e "${snapshot}" ]; then
+  echo "::warning::Restoring the installed-files snapshot failed - installing from the cached .deb files"
+fi
+
 install_with_cache() {
   # shellcheck disable=SC2086 # APT_PACKAGES is word-split on purpose: one input carries several packages.
   sudo apt-get --yes --no-install-recommends -o "Dir::Cache::Archives=${cache_dir}" -o APT::Keep-Downloaded-Packages=true install ${APT_PACKAGES}
 }
+
+before="$(status_entries installed "${admin_dir}/status")"
+before_alternatives="$(alternatives_state)"
 
 if install_with_cache; then
   echo "Installed without apt-get update: ${APT_PACKAGES}"
@@ -52,5 +187,7 @@ else
   sudo apt-get --yes update
   install_with_cache
 fi
+
+take_snapshot "${before}" "${before_alternatives}" || echo "::warning::Saving the installed-files snapshot failed"
 
 sudo chown -R "$(id -u):$(id -g)" "${cache_dir}"

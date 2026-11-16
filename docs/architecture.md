@@ -330,10 +330,15 @@ surface, and neither may take the other's content.
   doing nothing when dpkg reports every package installed. With `APT_CACHE_DIR`
   (set by `setup`) it uses that directory as apt's archive directory, so verified
   cached `.deb` files are not downloaded again, and installs without
-  `apt-get update` first, updating and retrying only if that fails. Called by the `Install APT Packages` step of
+  `apt-get update` first, updating and retrying only if that fails. After such an install it saves the files
+  (`.list` entries), `/var/lib/dpkg/info` files, status stanzas and new alternatives of the newly installed packages
+  to `installed.tar` and `installed.status` in that directory, unless the install upgraded an installed package or a
+  new package's maintainer scripts add users or manage services; when both files are there and dpkg knows none of
+  their packages, it extracts the tarball onto `/`, appends the stanzas to the dpkg status file and runs `ldconfig`
+  instead of `apt-get`, falling back to the `.deb` install with a warning when that fails. Called by the `Install APT Packages` step of
   `setup` and `linters/phpstan`; unit-tested by `linters/tests/apt_install.bats`
-- `apt_cache_key.sh`: writes the apt `.deb` cache `dir` and a `key` built from the
-  runner image (`ImageOS`, `ImageVersion`, `RUNNER_ARCH`) and the sorted package
+- `apt_cache_key.sh`: writes the apt cache `dir` and a `key` built from a format
+  version (`v2`, the installed-files snapshot), the runner image (`ImageOS`, `ImageVersion`, `RUNNER_ARCH`) and the sorted package
   list for the `Cache - APT` step of `setup`; unit-tested by
   `linters/tests/apt_cache_key.bats`
 - `node_cache_dir.sh`: writes `dir=<npm, Yarn or pnpm cache directory>`, resolved as

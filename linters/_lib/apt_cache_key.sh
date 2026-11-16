@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Writes dir=<apt .deb cache directory> and key=<cache key> to GITHUB_OUTPUT for the actions/cache step that follows.
+# Writes dir=<apt cache directory> and key=<cache key> to GITHUB_OUTPUT for the actions/cache step that follows.
 # The key changes with the runner image and the sorted, de-duplicated APT_PACKAGES list.
 #
 # Usage (from a composite action step with `id: apt-cache-key`):
@@ -17,5 +17,5 @@ hash="$(printf '%s\n' ${APT_PACKAGES} | LC_ALL=C sort -u | sha256sum | cut -c1-1
 
 {
   echo "dir=${HOME}/.cache/ci-actions/apt"
-  echo "key=apt-${ImageOS:-unknown}-${ImageVersion:-unknown}-${RUNNER_ARCH:-unknown}-${hash}"
+  echo "key=apt-v2-${ImageOS:-unknown}-${ImageVersion:-unknown}-${RUNNER_ARCH:-unknown}-${hash}"
 } >> "${GITHUB_OUTPUT}"
