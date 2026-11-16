@@ -395,6 +395,18 @@
     "requirements": "Dependency",
     "verification_reasoning": "Dependency"
   },
+  "Python:six": {
+    "language": "Python",
+    "package": "six",
+    "version": "1.17.0",
+    "license": "MIT License",
+    "description": "Python 2 and 3 compatibility utilities",
+    "website": "https://github.com/benjaminp/six",
+    "last_verified_at": "2026-11-16",
+    "risk_level": "Low",
+    "requirements": "Dependency",
+    "verification_reasoning": "Dependency"
+  },
   "GHA:actions/checkout": {
     "language": "GHA",
     "package": "actions/checkout",
@@ -526,6 +538,18 @@
     "risk_level": "Low",
     "requirements": "Runs actionlint with reviewdog for the actionlint linter",
     "verification_reasoning": "Official reviewdog integration"
+  },
+  "GHA:ruby/setup-ruby": {
+    "language": "GHA",
+    "package": "ruby/setup-ruby",
+    "version": "v1",
+    "license": "MIT",
+    "description": "An action to download a prebuilt Ruby and add it to the PATH in 5 seconds",
+    "website": "https://github.com/ruby/setup-ruby",
+    "last_verified_at": "2026-09-14",
+    "risk_level": "Low",
+    "requirements": "Installs Ruby for the setup action, the RuboCop linter and the soup action",
+    "verification_reasoning": "Official action from the Ruby organization"
   },
   "GHA:scottbrenner/cfn-lint-action": {
     "language": "GHA",
@@ -659,18 +683,6 @@
     "requirements": "Installs Java for the setup action and the PMD linter",
     "verification_reasoning": "Official GitHub toolchain action"
   },
-  "GHA:ruby/setup-ruby": {
-    "language": "GHA",
-    "package": "ruby/setup-ruby",
-    "version": "v1",
-    "license": "MIT",
-    "description": "An action to download a prebuilt Ruby and add it to the PATH in 5 seconds",
-    "website": "https://github.com/ruby/setup-ruby",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Installs Ruby for the setup action, the RuboCop linter and the soup action",
-    "verification_reasoning": "Official action from the Ruby organization"
-  },
   "GHA:reviewdog/action-rubocop": {
     "language": "GHA",
     "package": "reviewdog/action-rubocop",
@@ -767,18 +779,6 @@
     "requirements": "Starts an OpenSearch service for the setup action",
     "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
   },
-  "GHA:supercharge/mongodb-github-action": {
-    "language": "GHA",
-    "package": "supercharge/mongodb-github-action",
-    "version": "1.12.1",
-    "license": "MIT",
-    "description": "Use MongoDB in GitHub Actions",
-    "website": "https://github.com/supercharge/mongodb-github-action",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Starts a MongoDB service for the setup action",
-    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
-  },
   "GHA:shogo82148/actions-setup-mysql": {
     "language": "GHA",
     "package": "shogo82148/actions-setup-mysql",
@@ -789,18 +789,6 @@
     "last_verified_at": "2026-09-14",
     "risk_level": "Low",
     "requirements": "Starts a MySQL service for the setup action",
-    "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
-  },
-  "GHA:namoshek/rabbitmq-github-action": {
-    "language": "GHA",
-    "package": "namoshek/rabbitmq-github-action",
-    "version": "v1",
-    "license": "MIT",
-    "description": "Use RabbitMQ message broker in GitHub Actions",
-    "website": "https://github.com/Namoshek/rabbitmq-github-action",
-    "last_verified_at": "2026-09-14",
-    "risk_level": "Low",
-    "requirements": "Starts a RabbitMQ service for the setup action",
     "verification_reasoning": "Community-maintained; ref bumped and reviewed weekly through external-actions-bump"
   },
   "GHA:shogo82148/actions-setup-redis": {
