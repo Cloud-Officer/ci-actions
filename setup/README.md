@@ -17,9 +17,14 @@ MongoDB and RabbitMQ are started with `docker run` from the official `mongo` and
 
 Take note that when you enable the setup action for a language, the corresponding [cache](<https://github.com/marketplace/actions/cache>) action(s) will also be automatically enabled.
 
-## Auto-detection of Language Versions
+## Language Selection
 
-This action automatically detects language version files in your repository and installs the corresponding languages without requiring explicit version inputs:
+A language is set up only when the job asks for it: pass its `<language>-version` or `<language>-version-file` input
+(for Ruby, `ruby-version: default` reads `.ruby-version`). A version file in the repository does not, on its own, make
+a job install that language or restore its caches.
+
+Set `detect-version-files: 'true'` to opt in to auto-detection: every language whose version file is in the
+repository root is then set up from that file, whether or not the job asks for it.
 
 | Language | Version File              |
 |----------|---------------------------|
@@ -30,8 +35,17 @@ This action automatically detects language version files in your repository and 
 | Python   | `.python-version`         |
 | Ruby     | `.ruby-version`           |
 
-If a version file is present, the language will be installed using the version specified in the file. Explicit version inputs (e.g.,
-`ruby-version: '3.2'`) will override auto-detection.
+Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
+
+## Caching
+
+* **pip:** one cache, the one `actions/setup-python` keeps for `python-cache` (default `pip`), keyed on the dependency
+  files. Set `python-cache: ''` to turn it off.
+* **npm, Yarn, pnpm:** `node-cache` restores the package manager's cache directory, keyed on the lockfile(s) in
+  `node-cache-dependency-path` (or every lockfile in the repository). When nothing was restored and the job installs
+  nothing, the empty directory is removed so no empty cache is saved over the key.
+* **apt:** the `.deb` files downloaded for `apt-packages` are cached per runner image and package list. On a hit they
+  are installed without `apt-get update`; packages that are already installed are skipped.
 
 ### PHP from apt
 
@@ -48,7 +62,7 @@ installed.
 
 ## Inputs
 
-`setup` is a single composite action that orchestrates 140 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
+`setup` is a single composite action that orchestrates 141 inputs across many tools. Pass only the inputs for the tools you need; everything else is skipped. Inputs are grouped by tool below.
 
 ### Core
 
@@ -58,6 +72,7 @@ installed.
 | `fetch-depth` | no | `1` | Number of commits to fetch. 0 indicates all history for all branches and tags. |
 | `ssh-key` | no | — | ssh key |
 | `persist-credentials` | no | `'false'` | Leave the token in `.git/config` after checkout so later steps can run authenticated git commands against `origin`. Off by default so the credential is not readable by every subsequent step; private submodules resolve over the SSH agent started from `ssh-key` and do not need it. |
+| `detect-version-files` | no | `'false'` | Set to `'true'` to also set up every language whose version file is in the repository root, even when the job does not ask for it. See [Language Selection](#language-selection). |
 
 ### Languages & toolchains
 
