@@ -47,6 +47,12 @@ Explicit version inputs (e.g. `ruby-version: '3.2'`) override a detected file.
 * **apt:** the `.deb` files downloaded for `apt-packages` are cached per runner image and package list and used as apt's
   archive directory, so on a hit apt verifies them against its package index instead of downloading them. Installing
   first runs without `apt-get update` and updates only if that fails; packages that are already installed are skipped.
+* **Gradle:** [setup-gradle](<https://github.com/marketplace/actions/build-with-gradle>) caches the Gradle User Home
+  when Java is set up and `java-cache: gradle` is set or the repository has Gradle build files. It saves only the
+  entries the build used, removes unused ones, and writes the cache only from the default branch (other branches read
+  it). `java-cache: gradle` is not also passed to `actions/setup-java`.
+* **Maven:** `~/.m2/repository` is restored only when the repository has a `pom.xml`. With `java-cache: maven`,
+  `actions/setup-java` caches it instead.
 
 ### PHP from apt
 
