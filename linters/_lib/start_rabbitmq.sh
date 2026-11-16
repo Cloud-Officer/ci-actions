@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 
-# Starts a RabbitMQ container and waits until the broker is running.
+# Starts a RabbitMQ container: `launch` in the background, then `wait` until the broker is running.
 
 set -euo pipefail
 
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/background_launch.sh"
+
 : "${RABBITMQ_VERSION:?RABBITMQ_VERSION must be set}"
 
+phase="${1:-}"
 container="${RABBITMQ_CONTAINER_NAME:-rabbitmq}"
 certificates="${RABBITMQ_CERTIFICATES:-}"
 config="${RABBITMQ_CONFIG:-}"
 definitions="${RABBITMQ_DEFINITIONS:-}"
 plugins="${RABBITMQ_PLUGINS:-}"
 wait_seconds="${RABBITMQ_WAIT_SECONDS:-60}"
+launch_wait_seconds="${RABBITMQ_LAUNCH_WAIT_SECONDS:-300}"
 
 run_args=(run --detach --name "${container}")
 
@@ -34,8 +39,18 @@ if [[ -n "${plugins}" ]]; then
   run_args+=(sh -c 'printf "[%s].\n" "$1" > /etc/rabbitmq/enabled_plugins && exec docker-entrypoint.sh rabbitmq-server' sh "${plugins}")
 fi
 
-echo "Starting RabbitMQ ${RABBITMQ_VERSION} as container ${container}"
-docker "${run_args[@]}"
+case "${phase}" in
+  launch)
+    echo "Starting RabbitMQ ${RABBITMQ_VERSION} as container ${container} in the background"
+    launch_in_background "${container}" docker "${run_args[@]}"
+    exit 0
+    ;;
+  wait) wait_for_launch "${container}" "${launch_wait_seconds}" ;;
+  *)
+    echo "::error::usage: start_rabbitmq.sh launch|wait" >&2
+    exit 2
+    ;;
+esac
 
 waited=0
 until docker exec --user rabbitmq "${container}" rabbitmq-diagnostics --quiet check_running > /dev/null 2>&1; do
