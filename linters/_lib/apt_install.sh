@@ -111,22 +111,23 @@ snapshot_files() {
   done <<< "${changed_alternatives}"
 }
 
-# Prints, relative to /, the symlinks and world-readable files under the scan roots changed after the marker was created.
+# Prints, relative to /, the files and symlinks under the scan roots matching the find test, changed after the marker.
 changed_files() {
   local marker="$1" root path prune=()
+  shift
   for path in "${admin_dir}" /var/lib/apt/lists /var/cache/apt /var/log /var/tmp "${cache_dir}"; do
     prune+=(-path "${path}" -prune -o)
   done
   # shellcheck disable=SC2086 # scan_roots is word-split on purpose: one setting carries several directories.
   for root in ${scan_roots}; do
     [ -d "${root}" ] || continue
-    sudo find "${root}" -xdev "${prune[@]}" \( -type l -o -type f -perm -0004 \) -cnewer "${marker}" -print || return 1
+    sudo find "${root}" -xdev "${prune[@]}" "$@" -cnewer "${marker}" -print || return 1
   done | sed 's|^/||'
   return "${PIPESTATUS[0]}"
 }
 
 take_snapshot() {
-  local before="$1" before_alternatives="$2" marker="$3" new keys key prefix files
+  local before="$1" before_alternatives="$2" marker="$3" new keys key prefix files private
   new="$(LC_ALL=C comm -13 <(printf '%s\n' "${before}") <(status_entries installed "${admin_dir}/status"))"
   if [ -z "${new}" ]; then
     return 0
@@ -144,6 +145,12 @@ take_snapshot() {
     fi
   done <<< "${new}"
 
+  private="$(changed_files "${marker}" -type f ! -perm -0004)" || return 1
+  if [ -n "${private}" ]; then
+    echo "Not snapshotting: the install wrote files that are not world-readable, such as /$(head -n 1 <<< "${private}")"
+    return 0
+  fi
+
   keys="$(cut -d' ' -f1 <<< "${new}" | tr '\n' ' ')"
   awk -v keys="${keys}" 'BEGIN { RS = ""; FS = "\n"; n = split(keys, k, " "); for (i = 1; i <= n; i++) want[k[i]] = 1 }
     {
@@ -158,7 +165,7 @@ take_snapshot() {
   files="$(mktemp)"
   {
     snapshot_files "${new}" "$(LC_ALL=C comm -13 <(printf '%s\n' "${before_alternatives}") <(alternatives_state))" \
-      && changed_files "${marker}"
+      && changed_files "${marker}" \( -type f -o -type l \)
   } > "${files}.all" \
     && LC_ALL=C sort -u "${files}.all" > "${files}" \
     && sudo tar -c -f "${snapshot}.tmp" -C / -T "${files}" \

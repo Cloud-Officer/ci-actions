@@ -294,7 +294,7 @@ EOF
   ! grep -q "${CACHE#/}/" <<< "${entries}"
 }
 
-@test "does not save generated files that are not world-readable" {
+@test "does not snapshot when the install wrote files that are not world-readable" {
   simulate_ffmpeg_install
   cat >> "${BIN}/on-install" <<'EOF'
 mkdir -p "${ROOT}/etc/ssl/private"
@@ -303,5 +303,7 @@ chmod 600 "${ROOT}/etc/ssl/private/snakeoil.key"
 EOF
   APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" run bash "${SCRIPT}"
   [ "$status" -eq 0 ]
-  ! grep -q snakeoil.key <<< "$(tar -t -f "${CACHE}/installed.tar")"
+  [[ "$output" == *"Not snapshotting: the install wrote files that are not world-readable, such as ${ROOT}/etc/ssl/private/snakeoil.key"* ]]
+  [ ! -e "${CACHE}/installed.tar" ]
+  [ ! -e "${CACHE}/installed.status" ]
 }
