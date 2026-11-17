@@ -293,3 +293,15 @@ EOF
   ! grep -qx "${DPKG_ADMINDIR#/}/status" <<< "${entries}"
   ! grep -q "${CACHE#/}/" <<< "${entries}"
 }
+
+@test "does not save generated files that are not world-readable" {
+  simulate_ffmpeg_install
+  cat >> "${BIN}/on-install" <<'EOF'
+mkdir -p "${ROOT}/etc/ssl/private"
+echo key > "${ROOT}/etc/ssl/private/snakeoil.key"
+chmod 600 "${ROOT}/etc/ssl/private/snakeoil.key"
+EOF
+  APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  ! grep -q snakeoil.key <<< "$(tar -t -f "${CACHE}/installed.tar")"
+}

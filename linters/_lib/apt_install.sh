@@ -111,7 +111,7 @@ snapshot_files() {
   done <<< "${changed_alternatives}"
 }
 
-# Prints, relative to /, the files and symlinks under the scan roots whose inode changed after the marker was created.
+# Prints, relative to /, the symlinks and world-readable files under the scan roots changed after the marker was created.
 changed_files() {
   local marker="$1" root path prune=()
   for path in "${admin_dir}" /var/lib/apt/lists /var/cache/apt /var/log /var/tmp "${cache_dir}"; do
@@ -120,7 +120,7 @@ changed_files() {
   # shellcheck disable=SC2086 # scan_roots is word-split on purpose: one setting carries several directories.
   for root in ${scan_roots}; do
     [ -d "${root}" ] || continue
-    sudo find "${root}" -xdev "${prune[@]}" \( -type f -o -type l \) -cnewer "${marker}" -print || return 1
+    sudo find "${root}" -xdev "${prune[@]}" \( -type l -o -type f -perm -0004 \) -cnewer "${marker}" -print || return 1
   done | sed 's|^/||'
   return "${PIPESTATUS[0]}"
 }
