@@ -7,6 +7,7 @@ setup() {
   STATUS="${BIN}/status"
   CACHE="${BIN}/cache"
   export ROOT="${BIN}/root" DPKG_ADMINDIR="${BIN}/dpkg"
+  export APT_SNAPSHOT_SCAN_ROOTS="${ROOT}"
   mkdir -p "${DPKG_ADMINDIR}/info" "${DPKG_ADMINDIR}/alternatives" "${ROOT}"
   cat > "${BIN}/sudo" <<EOF
 #!/usr/bin/env bash
@@ -17,7 +18,7 @@ if [ -n "\${SUDO_FAIL_MATCH:-}" ] && [[ "\$*" == *"\${SUDO_FAIL_MATCH}"* ]]; the
 if [ -n "\${SUDO_FAIL_ONCE_MATCH:-}" ] && [[ "\$*" == *"\${SUDO_FAIL_ONCE_MATCH}"* ]] && [ ! -e "${BIN}/failed-once" ]; then touch "${BIN}/failed-once"; exit 100; fi
 if [[ " \$* " == *" install "* ]] && [ -z "\${SUDO_NO_MARK:-}" ]; then echo installed > "${STATUS}"; fi
 if [[ " \$* " == *" install "* ]] && [ -f "${BIN}/on-install" ]; then bash "${BIN}/on-install"; fi
-case "\$1" in tar|tee) exec "\$@" ;; esac
+case "\$1" in tar|tee|find) exec "\$@" ;; esac
 EOF
   cat > "${BIN}/dpkg-query" <<EOF
 #!/usr/bin/env bash
@@ -261,4 +262,34 @@ EOF
   [[ "$output" == *'::warning::Saving the installed-files snapshot failed'* ]]
   [ ! -e "${CACHE}/installed.tar" ]
   [ ! -e "${CACHE}/installed.status" ]
+}
+
+@test "saves the files maintainer scripts generate during the install and restores them" {
+  mkdir -p "${ROOT}/etc"
+  echo image > "${ROOT}/etc/untouched.conf"
+  simulate_ffmpeg_install
+  cat >> "${BIN}/on-install" <<'EOF'
+mkdir -p "${ROOT}/var/lib/texmf/web2c/pdftex"
+echo format > "${ROOT}/var/lib/texmf/web2c/pdftex/pdflatex.fmt"
+EOF
+  APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  entries="$(tar -t -f "${CACHE}/installed.tar")"
+  grep -qx "${ROOT#/}/var/lib/texmf/web2c/pdftex/pdflatex.fmt" <<< "${entries}"
+  ! grep -q untouched.conf <<< "${entries}"
+  [ "$(grep -cx "${ROOT#/}/usr/bin/ffmpeg" <<< "${entries}")" -eq 1 ]
+  reset_runner
+  APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *'Restored from the installed-files snapshot: ffmpeg'* ]]
+  [ "$(cat "${ROOT}/var/lib/texmf/web2c/pdftex/pdflatex.fmt")" = format ]
+}
+
+@test "does not save the dpkg database or the cache directory as generated files" {
+  simulate_ffmpeg_install
+  APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" APT_SNAPSHOT_SCAN_ROOTS="${ROOT} ${DPKG_ADMINDIR} ${CACHE}" run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  entries="$(tar -t -f "${CACHE}/installed.tar")"
+  ! grep -qx "${DPKG_ADMINDIR#/}/status" <<< "${entries}"
+  ! grep -q "${CACHE#/}/" <<< "${entries}"
 }
