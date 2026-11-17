@@ -17,5 +17,5 @@ hash="$(printf '%s\n' ${APT_PACKAGES} | LC_ALL=C sort -u | sha256sum | cut -c1-1
 
 {
   echo "dir=${HOME}/.cache/ci-actions/apt"
-  echo "key=apt-v3-${ImageOS:-unknown}-${ImageVersion:-unknown}-${RUNNER_ARCH:-unknown}-${hash}"
+  echo "key=apt-v4-${ImageOS:-unknown}-${ImageVersion:-unknown}-${RUNNER_ARCH:-unknown}-${hash}"
 } >> "${GITHUB_OUTPUT}"
