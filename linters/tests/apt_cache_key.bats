@@ -23,7 +23,7 @@ key_for() {
   APT_PACKAGES='graphviz jq' run bash "${SCRIPT}"
   [ "$status" -eq 0 ]
   [ "$(sed -n 1p "${GITHUB_OUTPUT}")" = "dir=${HOME}/.cache/ci-actions/apt" ]
-  [[ "$(sed -n 2p "${GITHUB_OUTPUT}")" =~ ^key=apt-v2-ubuntu24-20261110\.1-X64-[0-9a-f]{16}$ ]]
+  [[ "$(sed -n 2p "${GITHUB_OUTPUT}")" =~ ^key=apt-v3-ubuntu24-20261110\.1-X64-[0-9a-f]{16}$ ]]
 }
 
 @test "keys the same package list identically whatever its order, spacing or duplicates" {
@@ -44,7 +44,7 @@ graphviz   jq ')" ]
 @test "uses placeholders when the runner image variables are missing" {
   run env -u ImageOS -u ImageVersion -u RUNNER_ARCH APT_PACKAGES=graphviz bash "${SCRIPT}"
   [ "$status" -eq 0 ]
-  [[ "$(sed -n 2p "${GITHUB_OUTPUT}")" == key=apt-v2-unknown-unknown-unknown-* ]]
+  [[ "$(sed -n 2p "${GITHUB_OUTPUT}")" == key=apt-v3-unknown-unknown-unknown-* ]]
 }
 
 @test "fails when APT_PACKAGES is not set" {
