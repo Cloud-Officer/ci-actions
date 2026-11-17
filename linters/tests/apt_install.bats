@@ -307,3 +307,20 @@ EOF
   [ ! -e "${CACHE}/installed.tar" ]
   [ ! -e "${CACHE}/installed.status" ]
 }
+
+@test "ignores files service containers write under the container runtime directories" {
+  simulate_ffmpeg_install
+  cat >> "${BIN}/on-install" <<'EOF'
+mkdir -p "${ROOT}/var/lib/docker/volumes/pg/_data" "${ROOT}/var/lib/containerd/io"
+echo data > "${ROOT}/var/lib/docker/volumes/pg/_data/pg_control"
+chmod 600 "${ROOT}/var/lib/docker/volumes/pg/_data/pg_control"
+echo layer > "${ROOT}/var/lib/containerd/io/layer"
+EOF
+  APT_PACKAGES='ffmpeg' APT_CACHE_DIR="${CACHE}" APT_SNAPSHOT_RUNTIME_DIRS="${ROOT}/var/lib/docker ${ROOT}/var/lib/containerd" run bash "${SCRIPT}"
+  [ "$status" -eq 0 ]
+  [[ "$output" != *'Not snapshotting'* ]]
+  entries="$(tar -t -f "${CACHE}/installed.tar")"
+  grep -qx "${ROOT#/}/usr/bin/ffmpeg" <<< "${entries}"
+  ! grep -q 'var/lib/docker' <<< "${entries}"
+  ! grep -q 'var/lib/containerd' <<< "${entries}"
+}
