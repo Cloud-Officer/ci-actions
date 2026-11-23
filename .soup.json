@@ -748,7 +748,7 @@
     "package": "amyu/setup-android",
     "version": "v6.0",
     "license": "MIT",
-    "description": "Setup Android SDK for self hosted runner",
+    "description": "Install and cache the Android SDK on self-hosted GitHub Actions runners for Linux, macOS, and Windows",
     "website": "https://github.com/amyu/setup-android",
     "last_verified_at": "2026-09-14",
     "risk_level": "Low",
