@@ -146,6 +146,9 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 - `codedeploy/s3copy/action.yml`: Sync files to/from S3
 - `codedeploy/deploy/action.yml`: Create and monitor CodeDeploy deployments
   (polling logic extracted to `codedeploy/deploy/deploy.sh`)
+- `codedeploy/asg-rollout/action.yml`: Start the account's `deploy-runner` CodeBuild project (`deploy.rb` with
+  automatic rollback) to build the standalone AMIs and roll the auto scaling groups out, and follow it to the end
+  (logic in `codedeploy/asg-rollout/rollout.sh`)
 
 **Key Components:**
 
@@ -155,8 +158,14 @@ The guard is skipped when the file is sourced, so the bats suite is unaffected.
 - Deployment creation with status polling (5-second intervals; monitoring
   window configurable via the `monitor-timeout-minutes` input, default 30)
 
+- ASG rollout: inputs validated against the `deploy-runner` patterns and flag allow-list before any AWS call, a build
+  started with only the `DEPLOY_ENVIRONMENT`, `DEPLOY_INSTANCES` and `DEPLOY_FLAGS` overrides, new CloudWatch log lines
+  printed on each 15-second poll, and success only on `SUCCEEDED` (monitoring window `monitor-timeout-minutes`,
+  default 180)
+
 **Tests:** `codedeploy/tests/deploy.bats` sources `deploy.sh` and exercises
-`create_deployment`/`poll_deployment` against a stubbed AWS CLI.
+`create_deployment`/`poll_deployment` against a stubbed AWS CLI; `codedeploy/tests/asg-rollout.bats` drives
+`rollout.sh` against a fake AWS CLI that plays back build statuses and log pages.
 
 ### docker
 
@@ -297,7 +306,8 @@ surface, and neither may take the other's content.
   Composer command. On the Composer path phpcs starts the SSH agent and passes
   `github-token` through `COMPOSER_AUTH` so private dependencies install.
   Unit-tested by `linters/tests/detect_php_cs_fixer_source.bats`
-- `require_aws_credentials.sh`: fails the first step of `aws`, `codedeploy/deploy` and `codedeploy/s3copy` unless
+- `require_aws_credentials.sh`: fails the first step of `aws`, `codedeploy/deploy`, `codedeploy/s3copy` and
+  `codedeploy/asg-rollout` unless
   `ROLE_TO_ASSUME` (GitHub OIDC) or both `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY` are non-blank, and whenever only one
   half of the key pair is set, so a missing credential surfaces before any AWS call. Unit-tested by
   `linters/tests/require_aws_credentials.bats`
@@ -311,6 +321,7 @@ surface, and neither may take the other's content.
   fails the step (CFG-002). Despite living under `linters/_lib/`, it is consumed
   by the deployment actions: `aws` (`shell-commands`), `codedeploy/deploy`
   (`application-name`, `deployment-group-name`, `s3-bucket`, `s3-key`),
+  `codedeploy/asg-rollout` (`environment`, `instances`),
   `codedeploy/s3copy` (`source`, `target`) and `docker` (`platforms`, plus
   `username` and `password` when `push` is `true`). Unit-tested by
   `linters/tests/require_inputs.bats`
@@ -563,7 +574,7 @@ end-to-end in CI without secrets or side effects.
   `GITHUB_TOKEN`, and that `linters/bandit` mirrors `linters/semgrep` step for
   step -- the two pip-installed Python linters must not drift apart again
 - `required_inputs_contract.py`: asserts the actions whose empty inputs would
-  fail silently (`aws`, `codedeploy/deploy`, `codedeploy/s3copy`, `docker`)
+  fail silently (`aws`, `codedeploy/asg-rollout`, `codedeploy/deploy`, `codedeploy/s3copy`, `docker`)
   each call the shared `linters/_lib/require_inputs.sh` gate and name every
   such input. Actions that already fail loudly on their own are deliberately
   not listed: `setup` errors on an unusable version, and `slack` validates
@@ -578,7 +589,8 @@ end-to-end in CI without secrets or side effects.
   read submodule paths from `linters/_lib/submodule_paths.sh`, and that no other
   shell script or `action.yml` parses `.gitmodules` with grep/sed/awk or its own
   `git config --file .gitmodules`
-- `aws_credentials_contract.py`: asserts `aws`, `codedeploy/deploy` and `codedeploy/s3copy` declare the GitHub OIDC
+- `aws_credentials_contract.py`: asserts `aws`, `codedeploy/asg-rollout`, `codedeploy/deploy` and `codedeploy/s3copy`
+  declare the GitHub OIDC
   inputs, no longer require the access key pair, run `require_aws_credentials.sh` in their first step with the role
   and keys bound from inputs, and pass role, keys and OIDC options to `configure-aws-credentials`; and that `setup`
   configures AWS credentials when only `aws-role-to-assume` is set
