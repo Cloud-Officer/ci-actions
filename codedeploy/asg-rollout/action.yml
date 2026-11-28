@@ -1,0 +1,87 @@
+---
+name: 'ASG rollout'
+description: 'Build the AMIs of the standalone instances and roll the auto scaling groups out through the deploy-runner CodeBuild project'
+
+inputs:
+  aws-access-key-id:
+    description: 'aws access key id; leave empty when aws-role-to-assume is set'
+    required: false
+  aws-secret-access-key:
+    description: 'aws secret access key; leave empty when aws-role-to-assume is set'
+    required: false
+  aws-region:
+    description: 'aws region of the deploy-runner project'
+    required: true
+  aws-role-to-assume:
+    description: 'ARN of the IAM role to assume with GitHub OIDC instead of access keys; the job needs permissions: id-token: write'
+    required: false
+  aws-audience:
+    description: 'audience of the GitHub OIDC token'
+    required: false
+    default: 'sts.amazonaws.com'
+  aws-role-session-name:
+    description: 'session name recorded in CloudTrail for the assumed role'
+    required: false
+    default: 'GitHubActions'
+  aws-role-duration-seconds:
+    description: 'lifetime of the assumed role credentials, in seconds; cover the whole rollout'
+    required: false
+    default: '10800'
+  environment:
+    description: 'environment to roll out, such as beta1, rc5 or prod3'
+    required: true
+  instances:
+    description: 'comma-separated instances whose standalone AMI is built and whose auto scaling group is rolled out: api, grpc, worker, ml'
+    required: true
+  flags:
+    description: 'extra deploy.rb flags allowed by deploy-runner: --redeploy-latest, --patch-standalone, --sequential_rollout, --skip_scale_down, --preserve_desired_capacity'
+    required: false
+    default: ''
+  project-name:
+    description: 'CodeBuild project that runs deploy.rb'
+    required: false
+    default: 'deploy-runner'
+  monitor-timeout-minutes:
+    description: 'how long to follow the build before failing the step'
+    required: false
+    default: '180'
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Inputs
+      shell: bash
+      env:
+        ENVIRONMENT: ${{ inputs.environment }}
+        INSTANCES: ${{ inputs.instances }}
+        REGION: ${{ inputs.aws-region }}
+        ROLE_TO_ASSUME: ${{ inputs.aws-role-to-assume }}
+        ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+      run: |
+        bash "${GITHUB_ACTION_PATH}/../../linters/_lib/require_inputs.sh" \
+          "environment=${ENVIRONMENT}" \
+          "instances=${INSTANCES}" \
+          "aws-region=${REGION}"
+        bash "${GITHUB_ACTION_PATH}/../../linters/_lib/require_aws_credentials.sh"
+
+    # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.aws-role-to-assume }}
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        audience: ${{ inputs.aws-audience }}
+        role-session-name: ${{ inputs.aws-role-session-name }}
+        role-duration-seconds: ${{ inputs.aws-role-duration-seconds }}
+
+    - name: Roll out through deploy-runner
+      shell: bash
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+        DEPLOY_INSTANCES: ${{ inputs.instances }}
+        DEPLOY_FLAGS: ${{ inputs.flags }}
+        PROJECT_NAME: ${{ inputs.project-name }}
+        MONITOR_TIMEOUT_MINUTES: ${{ inputs.monitor-timeout-minutes }}
+      run: bash "${GITHUB_ACTION_PATH}/rollout.sh"

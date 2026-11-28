@@ -102,7 +102,7 @@ See individual action documentation below for detailed inputs and examples.
 ### Available Actions
 
 * [aws](aws/README.md): Execute AWS CLI or shell commands
-* [codedeploy](codedeploy/README.md): AWS CodeDeploy actions (checkout, deploy, s3copy)
+* [codedeploy](codedeploy/README.md): AWS CodeDeploy actions (checkout, deploy, s3copy, asg-rollout)
 * [docker](docker/README.md): Build and publish Docker images
 * [linters](linters/README.md): Code quality linters for multiple languages
 * [setup](setup/README.md): Setup tools for build environments
