@@ -33,6 +33,7 @@ GATE = os.path.join("linters", "_lib", "require_inputs.sh")
 # action.yml -> the inputs whose emptiness is silent, so must be gated
 GUARDED = {
     os.path.join("aws", "action.yml"): {"shell-commands"},
+    os.path.join("codedeploy", "asg-rollout", "action.yml"): {"environment", "instances"},
     os.path.join("codedeploy", "deploy", "action.yml"): {
         "application-name",
         "deployment-group-name",

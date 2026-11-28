@@ -27,6 +27,7 @@ from _contract_lib import composite_steps, load_yaml, report
 
 ACTIONS = (
     os.path.join("aws", "action.yml"),
+    os.path.join("codedeploy", "asg-rollout", "action.yml"),
     os.path.join("codedeploy", "deploy", "action.yml"),
     os.path.join("codedeploy", "s3copy", "action.yml"),
 )
